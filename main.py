@@ -12,7 +12,7 @@ if sys.argv[1] in ["help", "--help", "-h"]: # if the user gave one of these argu
     
     print(f"To execute a problem set, please enter a set's details. The details required, and in this order, are:{os.linesep} 1. Amount of customers - can be either '25', '50' or '100'{os.linesep} 2. Type of problem - can be either 'C', 'R', or 'RC'{os.linesep} 3. Problem set - can be either '1' or '2'{os.linesep}An example command is: \"main.py 25 RC 2\"")
 else:
-    problemInstances = openIterationsOfProblemSet(sys.argv[1], sys.argv[2], sys.argv[3])
+    problemInstances = openIterationsOfProblemSet(*sys.argv[1:])
     
     if not problemInstances == []: # this output will be removed later; it only exists now to show that the problem instances were loaded correctly
         print([problemInstance.__str__() for problemInstance in problemInstances])
