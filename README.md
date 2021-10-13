@@ -1,2 +1,5 @@
-# HonoursProject
-My Edinburgh Napier University Honours Project
+# My Edinburgh Napier University Honours Project
+
+My Honours Project is aimed at investigating the performance of different methods of solving the Capacitated Vehicle Routing Problem with Time Windows (CVRPTW). The problem entails finding the most efficient combination of routes that multiple vehicles can take to deliver to every customer present in a set of customers. The edition of the VRP I'm investigating (the CVRPTW) is defferent because it constrains the capacity of each vehicle (and, therefore, the amount of packages each vehicle can carry) and the time windows in which each customer should recieve their delivery.
+
+I'm investigating evolutionary algorithms (EA), heuristics, and EA-heuristic hybrids that solve the problem by aiming to find the combinations of routes that require the lowest cost to carry out. Therefore, the cost is my objective function. Factors I'm going to contribute to the cost of a solution are: the amount of vehicles required, the total distance of each route, and any capacity and time window violations.
