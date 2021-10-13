@@ -1,4 +1,4 @@
-import os.path
+import os
 import re
 from destination import Destination
 from problemInstance import ProblemInstance
@@ -30,3 +30,25 @@ def loadInstance(filename) -> ProblemInstance:
         return problemInstance
     except FileNotFoundError as e:
         print(f"Couldn't open file \"{filename}\"\nCause: {e}")
+
+def openIterationsOfProblem(amountOfCustomers, typeOfProblem, problemSet) -> list:
+    """ there's three types of problems in Solomon's instances:
+    - C - clustered customers
+    - R - uniformly distributed customers
+    - RC - a mix of R and C
+    """
+
+    problemInstances = []
+    partialPath = f"solomon_{amountOfCustomers}/{typeOfProblem.upper()}{problemSet}"
+
+    i = 1
+    path = f"{partialPath}{1:02}.txt"
+    while(os.path.isfile(path)):
+        problemInstances.append(loadInstance(path))
+
+        i += 1
+        path = f"{partialPath}{i:02}.txt"
+
+    if i == 1:
+        print(f"Couldn't open file set \"solomon_{amountOfCustomers}/{typeOfProblem}{problemSet}xx.txt\"\n")
+    return problemInstances
