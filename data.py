@@ -1,4 +1,3 @@
-import os
 import re
 import sys
 from itertools import repeat
@@ -6,9 +5,6 @@ from destination import Destination
 from problemInstance import ProblemInstance
 
 def loadInstance(filename) -> ProblemInstance:
-    #if not os.path.isfile(filename):
-        #return None
-
     try:
         with open(filename) as file:
             lines = []
