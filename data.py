@@ -30,5 +30,3 @@ def loadInstance(filename) -> ProblemInstance:
         return problemInstance
     except FileNotFoundError as e:
         print(f"Couldn't open file \"{filename}\"\nCause: {e}")
-
-loadInstance("solomon_100/C101.txt")
