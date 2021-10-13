@@ -1,5 +1,7 @@
 import os
 import re
+import sys
+from itertools import repeat
 from destination import Destination
 from problemInstance import ProblemInstance
 
@@ -29,26 +31,31 @@ def loadInstance(filename) -> ProblemInstance:
 
         return problemInstance
     except FileNotFoundError as e:
-        print(f"Couldn't open file \"{filename}\"\nCause: {e}")
+        raise FileNotFoundError(f"Couldn't open file \"{filename}\"\nCause: {e}")
 
-def openIterationsOfProblem(amountOfCustomers, typeOfProblem, problemSet) -> list:
-    """ there's three types of problems in Solomon's instances:
-    - C - clustered customers
-    - R - uniformly distributed customers
-    - RC - a mix of R and C
-    """
-
+def openIterationsOfProblemSet(amountOfCustomers, typeOfProblem, problemSet) -> list:
     problemInstances = []
     partialPath = f"solomon_{amountOfCustomers}/{typeOfProblem.upper()}{problemSet}"
 
-    i = 1
-    path = f"{partialPath}{1:02}.txt"
-    while(os.path.isfile(path)):
-        problemInstances.append(loadInstance(path))
+    # is this neater than the for loop below? 
+    # the for loop allows for a more helpful error as it shows which specific directory the file couldn't be found in and the file name it was searching for
+    #i = 1
+    #path = f"{partialPath}{1:02}.txt"
+    #while(os.path.isfile(path)):
+        #problemInstances.append(loadInstance(path))
 
-        i += 1
-        path = f"{partialPath}{i:02}.txt"
+        #i += 1
+        #path = f"{partialPath}{i:02}.txt"
 
-    if i == 1:
-        print(f"Couldn't open file set \"solomon_{amountOfCustomers}/{typeOfProblem}{problemSet}xx.txt\"\n")
+    #if i == 1:
+    #    print(f"Couldn't open file set \"solomon_{amountOfCustomers}/{typeOfProblem}{problemSet}xx.txt\"\n")
+    
+    for i in range(1, sys.maxsize): # "sys.maxsize" is almost the same as "INT_MAX"; it's a dummy value that will never be reached
+        try:
+            problemInstances.append(loadInstance(f"{partialPath}{i:02}.txt"))
+        except FileNotFoundError as e: # if the file is not found, then we've either iterated over every file in the problem set or the problem set details entered are incorrect
+            if i == 1: # if the problem set's details are incorrect then "i" will still be 1, so, if it is, output an error message
+                print(e)
+            break
+
     return problemInstances
