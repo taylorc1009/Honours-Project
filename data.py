@@ -23,7 +23,8 @@ def loadInstance(filename) -> ProblemInstance:
                         if len(curLine) == 2: # if the current line only contains two numbers then it's the line that holds only the amount of vehicles and vehicles' capacity, so use them to make a "ProblemInstance"
                             problemInstance = ProblemInstance(problemName, *curLine)
                         else: # if the current line doesn't contain only two values, it will, instead, always contain seven and lines with seven values represent destinations
-                            problemInstance.destinations.append(Destination(*curLine))
+                            destination = Destination(*curLine)
+                            problemInstance.destinations[destination.number] = destination
 
         return problemInstance
     except FileNotFoundError as e:

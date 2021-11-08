@@ -1,12 +1,14 @@
 class Destination():
-    def __init__(self, number, x, y, demand, readyTime, dueDate, serviceDuration):
+    assignedVehicle = None
+
+    def __init__(self, number: int, x: int, y: int, demand: int, readyTime: int, dueDate: int, serviceDuration: int):
         self.number = number
-        self.x = x
-        self.y = y
-        self.demand = demand
-        self.readyTime = readyTime
-        self.dueDate = dueDate
-        self.serviceDuration = serviceDuration
+        self.x = int(x)
+        self.y = int(y)
+        self.demand = int(demand)
+        self.readyTime = int(readyTime)
+        self.dueDate = int(dueDate)
+        self.serviceDuration = int(serviceDuration)
 
     def getDistance(self, x, y):
         import math

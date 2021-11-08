@@ -1,0 +1,87 @@
+from problemInstance import ProblemInstance
+from vehicle import Vehicle
+from typing import List
+from numpy import random
+
+class Solution():
+    T: float=None
+    T_cooling: float=None
+    t: float=None
+
+    def __init__(self, orderOfDestinations: List[int]=list(), vehicles: List[Vehicle]=list()):
+        self.orderOfDestinations = orderOfDestinations
+        self.vehicles = vehicles
+
+def TWIH(instance: ProblemInstance):
+    solution = Solution(
+        orderOfDestinations=sorted([value for _, value in instance.destinations.items()], key=lambda x: x.readyTime),
+        vehicles=list()
+    )
+    D_i = 1 # list of destinations iterator
+
+    for i in range(0, instance.amountOfVehicles - 1):
+        if D_i >= len(instance.destinations) - 1:
+            break
+        if solution.orderOfDestinations[D_i].number == 0:
+            continue
+
+        vehicle = Vehicle(i, instance.capacityOfVehicles, destinations=list())
+        vehicle.destinations.append(solution.orderOfDestinations[0]) # have the route start at the depot
+
+        while vehicle.currentCapacity + solution.orderOfDestinations[D_i].demand < vehicle.maxCapacity and D_i < len(instance.destinations) - 1:
+            vehicle.destinations.append(solution.orderOfDestinations[D_i])
+            vehicle.currentCapacity += solution.orderOfDestinations[D_i].demand
+            instance.destinations[solution.orderOfDestinations[D_i].number].assignedVehicle = vehicle
+            D_i += 1
+        
+        vehicle.destinations.append(solution.orderOfDestinations[0]) # have the route end at the depot
+        solution.vehicles.append(vehicle)
+
+    #for vehicle in solution.vehicles:
+    #    print(f"{vehicle.number}, {[destination.number for destination in vehicle.destinations]}")
+
+    return solution
+
+def Calculate_cooling(T: float, TC: int):
+    pass
+
+def Cooling(P: List[Solution], T_stop: float) -> bool:
+    for I in P:
+        if I.t <= T_stop:
+            return False
+    return True
+
+def Crossover(I: Solution, P_crossover: int):
+    if random.randint(1, 100) <= P_crossover:
+        pass
+
+def Mutation(I: Solution, P_mutation: int, probability: int):
+    if random.randint(1, 100) <= P_mutation:
+        pass
+
+def MO_Metropolis(I: Solution, I_m: Solution, T: float):
+    pass
+
+def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_min: float, T_max: float, T_stop: float) -> List[Solution]:
+    #for i, I in enumerate(instance.destinations, start=1):
+    P: List[Solution]=list()
+    ND: List[Solution]=list()
+    for i in range(p):
+        P.insert(i, TWIH(instance))
+        P[i].T = T_min + i * ((T_max/T_min) / p)
+        P[i].T_cooling = Calculate_cooling(P[i].T, TC)
+        current_multi_start = 1;
+        while (current_multi_start <= MS):
+            for j in enumerate(P):
+                P[j].t = P[j].T
+            while Cooling(P, T_stop):
+                for j, I in enumerate(P):
+                    if j > 0: # I added this because I need to give Crossover and Mutation two parents; the pseudocode says to only give them one but if I do that then I don't have two parents to use in crossover/mutation
+                        I_c = Crossover(I, P[j - 1], P_crossover)
+                        I_m = Mutation(I_c, P_mutation, random.randint(1, 10))
+                        P[j] = MO_Metropolis(I, I_m, I.T)
+                    if True:
+                        ND.append(P[j])
+                    P[j].t = P[j].t * P[j].T_cooling
+            current_multi_start += 1
+    return ND
