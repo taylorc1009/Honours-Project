@@ -48,7 +48,23 @@ def Calculate_cooling(destination: int, T_max: float, T_min: float, T_stop: floa
     if p > 1:
         jumpTemperatures = (T_max - T_min)/(p - 1)
     
-    T_2 = T_max - I.
+    T_2 = T_max - destination * jumpTemperatures
+    error = 0
+    maxError = 0.005 * TC
+    T_cooling = 0.995
+
+    while abs(error) > maxError:
+        T_1 = T_2
+        auxiliaryIterations = 0
+
+        while T_1 > T_stop:
+            T_1 *= T_cooling
+            auxiliaryIterations += 1
+        
+        error = TC - auxiliaryIterations
+        T_cooling = (T_cooling + 0.05 / TC) if error > 0 else (T_cooling - 0.05 / TC)
+    
+    return T_cooling
 
 def Cooling(P: List[Solution], T_stop: float) -> bool:
     for I in P:
