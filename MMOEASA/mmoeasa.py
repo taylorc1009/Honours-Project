@@ -1,4 +1,4 @@
-from MMOEASAOperators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
+from operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 from typing import List

@@ -1,7 +1,7 @@
 import sys
 import os
 from data import openIterationsOfProblemSet
-from MMOEASA import MMOEASA, TWIH
+from MMOEASA.mmoeasa import MMOEASA
 
 if not len(sys.argv) > 1:
     print("If you're unsure how to use the application, type h (help) for information")
