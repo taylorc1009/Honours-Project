@@ -2,7 +2,7 @@ from typing import Dict
 from destination import Destination
 
 class ProblemInstance():
-    def __init__(self, name: str, amountOfVehicles: int, capacityOfVehicles: int, destinations: Dict[int, Destination]={}):
+    def __init__(self, name: str, amountOfVehicles: int, capacityOfVehicles: int, destinations: Dict[int, Destination]=dict()):
         self.name = name
         self.amountOfVehicles = int(amountOfVehicles)
         self.capacityOfVehicles = int(capacityOfVehicles)
