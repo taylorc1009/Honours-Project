@@ -1,10 +1,17 @@
 from operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
-from typing import List, Dict
-from numpy import random
+from typing import List, Final
+from numpy import random, sqrt, exp
+
+# Constants
+INT_MAX: Final[int]=2147483648
+
+Hypervolume_f1, Hypervolume_f3 = 1, 1
 
 class Solution():
+    total_distance: float=0.0
+    cargo_unbalance: float=0.0
     #T: float=None
     #T_cooling: Dict[int, float]=dict()
     #t: float=None
@@ -43,7 +50,7 @@ def TWIH(instance: ProblemInstance):
 
     return solution
 
-def Calculate_cooling(destination: int, T_max: float, T_min: float, T_stop: float, p: int, TC: int):
+def Calculate_cooling(destination: int, T_max: float, T_min: float, T_stop: float, p: int, TC: int) -> float:
     jumpTemperatures = 0
     if p > 1:
         jumpTemperatures = (T_max - T_min)/(p - 1)
@@ -99,13 +106,39 @@ def Mutation(I: Solution, P_mutation: int, probability: int):
         elif probability >= 91 and probability <= 100:
             Mutation10()
 
-def MO_Metropolis(I: Solution, I_m: Solution, T: float):
-    pass
+def Euclidean_distance_dispersion(x1: int, y1: int, x2: int, y2: int):
+    return sqrt(((x2 - x1) / 2 * Hypervolume_f1) ** 2 + ((y2 - y1) / 2 * Hypervolume_f3) ** 2)
+
+def Child_dominates(Parent: Solution, Child) -> bool:
+    if Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance or Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance:
+        return True
+    return False
+
+def MO_Metropolis(p: int, Parent: Solution, Child: Solution, T: float) -> Solution:
+    if Child_dominates(Parent, Child):
+        return Child
+    elif T <= 0.00001:
+        return Parent
+    else:
+        d_df = Euclidean_distance_dispersion(Child.total_distance, Child.cargo_unbalance, Parent.total_distance, Parent.cargo_unbalance)
+        random_val = random.randint(0, INT_MAX) / INT_MAX
+        d_pt_pt = d_df / T ** 2
+        pt_exp = exp(-1 * d_pt_pt)
+
+        if random_val < pt_exp:
+            return Child
+        else:
+            return Parent
+
 
 def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_min: float, T_max: float, T_stop: float) -> List[Solution]:
     #for i, I in enumerate(instance.destinations, start=1):
     P: List[Solution]=list()
     ND: List[Solution]=list()
+
+    # Temporary Hypervolume initialization
+    Hypervolume_f1 = 2378.924 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
+    Hypervolume_f3 = 171.000 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
 
     for i in range(p):
         P.insert(i, TWIH(instance))
@@ -131,7 +164,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                     if j > 0: # I added this because I need to give Crossover and Mutation two parents; the pseudocode says to only give them one but if I do that then I don't have two parents to use in crossover/mutation
                         I_c = Crossover(I, P[j - 1], P_crossover)
                         I_m = Mutation(I_c, P_mutation, random.randint(1, 100))
-                        P[j] = MO_Metropolis(I, I_m, I.T)
+                        P[j] = MO_Metropolis(p, I, I_m, I.T)
                     
                     if True:
                         ND.append(P[j])
