@@ -3,7 +3,7 @@ class Destination():
     T: float=None
     T_cooling: float=None
 
-    def __init__(self, number: int, x: int, y: int, demand: int, readyTime: int, dueDate: int, serviceDuration: int):
+    def __init__(self, number: int, x: int, y: int, demand: int, readyTime: int, dueDate: int, serviceDuration: int) -> None:
         self.number = number
         self.x = int(x)
         self.y = int(y)
@@ -12,7 +12,7 @@ class Destination():
         self.dueDate = int(dueDate)
         self.serviceDuration = int(serviceDuration)
 
-    def getDistance(self, x, y):
+    def getDistance(self, x, y) -> float:
         import math
         xPow, yPow = (x - self.x) ** 2, (y - self.y) ** 2
         return math.sqrt(x + y)
