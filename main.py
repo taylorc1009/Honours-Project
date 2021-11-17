@@ -2,6 +2,7 @@ import sys
 import os
 from data import openIterationsOfProblemSet
 from MMOEASA.mmoeasa import MMOEASA
+from MMOEASA.constants import MMOEASA_POPULATION_SIZE
 
 if not len(sys.argv) > 1:
     print("If you're unsure how to use the application, type h (help) for information")
@@ -28,4 +29,4 @@ else:
     
     # Terminating Condition (TC) is set to 40 seconds
 
-    MMOEASA(problemInstances[0], 20, 10, 40, 0.25, 0.25, 100, 20, 10)
+    MMOEASA(problemInstances[0], MMOEASA_POPULATION_SIZE, 10, 40, 0.25, 0.25, 100, 20, 10)
