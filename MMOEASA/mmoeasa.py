@@ -1,19 +1,17 @@
 from operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
-from problemInstance import ProblemInstance
-from vehicle import Vehicle
-from typing import List, Final
+from constants import INT_MAX
+from ..problemInstance import ProblemInstance
+from ..vehicle import Vehicle
+from typing import List
 from numpy import random, sqrt, exp
-
-# Constants
-INT_MAX: Final[int]=2147483648
 
 Hypervolume_f1, Hypervolume_f3 = 1, 1
 
 class Solution():
-    total_distance: float=0.0
-    cargo_unbalance: float=0.0
-    #T: float=None
-    #T_cooling: Dict[int, float]=dict()
+    total_distance: float=None
+    cargo_unbalance: float=None
+    T: float=None
+    T_cooling: float=None
     #t: float=None
 
     def __init__(self, orderOfDestinations: List[int]=list(), vehicles: List[Vehicle]=list()):
@@ -75,7 +73,7 @@ def Calculate_cooling(destination: int, T_max: float, T_min: float, T_stop: floa
 
 def Cooling(P: List[Solution], T_stop: float) -> bool:
     for I in P:
-        if I.t <= T_stop:
+        if I.T <= T_stop:
             return False
     return True
 
@@ -83,10 +81,12 @@ def Crossover(I: Solution, P_crossover: int):
     if random.randint(1, 100) <= P_crossover:
         Crossover1()
 
-def Mutation(I: Solution, P_mutation: int, probability: int):
+def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probability: int):
+    I_m = I
+
     if random.randint(1, 100) <= P_mutation:
         if probability >= 1 and probability <= 10:
-            Mutation1()
+            Mutation1(instance, I_m)
         elif probability >= 11 and probability <= 20:
             Mutation2()
         elif probability >= 21 and probability <= 30:
@@ -105,6 +105,8 @@ def Mutation(I: Solution, P_mutation: int, probability: int):
             Mutation9()
         elif probability >= 91 and probability <= 100:
             Mutation10()
+    
+    return I_m
 
 def Euclidean_distance_dispersion(x1: int, y1: int, x2: int, y2: int):
     return sqrt(((x2 - x1) / 2 * Hypervolume_f1) ** 2 + ((y2 - y1) / 2 * Hypervolume_f3) ** 2)
@@ -155,9 +157,9 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
             #for j in enumerate(P):
                 #P[j].t = P[j].T
             
-            for I in instance.destinations.keys:
-                instance.destinations[I].T = T_min + i * ((T_max - T_min) / p - 1)
-                instance.destinations[I].T_cooling = Calculate_cooling(I, T_max, T_min, T_stop, p, TC)
+            for I in P:
+                I.T = T_min + i * ((T_max - T_min) / p - 1)
+                I.T_cooling = Calculate_cooling(I, T_max, T_min, T_stop, p, TC)
             
             while Cooling(P, T_stop):
                 for j, I in enumerate(P):

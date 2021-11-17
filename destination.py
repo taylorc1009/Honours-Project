@@ -1,7 +1,7 @@
 class Destination():
     assignedVehicle: int=None
-    T: float=None
-    T_cooling: float=None
+    #T: float=None
+    #T_cooling: float=None
 
     def __init__(self, number: int, x: int, y: int, demand: int, readyTime: int, dueDate: int, serviceDuration: int) -> None:
         self.number = number
