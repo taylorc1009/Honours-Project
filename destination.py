@@ -1,5 +1,5 @@
 class Destination():
-    assignedVehicle: int=None
+    #assignedVehicle: int=None
     #T: float=None
     #T_cooling: float=None
 
