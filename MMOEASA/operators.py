@@ -12,27 +12,27 @@ def rand(start: int, end: int, exclude_values: List[int]=list()):
 
 def shift_left(I: Solution, vehicle: int, destination: int, displacement: int=1):
     for i in range(I.vehicles[vehicle].getIndexOfDestination(destination), len(I.vehicles[vehicle].destinations)):
-        I.vehicles[vehicle].destinations[i] = I.vehicles[vehicle].destinations[i + displacement]
+        I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i + displacement].node
 
 def shift_right(I: Solution, vehicle: int, destination: int, displacement: int=1):
     for i in range(len(I.vehicles[vehicle].destinations), I.vehicles[vehicle].getIndexOfDestination(destination), -1):
-        I.vehicles[vehicle].destinations[i] = I.vehicles[vehicle].destinations[i - displacement]
+        I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i - displacement].node
 
 def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, origin: int, vehicle_2: int, destination: int):
-    num_nodes = len(instance.destinations)
+    num_nodes = len(instance.nodes)
     
-    origin_node = I.vehicles[vehicle_1].destinations[origin]
-    destination_node = I.vehicles[vehicle_2].destinations[destination]
+    origin_node = I.vehicles[vehicle_1].destinations[origin].node
+    destination_node = I.vehicles[vehicle_2].destinations[destination].node
 
     if vehicle_1 == vehicle_2:
         omd_absolute = abs(origin - destination)
 
         if omd_absolute == 1:
-            I.vehicles[vehicle_2].destinations[destination] = origin_node
-            I.vehicles[vehicle_1].destinations[origin] = destination_node
+            I.vehicles[vehicle_2].destinations[destination].node = origin_node
+            I.vehicles[vehicle_1].destinations[origin].node = destination_node
         elif omd_absolute > 1:
             shift_right(I, vehicle_2, destination)
-            I.vehicles[vehicle_2].destinations[destination] = origin_node
+            I.vehicles[vehicle_2].destinations[destination].node = origin_node
 
             if origin > destination:
                 shift_left(I, vehicle_1, origin + 1)
@@ -40,9 +40,9 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
                 shift_left(I, vehicle_1, origin)
     else:
         if len(I.vehicles[vehicle_2].destinations) - 2 <= 0: # "- 2" to discount the two depot entries
-            I.vehicles[vehicle_2].destinations[0] = instance.destinations[0]
-            I.vehicles[vehicle_2].destinations[1] = origin_node
-            I.vehicles[vehicle_2].destinations[2] = instance.destinations[0]
+            I.vehicles[vehicle_2].destinations[0].node = instance.node[0]
+            I.vehicles[vehicle_2].destinations[1].node = origin_node.node
+            I.vehicles[vehicle_2].destinations[2].node = instance.node[0]
 
             if len(I.vehicles[vehicle_2].destinations) > 3:
                 for i in range(3, len(I.vehicles[vehicle_2].destinations)):
@@ -52,8 +52,14 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
         elif len(I.vehicles[vehicle_1].destinations) - 2 == 0:
             shift_right(num_nodes, I, vehicle_2, destination)
 
-            I.vehicles[vehicle_2].destinations[destination] = origin_node
+            I.vehicles[vehicle_2].destinations[destination].node = origin_node
             shift_left(num_nodes, I, vehicle_1, origin)
+    
+    calculate_number_of_routes()
+    calculate_time_window_paths()
+    calculate_route_cargo()
+    calculate_length_of_routes()
+    objective_function()
 
 def Mutation1(instance: ProblemInstance, I: Solution) -> Solution:
     I_m = I
@@ -104,7 +110,7 @@ def solution_visits_destination(destination: int, instance: ProblemInstance, I: 
     for j in range(0, instance.amountOfVehicles):
         if len(I.vehicles[j].destinations) - 2 >= 1:
             for k in len(I.vehicles[j].destinations):
-                if I.vehicles[j].destinations[k].number == instance.destinations[destination].number: # directly get the destination number from the list of destinations in case there's a mismatch between the destination number and the for loop iterator (although there shouldn't)
+                if I.vehicles[j].destinations[k].node.number == instance.destinations[destination].node.number: # directly get the destination number from the list of destinations in case there's a mismatch between the destination number and the for loop iterator (although there shouldn't)
                     return True
     return False
 
@@ -129,7 +135,7 @@ def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]):
                     I_c.vehicles[j].destinations = I_c.vehicles[i].destinations
                     routes_to_safeguard.append(j)
                     #I.vehicles[i].clearAssignedDestinations()
-                    I_c.vehicles[i].clear()
+                    del I_c.vehicles[i]
                     del routes_to_safeguard[i]
                     break
     
@@ -143,7 +149,7 @@ def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]):
                 for k in enumerate(I_c.vehicles):
                     if len(I_c.vehicles[k].destinations) - 2 >= 1:
                         for l in range(1, len(I_c.vehicles[k].destinations) - 1):
-                            if I_c.vehicles[k].destinations[l].number == P[random_solution].vehicles[i].destinations[j].number:
+                            if I_c.vehicles[k].destinations[l].node.number == P[random_solution].vehicles[i].destinations[j].node.number:
                                 insertion_possible = False
             if insertion_possible and routes_inserted < instance.amountOfVehicles:
                 I_c.vehicles[routes_inserted].destinations = P[random_solution].vehicles[i].destinations
@@ -152,12 +158,12 @@ def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]):
     for i in range(1, len(instance.destinations)):
         if not solution_visits_destination(i, instance, I):
             inserted, vehicle = False, 0
-            while vehicle < instance.amountOfVehicles and inserted < 0:
+            while vehicle < instance.amount_of_vehicles and inserted < 0:
                 length_of_route = len(I_c.vehicles[vehicle].destinations) - 2
-                final_destination = I_c.vehicles[vehicle].destinations[length_of_route].number
+                final_destination = I_c.vehicles[vehicle].destinations[length_of_route].node.number
                 
-                I_c.vehicles[vehicle].destinations[length_of_route + 1] = instance.destinations[i]
-                I_c.vehicles[vehicle].currentCapacity += instance.destinations[i].demand
+                I_c.vehicles[vehicle].destinations[length_of_route + 1].node = instance.nodes[i]
+                I_c.vehicles[vehicle].current_capacity += instance.destinations[i].node.demand
 
                 I_c.vehicles[vehicle].destinations[length_of_route + 1].arrival_time = I_c.vehicles[vehicle].destinations[length_of_route].departure_time + instance.MMOEASA_distances[final_destination][i]
                 I_c.vehicles[vehicle].destinations[length_of_route + 1].wait_time = 0.0
@@ -178,7 +184,7 @@ def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]):
     for i in range(I_c.vehicles):
         I_c.vehicles[vehicle].destinations.append(instance.destinations[0])
 
-        length_of_route = len(I_c.vehicles[i].destinations)
+        length_of_route = len(I_c.vehicles[i].destinations) - 2
         final_destination = I_c.vehicles[vehicle].destinations[length_of_route].number
 
         I_c.vehicles[vehicle].destinations[length_of_route + 1].arrival_time = I_c.vehicles[vehicle].destinations[length_of_route + 1].departure_time + instance.MMOEASA_distances[final_destination][0]

@@ -1,3 +1,4 @@
+from destination import Destination
 from operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from constants import INT_MAX
 from ..problemInstance import ProblemInstance
@@ -14,36 +15,46 @@ class Solution():
     T_cooling: float=None
     #t: float=None
 
-    def __init__(self, _id: int=None, orderOfDestinations: List[int]=list(), vehicles: List[Vehicle]=list()):
+    def __init__(self, _id: int=None, order_of_destinations: List[Destination]=list(), vehicles: List[Vehicle]=list()):
         self.id: int=_id
-        self.orderOfDestinations: List[int]=orderOfDestinations
+        self.order_of_destinations: List[Destination]=order_of_destinations
         self.vehicles: List[Vehicle]=vehicles
 
 def TWIH(instance: ProblemInstance, solution_id: int):
+    sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
+
     solution = Solution(
         id=solution_id,
-        orderOfDestinations=sorted([value for _, value in instance.destinations.items()], key=lambda x: x.readyTime),
+        order_of_destinations=[Destination(node_args=list(*node)) for node in sorted_nodes],
         vehicles=list()
     )
     D_i = 1 # list of destinations iterator
 
     for i in range(0, instance.amountOfVehicles - 1):
-        if D_i >= len(instance.destinations) - 1:
+        if D_i >= len(instance.nodes) - 1:
             break
         if solution.orderOfDestinations[D_i].number == 0:
             continue
 
-        vehicle = Vehicle(i, instance.capacityOfVehicles, destinations=list())
-        vehicle.destinations.append(solution.orderOfDestinations[0]) # have the route start at the depot
+        vehicle = Vehicle(i, instance.capacity_of_vehicles, destinations=list())
+        vehicle.destinations.append(solution.order_of_destinations[0]) # have the route start at the depot
 
-        while vehicle.currentCapacity + solution.orderOfDestinations[D_i].demand < vehicle.maxCapacity and D_i < len(instance.destinations) - 1:
-            vehicle.destinations.append(solution.orderOfDestinations[D_i])
-            vehicle.currentCapacity += solution.orderOfDestinations[D_i].demand
+        while vehicle.current_capacity + solution.order_of_destinations[D_i].demand < instance.capacity_of_vehicles and D_i < len(instance.nodes) - 1:
+            vehicle.destinations.append(solution.order_of_destinations[D_i])
+            vehicle.current_capacity += solution.order_of_destinations[D_i].demand
             #instance.destinations[solution.orderOfDestinations[D_i].number].assignedVehicle = vehicle
             D_i += 1
         
-        vehicle.destinations.append(solution.orderOfDestinations[0]) # have the route end at the depot
+        vehicle.destinations.append(solution.order_of_destinations[0]) # have the route end at the depot
         solution.vehicles.append(vehicle)
+
+    """for i in range(instance.amount_of_vehicles):
+        inserted, vehicle = False, 0
+        while vehicle < instance.amount_of_vehicles and not inserted:
+            length_of_route = len(solution.vehicles[vehicle].destinations) - 2
+            final_destination = solution.vehicles[vehicle].destinations[length_of_route]
+
+            solution.vehicles[vehicle].arrival_time"""
 
     #for vehicle in solution.vehicles:
     #    print(f"{vehicle.number}, {[destination.number for destination in vehicle.destinations]}")
@@ -168,7 +179,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                     I_m = Mutation(I_c, P_mutation, random.randint(1, 100))
                     P[j] = MO_Metropolis(I, I_m, I.T)
                     
-                    if True:
+                    if True: # this should be something like "if P[j] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
                         ND.append(P[j])
                     
                     P[j].t *= P[j].T_cooling
