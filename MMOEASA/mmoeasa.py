@@ -1,7 +1,8 @@
-from auxiliaries import verify_nodes_are_inserted, Hypervolume_total_distance, Hypervolume_cargo_unbalance
-from operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
-from constants import INT_MAX
-from solution import Solution
+from MMOEASA.auxiliaries import verify_nodes_are_inserted
+from MMOEASA.hypervolumes import Hypervolume_total_distance, Hypervolume_cargo_unbalance
+from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
+from MMOEASA.constants import INT_MAX
+from MMOEASA.solution import Solution
 from ..problemInstance import ProblemInstance
 from ..destination import Destination
 from ..vehicle import Vehicle

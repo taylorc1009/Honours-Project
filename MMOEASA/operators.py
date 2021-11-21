@@ -1,6 +1,7 @@
-from mmoeasa import Solution, MO_Metropolis
-from constants import MMOEASA_POPULATION_SIZE
-from auxiliaries import verify_nodes_are_inserted
+from MMOEASA.mmoeasa import MO_Metropolis
+from MMOEASA.solution import Solution
+from MMOEASA.constants import MMOEASA_POPULATION_SIZE
+from MMOEASA.auxiliaries import verify_nodes_are_inserted
 from ..problemInstance import ProblemInstance
 from typing import List
 from numpy import random

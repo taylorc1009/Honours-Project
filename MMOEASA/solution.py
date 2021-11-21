@@ -1,7 +1,6 @@
 from typing import List
-from MMOEASA.auxiliaries import update_Hypervolumes
-from auxiliaries import Hypervolume_total_distance, Hypervolume_cargo_unbalance, update_Hypervolumes
-from constants import MMOEASA_INFINITY
+from MMOEASA.hypervolumes import Hypervolume_total_distance, Hypervolume_cargo_unbalance, update_Hypervolumes
+from MMOEASA.constants import MMOEASA_INFINITY
 from ..vehicle import Vehicle
 from ..problemInstance import ProblemInstance
 from ..destination import Destination

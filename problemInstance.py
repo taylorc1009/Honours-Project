@@ -3,7 +3,7 @@ from node import Node
 from numpy import matrix
 
 class ProblemInstance():
-    MMOEASA_distances: matrix[int][int]
+    MMOEASA_distances: matrix
 
     def __init__(self, name: str, amount_of_vehicles: int, capacity_of_vehicles: int, nodes: Dict[int, Node]=dict()) -> None:
         self.name: str=name
