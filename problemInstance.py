@@ -1,4 +1,3 @@
-from MMOEASA.auxiliary import Euclidean_distance
 from typing import Dict
 from node import Node
 from numpy import matrix
