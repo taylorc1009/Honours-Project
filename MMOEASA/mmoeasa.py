@@ -132,11 +132,21 @@ def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
         else:
             return Parent
 
+def is_nondominated(I: Solution, ND: List[Solution]) -> bool:
+    for nondominated in ND:
+        if I.total_distance < nondominated.total_distance and I.cargo_unbalance <= nondominated.cargo_unbalance or I.total_distance < nondominated.total_distance and I.cargo_unbalance < nondominated.cargo_unbalance:
+            continue
+        else:
+            return False
+    return True
 
 def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_min: float, T_max: float, T_stop: float) -> List[Solution]:
     #for i, I in enumerate(instance.destinations, start=1):
     P: List[Solution]=list()
     ND: List[Solution]=list()
+
+    terminate = False
+    iterations = 0
 
     # temporary Hypervolume initialization
     #Hypervolume_total_distance = 2378.924 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
@@ -163,15 +173,19 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 P[j].T_cooling = Calculate_cooling(I, T_max, T_min, T_stop, p, TC)
             
             while Cooling(P, T_stop):
+                if P[0].T < T_stop or iterations == TC:
+                    terminate = True
+
                 for j, I in enumerate(P):
                     #if j > 0: # I added this because I need to give Crossover and Mutation two parents; the pseudocode says to only give them one but if I do that then I don't have two parents to use in crossover/mutation
                     I_c = Crossover(instance, P[j], P, P_crossover)
                     I_m = Mutation(I_c, P_mutation, random.randint(1, 100))
                     P[j] = MO_Metropolis(I, I_m, I.T)
                     
-                    if True: # this should be something like "if P[j] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
+                    if is_nondominated(P[j], ND): # this should be something like "if P[j] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
                         ND.append(P[j])
                     
                     P[j].t *= P[j].T_cooling
+                iterations += 1
             current_multi_start += 1
     return ND
