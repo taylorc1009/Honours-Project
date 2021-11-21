@@ -6,13 +6,22 @@ class Vehicle():
         self.number = int(number)
         self.maxCapacity = int(maxCapacity)
         self.currentCapacity = int(currentCapacity)
-        self.destinations: List[destinations]=destinations
+        self.destinations: List[Destination]=destinations
 
     def __str__(self) -> str:
         return f"{self.number}, {self.maxCapacity}, {self.currentCapacity}, {[destination.number for destination in self.destinations]}"
     
     def getIndexOfDestination(self, destination: int) -> int:
-        for i, d in enumerate(self.destinations):
-            if d.number == destination:
-                return i
+        #for i, d in enumerate(self.destinations):
+            #if d.number == destination:
+                #return i
+
+        if filter(lambda d: (d.number == destination), self.destinations): # does this work and is it better than the for loop above?
+            return True
         return None
+
+    """ this funcion is supposed to change "assignedVehicle" of every destination in "self.destinations" to "None", which would allow for quicker calculations of unvisited nodes, but this is very hard to track
+    def clearAssignedDestinations(self) -> None:
+        for i in enumerate(self.destinations):
+            self.destinations[i].assignedVehicle = None
+        self.destinations.clear()"""
