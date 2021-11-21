@@ -8,8 +8,8 @@ class ProblemInstance():
 
     def __init__(self, name: str, amount_of_vehicles: int, capacity_of_vehicles: int, destinations: Dict[int, Destination]=dict()) -> None:
         self.name: str=name
-        self.amount_of_vehicles = int(amount_of_vehicles)
-        self.capacity_of_vehicles = int(capacity_of_vehicles)
+        self.amount_of_vehicles: int=amount_of_vehicles
+        self.capacity_of_vehicles: int=capacity_of_vehicles
         self.destinations: List[Destination]=destinations
 
     def __str__(self) -> str:
@@ -21,4 +21,4 @@ class ProblemInstance():
                 if i == j:
                     self.MMOEASA_distances[i][j] = -1
                 else:
-                    self.MMOEASA_distances[i][j] = self.destinations[i].getDistance(self.destinations[j].x, self.destinations[j].y)
+                    self.MMOEASA_distances[i][j] = self.destinations[i].node.getDistance(self.destinations[j].node.x, self.destinations[j].node.y)

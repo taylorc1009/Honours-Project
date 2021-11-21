@@ -1,25 +1,16 @@
+from typing import List
+from node import Node
+
 class Destination():
     #assignedVehicle: int=None
-    #T: float=None
-    #T_cooling: float=None
 
-    arrival_time: float=None
-    departure_time: float=None
-    wait_time: float=None
-
-    def __init__(self, number: int, x: int, y: int, demand: int, ready_time: int, due_date: int, service_duration: int) -> None:
-        self.number = number
-        self.x = int(x)
-        self.y = int(y)
-        self.demand = int(demand)
-        self.ready_time = int(ready_time)
-        self.due_date = int(due_date)
-        self.service_duration = int(service_duration)
-
-    def getDistance(self, x, y) -> float:
-        import math
-        xPow, yPow = (x - self.x) ** 2, (y - self.y) ** 2
-        return math.sqrt(xPow + yPow)
+    def __init__(self, arrival_time: float, departure_time: float, wait_time: float, node_args: List[int]=list()) -> None:
+        self.arrival_time: float=arrival_time
+        self.departure_time: float=departure_time
+        self.wait_time: float=wait_time
+        
+        if not node_args.empty():
+            self.node: Node=Node(*node_args)
     
     def __str__(self) -> str:
-        return f"{self.number}, {self.x}, {self.y}, {self.demand}, {self.ready_time}, {self.due_date}, {self.service_duration}"
+        return f"{self.arrival_time}, {self.departure_time}, {self.wait_time}, {self.node.__str__()}"

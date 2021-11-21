@@ -1,6 +1,5 @@
 import re
 import sys
-from itertools import repeat
 from destination import Destination
 from problemInstance import ProblemInstance
 
