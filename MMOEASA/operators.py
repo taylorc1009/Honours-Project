@@ -1,10 +1,14 @@
 from mmoeasa import Solution, MO_Metropolis
-from constants import MMOEASA_INFINITY, INT_MAX, MMOEASA_POPULATION_SIZE
+from constants import MMOEASA_POPULATION_SIZE
 from ..problemInstance import ProblemInstance
-from numpy import random, exp
+from typing import List
+from numpy import random
 
-def rand(start: int, end: int):
-    return random.randint(start, end)
+def rand(start: int, end: int, exclude_values: List[int]=list()):
+    random_val = random.randint(start, end)
+    while random_val in exclude_values:
+        random_val = random.randint(start, end)
+    return random_val
 
 def shift_left(I: Solution, vehicle: int, destination: int, displacement: int=1):
     for i in range(I.vehicles[vehicle].getIndexOfDestination(destination), len(I.vehicles[vehicle].destinations)):
@@ -21,12 +25,12 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
     destination_node = I.vehicles[vehicle_2].destinations[destination]
 
     if vehicle_1 == vehicle_2:
-        o_a_absolute = abs(origin - destination)
+        omd_absolute = abs(origin - destination)
 
-        if o_a_absolute == 1:
+        if omd_absolute == 1:
             I.vehicles[vehicle_2].destinations[destination] = origin_node
             I.vehicles[vehicle_1].destinations[origin] = destination_node
-        elif o_a_absolute > 1:
+        elif omd_absolute > 1:
             shift_right(I, vehicle_2, destination)
             I.vehicles[vehicle_2].destinations[destination] = origin_node
 
@@ -42,7 +46,7 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
 
             if len(I.vehicles[vehicle_2].destinations) > 3:
                 for i in range(3, len(I.vehicles[vehicle_2].destinations)):
-                    I.vehicles[vehicle_2].destinations.remove(i)
+                    del I.vehicles[vehicle_2].destinations[i]
             
             shift_left(num_nodes, I, vehicle_1, origin)
         elif len(I.vehicles[vehicle_1].destinations) - 2 == 0:
@@ -59,9 +63,9 @@ def Mutation1(instance: ProblemInstance, I: Solution) -> Solution:
         vehicle_randomize = rand(0, len(I_m.vehicles) - 1)
     
     origin_position = rand(0, len(I_m.vehicles[vehicle_randomize].destinations))
-    destination_position = rand(0, len(I_m.vehicles[vehicle_randomize].destinations))
-    while origin_position == destination_position:
-        destination_position = rand(0, len(I_m.vehicles[vehicle_randomize].destinations))
+    destination_position = rand(0, len(I_m.vehicles[vehicle_randomize].destinations), exclude_values=list(origin_position))
+    #while origin_position == destination_position:
+        #destination_position = rand(0, len(I_m.vehicles[vehicle_randomize].destinations))
 
     move_destination(instance, I_m, vehicle_randomize, origin_position, vehicle_randomize, destination_position)
     
@@ -96,5 +100,96 @@ def Mutation9():
 def Mutation10():
     pass
 
-def Crossover1():
-    pass
+def solution_visits_destination(destination: int, instance: ProblemInstance, I: Solution) -> bool:
+    for j in range(0, instance.amountOfVehicles):
+        if len(I.vehicles[j].destinations) - 2 >= 1:
+            for k in len(I.vehicles[j].destinations):
+                if I.vehicles[j].destinations[k].number == instance.destinations[destination].number: # directly get the destination number from the list of destinations in case there's a mismatch between the destination number and the for loop iterator (although there shouldn't)
+                    return True
+    return False
+
+def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]):
+    I_c = I
+
+    routes_to_safeguard = list()
+
+    for i in enumerate(I_c.vehicles):
+        if rand(0, 100) < 50:
+            routes_to_safeguard.append(i)
+        else:
+            #I.vehicles[i].clearAssignedDestinations()
+            I_c.vehicles[i].destinations.clear()
+            i -= 1
+
+    for i in range(len(I_c.vehicles), -1, -1):
+        if i in routes_to_safeguard:
+            for j in enumerate(I_c.vehicles):
+                if j not in routes_to_safeguard:
+                    #I.vehicles[j].clearAssignedDestinations()
+                    I_c.vehicles[j].destinations = I_c.vehicles[i].destinations
+                    routes_to_safeguard.append(j)
+                    #I.vehicles[i].clearAssignedDestinations()
+                    I_c.vehicles[i].clear()
+                    del routes_to_safeguard[i]
+                    break
+    
+    random_solution = rand(0, len(P), exclude_values=list(I_c.id))
+    routes_inserted = len(routes_to_safeguard)
+
+    for i in enumerate(P[random_solution].vehicles):
+        if len(P[random_solution].vehicles[i].destinations) - 2 >= 1:
+            insertion_possible = True
+            for j in range(1, len(P[random_solution].vehicles[i].destinations) - 1): # start at one and end one before the end of the list to discount depot nodes
+                for k in enumerate(I_c.vehicles):
+                    if len(I_c.vehicles[k].destinations) - 2 >= 1:
+                        for l in range(1, len(I_c.vehicles[k].destinations) - 1):
+                            if I_c.vehicles[k].destinations[l].number == P[random_solution].vehicles[i].destinations[j].number:
+                                insertion_possible = False
+            if insertion_possible and routes_inserted < instance.amountOfVehicles:
+                I_c.vehicles[routes_inserted].destinations = P[random_solution].vehicles[i].destinations
+                routes_inserted += 1
+    
+    for i in range(1, len(instance.destinations)):
+        if not solution_visits_destination(i, instance, I):
+            inserted, vehicle = False, 0
+            while vehicle < instance.amountOfVehicles and inserted < 0:
+                length_of_route = len(I_c.vehicles[vehicle].destinations) - 2
+                final_destination = I_c.vehicles[vehicle].destinations[length_of_route].number
+                
+                I_c.vehicles[vehicle].destinations[length_of_route + 1] = instance.destinations[i]
+                I_c.vehicles[vehicle].currentCapacity += instance.destinations[i].demand
+
+                I_c.vehicles[vehicle].destinations[length_of_route + 1].arrival_time = I_c.vehicles[vehicle].destinations[length_of_route].departure_time + instance.MMOEASA_distances[final_destination][i]
+                I_c.vehicles[vehicle].destinations[length_of_route + 1].wait_time = 0.0
+                if I_c.vehicles[vehicle].destinations[length_of_route + 1].arrival_time < instance.destinations[i].ready_time:
+                    I_c.vehicles[vehicle].destinations[length_of_route + 1].wait_time = instance.destinations[i].ready_time - I_c.vehicles[vehicle].destinations[length_of_route + 1].arrival_time
+                    I_c.vehicles[vehicle].destinations[length_of_route + 1].arrival_time = instance.destinations[i].ready_time
+                
+                if I_c.vehicles[vehicle].destinations[length_of_route + 1].arrival_time <= instance.destinations[i].due_date:
+                    I_c.vehicles[vehicle].destinations[length_of_route + 1].departure_time = instance.destinations[i].serve_time + I_c.vehicles[vehicle].destinations[length_of_route + 1].arrival_time
+
+                    calculate_route_lengths()
+
+                    inserted = True
+                elif I_c.vehicles[vehicle].destinations[length_of_route + 1].arrival_time > instance.destinations[i].due_date or I_c.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
+                    del I_c.vehicles[vehicle].destinations[length_of_route + 1]
+                    vehicle += 1
+    
+    for i in range(I_c.vehicles):
+        I_c.vehicles[vehicle].destinations.append(instance.destinations[0])
+
+        length_of_route = len(I_c.vehicles[i].destinations)
+        final_destination = I_c.vehicles[vehicle].destinations[length_of_route].number
+
+        I_c.vehicles[vehicle].destinations[length_of_route + 1].arrival_time = I_c.vehicles[vehicle].destinations[length_of_route + 1].departure_time + instance.MMOEASA_distances[final_destination][0]
+        I_c.vehicles[vehicle].destinations[length_of_route + 1].departure_time = I_c.vehicles[vehicle].destinations[length_of_route + 1].departure_time + instance.MMOEASA_distances[final_destination][0]
+        I_c.vehicles[vehicle].destinations[length_of_route + 1].wait_time = 0.0
+
+    calculate_number_of_routes()
+    calculate_time_window_paths()
+    calculate_route_cargo()
+    calculate_length_of_routes()
+    objective_function()
+
+
+    return I if I_c.total_distance < 0 else MO_Metropolis(I, I_c, I.T)

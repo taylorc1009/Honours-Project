@@ -14,12 +14,14 @@ class Solution():
     T_cooling: float=None
     #t: float=None
 
-    def __init__(self, orderOfDestinations: List[int]=list(), vehicles: List[Vehicle]=list()):
-        self.orderOfDestinations = orderOfDestinations
-        self.vehicles = vehicles
+    def __init__(self, _id: int=None, orderOfDestinations: List[int]=list(), vehicles: List[Vehicle]=list()):
+        self.id: int=_id
+        self.orderOfDestinations: List[int]=orderOfDestinations
+        self.vehicles: List[Vehicle]=vehicles
 
-def TWIH(instance: ProblemInstance):
+def TWIH(instance: ProblemInstance, solution_id: int):
     solution = Solution(
+        id=solution_id,
         orderOfDestinations=sorted([value for _, value in instance.destinations.items()], key=lambda x: x.readyTime),
         vehicles=list()
     )
@@ -37,7 +39,7 @@ def TWIH(instance: ProblemInstance):
         while vehicle.currentCapacity + solution.orderOfDestinations[D_i].demand < vehicle.maxCapacity and D_i < len(instance.destinations) - 1:
             vehicle.destinations.append(solution.orderOfDestinations[D_i])
             vehicle.currentCapacity += solution.orderOfDestinations[D_i].demand
-            instance.destinations[solution.orderOfDestinations[D_i].number].assignedVehicle = vehicle
+            #instance.destinations[solution.orderOfDestinations[D_i].number].assignedVehicle = vehicle
             D_i += 1
         
         vehicle.destinations.append(solution.orderOfDestinations[0]) # have the route end at the depot
@@ -77,9 +79,9 @@ def Cooling(P: List[Solution], T_stop: float) -> bool:
             return False
     return True
 
-def Crossover(I: Solution, P_crossover: int):
+def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_crossover: int):
     if random.randint(1, 100) <= P_crossover:
-        Crossover1()
+        Crossover1(instance, I, P)
 
 def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probability: int):
     I_m = I
@@ -112,11 +114,9 @@ def Euclidean_distance_dispersion(x1: int, y1: int, x2: int, y2: int):
     return sqrt(((x2 - x1) / 2 * Hypervolume_f1) ** 2 + ((y2 - y1) / 2 * Hypervolume_f3) ** 2)
 
 def Child_dominates(Parent: Solution, Child) -> bool:
-    if Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance or Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance:
-        return True
-    return False
+    return True if Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance or Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance else False
 
-def MO_Metropolis(p: int, Parent: Solution, Child: Solution, T: float) -> Solution:
+def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
     if Child_dominates(Parent, Child):
         return Child
     elif T <= 0.00001:
@@ -143,12 +143,12 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
     Hypervolume_f3 = 171.000 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
 
     for i in range(p):
-        P.insert(i, TWIH(instance))
+        P.insert(i, TWIH(instance, i))
     
-    for i in range(p):
+    for i in range(len(P)):
         #for I in instance.destinations.keys:
-            #P[i].T = T_min + i * ((T_max - T_min) / p - 1)
-            #P[i].T_cooling[I] = Calculate_cooling(I, T_max, T_min, T_stop, p, TC)
+            ##P[i].T = T_min + i * ((T_max - T_min) / p - 1)
+            ##P[i].T_cooling[I] = Calculate_cooling(I, T_max, T_min, T_stop, p, TC)
             #instance.destinations[I].T = T_min + i * ((T_max - T_min) / p - 1)
             #instance.destinations[I].T_cooling = Calculate_cooling(I, T_max, T_min, T_stop, p, TC)
         
@@ -157,16 +157,16 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
             #for j in enumerate(P):
                 #P[j].t = P[j].T
             
-            for I in P:
-                I.T = T_min + i * ((T_max - T_min) / p - 1)
-                I.T_cooling = Calculate_cooling(I, T_max, T_min, T_stop, p, TC)
+            for j in enumerate(P):
+                P[j].T = T_min + i * ((T_max - T_min) / p - 1)
+                P[j].T_cooling = Calculate_cooling(I, T_max, T_min, T_stop, p, TC)
             
             while Cooling(P, T_stop):
                 for j, I in enumerate(P):
-                    if j > 0: # I added this because I need to give Crossover and Mutation two parents; the pseudocode says to only give them one but if I do that then I don't have two parents to use in crossover/mutation
-                        I_c = Crossover(I, P[j - 1], P_crossover)
-                        I_m = Mutation(I_c, P_mutation, random.randint(1, 100))
-                        P[j] = MO_Metropolis(p, I, I_m, I.T)
+                    #if j > 0: # I added this because I need to give Crossover and Mutation two parents; the pseudocode says to only give them one but if I do that then I don't have two parents to use in crossover/mutation
+                    I_c = Crossover(instance, P[j], P, P_crossover)
+                    I_m = Mutation(I_c, P_mutation, random.randint(1, 100))
+                    P[j] = MO_Metropolis(I, I_m, I.T)
                     
                     if True:
                         ND.append(P[j])
