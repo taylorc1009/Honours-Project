@@ -10,7 +10,7 @@ class ProblemInstance():
         self.name: str=name
         self.amount_of_vehicles: int=amount_of_vehicles
         self.capacity_of_vehicles: int=capacity_of_vehicles
-        self.nodes: Dict[Node]=nodes
+        self.nodes: Dict[int, Node]=nodes
 
     def __str__(self) -> str:
         return f"{self.name}, {self.amountOfVehicles}, {self.capacityOfVehicles}, {[(key, value.__str__()) for key, value in self.nodes.items()]}"

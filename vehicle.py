@@ -2,6 +2,8 @@ from destination import Destination
 from typing import List
 
 class Vehicle():
+    route_distance: float=None
+    
     def __init__(self, number: int, current_capacity: int=0, destinations: List[Destination]=list()) -> None:
         self.number: int=number
         self.current_capacity: int=current_capacity

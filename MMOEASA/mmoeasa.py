@@ -1,24 +1,14 @@
-from destination import Destination
+from auxiliaries import verify_nodes_are_inserted
 from operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from constants import INT_MAX
+from solution import Solution
 from ..problemInstance import ProblemInstance
+from ..destination import Destination
 from ..vehicle import Vehicle
 from typing import List
 from numpy import random, sqrt, exp
 
-Hypervolume_f1, Hypervolume_f3 = 1, 1
-
-class Solution():
-    total_distance: float=None
-    cargo_unbalance: float=None
-    T: float=None
-    T_cooling: float=None
-    #t: float=None
-
-    def __init__(self, _id: int=None, order_of_destinations: List[Destination]=list(), vehicles: List[Vehicle]=list()):
-        self.id: int=_id
-        self.order_of_destinations: List[Destination]=order_of_destinations
-        self.vehicles: List[Vehicle]=vehicles
+Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance = 1, 1, 1
 
 def TWIH(instance: ProblemInstance, solution_id: int):
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
@@ -48,13 +38,12 @@ def TWIH(instance: ProblemInstance, solution_id: int):
         vehicle.destinations.append(solution.order_of_destinations[0]) # have the route end at the depot
         solution.vehicles.append(vehicle)
 
-    """for i in range(instance.amount_of_vehicles):
-        inserted, vehicle = False, 0
-        while vehicle < instance.amount_of_vehicles and not inserted:
-            length_of_route = len(solution.vehicles[vehicle].destinations) - 2
-            final_destination = solution.vehicles[vehicle].destinations[length_of_route]
+    verify_nodes_are_inserted(solution, instance)
 
-            solution.vehicles[vehicle].arrival_time"""
+    solution.calculate_nodes_time_windows()
+    solution.calculate_routes_capacities()
+    solution.calculate_length_of_routes()
+    solution.objective_function()
 
     #for vehicle in solution.vehicles:
     #    print(f"{vehicle.number}, {[destination.number for destination in vehicle.destinations]}")
@@ -149,9 +138,10 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
     P: List[Solution]=list()
     ND: List[Solution]=list()
 
-    # Temporary Hypervolume initialization
-    Hypervolume_f1 = 2378.924 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
-    Hypervolume_f3 = 171.000 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
+    # temporary Hypervolume initialization
+    Hypervolume_total_distance = 2378.924 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
+    #Hypervolume_distance_unbalance = 113.491 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
+    Hypervolume_cargo_unbalance = 171.000 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
 
     for i in range(p):
         P.insert(i, TWIH(instance, i))
