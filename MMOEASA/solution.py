@@ -1,5 +1,6 @@
 from typing import List
-from MMOEASA.mmoeasa import Hypervolume_cargo_unbalance, Hypervolume_distance_unbalance
+from MMOEASA.auxiliaries import update_Hypervolumes
+from auxiliaries import Hypervolume_total_distance, Hypervolume_cargo_unbalance, update_Hypervolumes
 from constants import MMOEASA_INFINITY
 from ..vehicle import Vehicle
 from ..problemInstance import ProblemInstance
@@ -83,9 +84,8 @@ class Solution():
             #self.distance_unbalance = maximum_distance - minimum_distance
             self.cargo_unbalance = maximum_cargo - minimum_cargo
 
-            if self.total_distance > Hypervolume_total_distance:
-                Hypervolume_total_distance = self.total_distance
-            """if self.distance_unbalance > Hypervolume_distance_unbalance:
-                Hypervolume_distance_unbalance = self.distance_unbalance"""
-            if self.cargo_unbalance > Hypervolume_cargo_unbalance:
-                Hypervolume_cargo_unbalance = self.cargo_unbalance
+            update_Hypervolumes(
+                total_distance=self.total_distance if self.total_distance > Hypervolume_total_distance[0] else 0.0,
+                #distance_unbalance=self.distance_unbalance if self.distance_unbalance > Hypervolume_distance_unbalance else 0.0,
+                cargo_unbalance=self.cargo_unbalance if self.cargo_unbalance > Hypervolume_cargo_unbalance[0] else 0.0
+            )

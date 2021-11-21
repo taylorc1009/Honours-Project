@@ -1,4 +1,4 @@
-from auxiliaries import verify_nodes_are_inserted
+from auxiliaries import verify_nodes_are_inserted, Hypervolume_total_distance, Hypervolume_cargo_unbalance
 from operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from constants import INT_MAX
 from solution import Solution
@@ -8,7 +8,7 @@ from ..vehicle import Vehicle
 from typing import List
 from numpy import random, sqrt, exp
 
-Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance = 1, 1, 1
+#Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance = 1, 1, 1
 
 def TWIH(instance: ProblemInstance, solution_id: int):
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
@@ -40,10 +40,10 @@ def TWIH(instance: ProblemInstance, solution_id: int):
 
     verify_nodes_are_inserted(solution, instance)
 
-    solution.calculate_nodes_time_windows()
-    solution.calculate_routes_capacities()
-    solution.calculate_length_of_routes()
-    solution.objective_function()
+    solution.calculate_nodes_time_windows(instance)
+    solution.calculate_routes_capacities(instance)
+    solution.calculate_length_of_routes(instance)
+    solution.objective_function(instance)
 
     #for vehicle in solution.vehicles:
     #    print(f"{vehicle.number}, {[destination.number for destination in vehicle.destinations]}")
@@ -111,7 +111,7 @@ def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probabilit
     return I_m
 
 def Euclidean_distance_dispersion(x1: int, y1: int, x2: int, y2: int):
-    return sqrt(((x2 - x1) / 2 * Hypervolume_f1) ** 2 + ((y2 - y1) / 2 * Hypervolume_f3) ** 2)
+    return sqrt(((x2 - x1) / 2 * Hypervolume_total_distance[0]) ** 2 + ((y2 - y1) / 2 * Hypervolume_cargo_unbalance[0]) ** 2)
 
 def Child_dominates(Parent: Solution, Child) -> bool:
     return True if Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance or Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance else False
@@ -139,9 +139,9 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
     ND: List[Solution]=list()
 
     # temporary Hypervolume initialization
-    Hypervolume_total_distance = 2378.924 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
-    #Hypervolume_distance_unbalance = 113.491 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
-    Hypervolume_cargo_unbalance = 171.000 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
+    #Hypervolume_total_distance = 2378.924 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
+    ##Hypervolume_distance_unbalance = 113.491 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
+    #Hypervolume_cargo_unbalance = 171.000 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
 
     for i in range(p):
         P.insert(i, TWIH(instance, i))

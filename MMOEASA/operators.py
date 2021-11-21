@@ -56,10 +56,10 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
             I.vehicles[vehicle_2].destinations[destination].node = origin_node
             shift_left(num_nodes, I, vehicle_1, origin)
     
-    I.calculate_nodes_time_windows()
-    I.calculate_routes_capacities()
-    I.calculate_length_of_routes()
-    I.objective_function()
+    I.calculate_nodes_time_windows(instance)
+    I.calculate_routes_capacities(instance)
+    I.calculate_length_of_routes(instance)
+    I.objective_function(instance)
 
 def Mutation1(instance: ProblemInstance, I: Solution) -> Solution:
     I_m = I
