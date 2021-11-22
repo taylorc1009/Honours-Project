@@ -76,9 +76,10 @@ def Mutation1(instance: ProblemInstance, I: Solution) -> Solution:
 
     move_destination(instance, I_m, vehicle_randomize, origin_position, vehicle_randomize, destination_position)
     
-    if MO_Metropolis(MMOEASA_POPULATION_SIZE, I_m, I, I_m.T):
-        return I_m
-    return I
+    # I don't think this "if" is necessary as the MMOEASA main algorithm performs the metropolis function anyway
+    #if MO_Metropolis(MMOEASA_POPULATION_SIZE, I_m, I, I_m.T):
+    return I_m
+    #return I
 
 def Mutation2():
     pass
@@ -148,13 +149,15 @@ def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]):
                 I_c.vehicles[routes_inserted].destinations = P[random_solution].vehicles[i].destinations
                 routes_inserted += 1
     
-    verify_nodes_are_inserted(I, instance)
+    verify_nodes_are_inserted(I_c, instance)
 
-    I.calculate_number_of_routes()
-    calculate_time_window_paths()
-    calculate_route_cargo()
-    calculate_length_of_routes()
-    objective_function()
+    I_c.calculate_number_of_routes()
+    I_c.calculate_time_window_paths()
+    I_c.calculate_route_cargo()
+    I_c.calculate_length_of_routes()
+    I_c.objective_function()
 
+    # I don't think this line is necessary as the MMOEASA main algorithm performs the metropolis function anyway
+    #return I if I_c.total_distance < 0 else MO_Metropolis(I, I_c, I.T)
 
-    return I if I_c.total_distance < 0 else MO_Metropolis(I, I_c, I.T)
+    return I_c
