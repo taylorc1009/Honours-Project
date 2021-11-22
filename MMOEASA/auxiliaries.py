@@ -46,5 +46,3 @@ def verify_nodes_are_inserted(I: Solution, instance: ProblemInstance) -> None:
         I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time = I.vehicles[vehicle].destinations[length_of_route + 1].departure_time + instance.MMOEASA_distances[final_destination][0]
         I.vehicles[vehicle].destinations[length_of_route + 1].departure_time = I.vehicles[vehicle].destinations[length_of_route + 1].departure_time + instance.MMOEASA_distances[final_destination][0]
         I.vehicles[vehicle].destinations[length_of_route + 1].wait_time = 0.0
-
-    return inserted
