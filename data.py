@@ -2,6 +2,7 @@ import re
 import sys
 from node import Node
 from problemInstance import ProblemInstance
+from typing import List
 
 def loadInstance(filename) -> ProblemInstance:
     try:
@@ -29,7 +30,7 @@ def loadInstance(filename) -> ProblemInstance:
     except FileNotFoundError as e:
         raise FileNotFoundError(f"Couldn't open file \"{filename}\"\nCause: {e}")
 
-def openIterationsOfProblemSet(amountOfCustomers, typeOfProblem, problemSet) -> list:
+def openIterationsOfProblemSet(amountOfCustomers, typeOfProblem, problemSet) -> List[ProblemInstance]:
     problemInstances = []
     partialPath = f"solomon_{amountOfCustomers}/{typeOfProblem.upper()}{problemSet}"
 

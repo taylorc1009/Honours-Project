@@ -6,7 +6,7 @@ from data import openIterationsOfProblemSet
 from MMOEASA.mmoeasa import MMOEASA
 from MMOEASA.constants import MMOEASA_POPULATION_SIZE
 
-def executeMMOEASA(problemInstances: List[ProblemInstance]):
+def executeMMOEASA(problemInstances: List[ProblemInstance]) -> None:
     for i in enumerate(problemInstances):
         problemInstances[i].calculateDistances()
 

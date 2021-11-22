@@ -11,7 +11,7 @@ from numpy import random, sqrt, exp
 
 #Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance = 1, 1, 1
 
-def TWIH(instance: ProblemInstance, solution_id: int):
+def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
 
     solution = Solution(
@@ -80,11 +80,10 @@ def Cooling(P: List[Solution], T_stop: float) -> bool:
             return False
     return True
 
-def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_crossover: int):
-    if random.randint(1, 100) <= P_crossover:
-        Crossover1(instance, I, P)
+def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_crossover: int) -> Solution:
+    return Crossover1(instance, I, P) if random.randint(1, 100) <= P_crossover else I
 
-def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probability: int):
+def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probability: int) -> Solution:
     I_m = I
 
     if random.randint(1, 100) <= P_mutation:
