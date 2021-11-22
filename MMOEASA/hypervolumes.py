@@ -6,7 +6,7 @@ Hypervolume_total_distance: List[float]=[0.0]
 #Hypervolume_distance_unbalance: List[float]=[0.0]
 Hypervolume_cargo_unbalance: List[float]=[0.0]
 
-def update_Hypervolumes(total_distance: float=0.0, distance_unbalance: float=0.0, cargo_unbalance: float=0.0):
+def update_Hypervolumes(total_distance: float=0.0, distance_unbalance: float=0.0, cargo_unbalance: float=0.0) -> None:
     if total_distance is not 0.0:
         Hypervolume_total_distance.clear()
         Hypervolume_total_distance.append(total_distance)
