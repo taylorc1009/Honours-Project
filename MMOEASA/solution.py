@@ -15,12 +15,12 @@ class Solution():
     T_cooling: float=None
     #t: float=None
 
-    def __init__(self, _id: int=None, order_of_destinations: List[Destination]=list(), vehicles: List[Vehicle]=list()):
+    def __init__(self, _id: int=None, order_of_destinations: List[Destination]=list(), vehicles: List[Vehicle]=list()) -> None:
         self.id: int=_id
         self.order_of_destinations: List[Destination]=order_of_destinations
         self.vehicles: List[Vehicle]=vehicles
 
-    def calculate_nodes_time_windows(self, instance: ProblemInstance):
+    def calculate_nodes_time_windows(self, instance: ProblemInstance) -> None:
         for i in enumerate(self.vehicles):
             for j in range(1, self.vehicles[i].destinations):
                 previous_node = self.vehicles[i].destinations[j - 1].node.number
@@ -31,7 +31,7 @@ class Solution():
                     self.vehicles[i].destinations[j].arrival_time = instance.nodes[current_node].ready_time
                 self.vehicles[i].destinations[j].departure_time = self.vehicles[i].destinations[j].arrival_time + instance.nodes[current_node].service_duration
 
-    def calculate_routes_capacities(self, instance: ProblemInstance):
+    def calculate_routes_capacities(self, instance: ProblemInstance) -> None:
         for i in enumerate(self.vehicles):
             temporary_capacity = 0.0
             for j in range(1, self.vehicles[i].destinations - 1):
@@ -39,7 +39,7 @@ class Solution():
                 temporary_capacity += instance.nodes[node_number].demand
             self.vehicles[i].current_capacity = temporary_capacity
 
-    def calculate_length_of_routes(self, instance: ProblemInstance):
+    def calculate_length_of_routes(self, instance: ProblemInstance) -> None:
         for i in enumerate(self.vehicles):
             temporary_distance = 0.0
             for j in enumerate(self.vehicles[i].destinations):
@@ -48,9 +48,7 @@ class Solution():
                 temporary_distance += instance.distances[previous_node][current_node]
             self.vehicles[i].route_distance = temporary_distance
 
-    def objective_function(self, instance: ProblemInstance):
-        total_distance = 0.0
-
+    def objective_function(self, instance: ProblemInstance) -> None:
         vehicle = 0
         while vehicle < len(self.vehicles) and self.feasible:
             self.total_distance += self.vehicles[vehicle].route_distance
