@@ -14,7 +14,7 @@ class ProblemInstance():
     def __str__(self) -> str:
         return f"{self.name}, {self.amountOfVehicles}, {self.capacityOfVehicles}, {[(key, value.__str__()) for key, value in self.nodes.items()]}"
     
-    def calculateDistances(self):
+    def calculateDistances(self) -> None:
         for i in enumerate(self.destinations):
             for j in enumerate(self.destinations):
                 if i == j:
