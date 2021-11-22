@@ -5,21 +5,21 @@ from ..problemInstance import ProblemInstance
 from typing import List
 from numpy import random
 
-def rand(start: int, end: int, exclude_values: List[int]=list()):
+def rand(start: int, end: int, exclude_values: List[int]=list()) -> int:
     random_val = random.randint(start, end)
     while random_val in exclude_values:
         random_val = random.randint(start, end)
     return random_val
 
-def shift_left(I: Solution, vehicle: int, node_number: int, displacement: int=1):
+def shift_left(I: Solution, vehicle: int, node_number: int, displacement: int=1) -> None:
     for i in range(I.vehicles[vehicle].getIndexOfDestinationByNode(node_number), len(I.vehicles[vehicle].destinations)):
         I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i + displacement].node
 
-def shift_right(I: Solution, vehicle: int, node_number: int, displacement: int=1):
+def shift_right(I: Solution, vehicle: int, node_number: int, displacement: int=1) -> None:
     for i in range(len(I.vehicles[vehicle].destinations), I.vehicles[vehicle].getIndexOfDestinationByNode(node_number), -1):
         I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i - displacement].node
 
-def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, origin: int, vehicle_2: int, destination: int):
+def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, origin: int, vehicle_2: int, destination: int) -> None:
     num_nodes = len(instance.nodes)
     
     origin_node = I.vehicles[vehicle_1].destinations[origin].node
@@ -107,7 +107,7 @@ def Mutation9():
 def Mutation10():
     pass
 
-def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]):
+def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Solution:
     I_c = I
 
     routes_to_safeguard = list()
