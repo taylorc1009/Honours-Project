@@ -11,12 +11,12 @@ def rand(start: int, end: int, exclude_values: List[int]=list()):
         random_val = random.randint(start, end)
     return random_val
 
-def shift_left(I: Solution, vehicle: int, destination: int, displacement: int=1):
-    for i in range(I.vehicles[vehicle].getIndexOfDestination(destination), len(I.vehicles[vehicle].destinations)):
+def shift_left(I: Solution, vehicle: int, node_number: int, displacement: int=1):
+    for i in range(I.vehicles[vehicle].getIndexOfDestinationByNode(node_number), len(I.vehicles[vehicle].destinations)):
         I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i + displacement].node
 
-def shift_right(I: Solution, vehicle: int, destination: int, displacement: int=1):
-    for i in range(len(I.vehicles[vehicle].destinations), I.vehicles[vehicle].getIndexOfDestination(destination), -1):
+def shift_right(I: Solution, vehicle: int, node_number: int, displacement: int=1):
+    for i in range(len(I.vehicles[vehicle].destinations), I.vehicles[vehicle].getIndexOfDestinationByNode(node_number), -1):
         I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i - displacement].node
 
 def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, origin: int, vehicle_2: int, destination: int):
