@@ -1,5 +1,6 @@
 from MMOEASA.solution import Solution
 from problemInstance import ProblemInstance
+from destination import Destination
 
 def solution_visits_destination(node: int, instance: ProblemInstance, I: Solution) -> bool:
     for j in range(0, instance.amount_of_vehicles - 1):
@@ -36,11 +37,11 @@ def verify_nodes_are_inserted(I: Solution, instance: ProblemInstance, node: int)
 
 def reinitialize_depot_return(I: Solution, instance: ProblemInstance):
     vehicle = 0
-    for i in range(I.vehicles):
-        I.vehicles[vehicle].destinations.append(instance.nodes[0])
+    for i in range(len(I.vehicles)):
+        I.vehicles[vehicle].destinations.append(Destination(node=instance.nodes[0]))
 
-        length_of_route = len(I.vehicles[i].destinations) - 2
-        final_destination = I.vehicles[vehicle].destinations[length_of_route].number
+        length_of_route = len(I.vehicles[i].destinations) - 3
+        final_destination = I.vehicles[vehicle].destinations[length_of_route].node.number
 
         I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time = I.vehicles[vehicle].destinations[length_of_route + 1].departure_time + instance.MMOEASA_distances[final_destination][0]
         I.vehicles[vehicle].destinations[length_of_route + 1].departure_time = I.vehicles[vehicle].destinations[length_of_route + 1].departure_time + instance.MMOEASA_distances[final_destination][0]
