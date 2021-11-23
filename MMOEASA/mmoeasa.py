@@ -16,7 +16,7 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
 
     solution = Solution(
         _id=solution_id,
-        order_of_destinations=[Destination(node=node) for node in sorted_nodes],
+        #order_of_destinations=[Destination(node=node) for node in sorted_nodes],
         vehicles=list()
     )
     D_i = 1 # list of destinations iterator
@@ -24,19 +24,19 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
     for i in range(0, instance.amount_of_vehicles - 1):
         if D_i >= len(instance.nodes) - 1:
             break
-        if solution.order_of_destinations[D_i].node.number == 0:
+        if sorted_nodes[D_i].number == 0:
             continue
 
-        vehicle = Vehicle(i, instance.capacity_of_vehicles, destinations=list())
-        vehicle.destinations.append(solution.order_of_destinations[0]) # have the route start at the depot
+        vehicle = Vehicle(i, destinations=list())
+        vehicle.destinations.append(Destination(node=sorted_nodes[0])) # have the route start at the depot
 
-        while vehicle.current_capacity + solution.order_of_destinations[D_i].node.demand < instance.capacity_of_vehicles and D_i < len(instance.nodes) - 1:
-            vehicle.destinations.append(solution.order_of_destinations[D_i])
-            vehicle.current_capacity += solution.order_of_destinations[D_i].node.demand
+        while vehicle.current_capacity + sorted_nodes[D_i].demand < instance.capacity_of_vehicles and D_i < len(instance.nodes) - 1:
+            vehicle.destinations.append(Destination(node=sorted_nodes[D_i]))
+            vehicle.current_capacity += sorted_nodes[D_i].demand
             #instance.destinations[solution.orderOfDestinations[D_i].number].assignedVehicle = vehicle
             D_i += 1
         
-        vehicle.destinations.append(solution.order_of_destinations[0]) # have the route end at the depot
+        vehicle.destinations.append(Destination(node=sorted_nodes[0])) # have the route end at the depot
         solution.vehicles.append(vehicle)
 
     for i in range(1, len(instance.nodes)):

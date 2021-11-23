@@ -3,16 +3,15 @@ from problemInstance import ProblemInstance
 
 def solution_visits_destination(node: int, instance: ProblemInstance, I: Solution) -> bool:
     for j in range(0, instance.amount_of_vehicles - 1):
-        print(j)
         if len(I.vehicles[j].destinations) - 2 >= 1:
-            for k in len(I.vehicles[j].destinations):
+            for k in range(0, len(I.vehicles[j].destinations)):
                 if I.vehicles[j].destinations[k].node.number == instance.nodes[node].number: # directly get the destination number from the list of destinations in case there's a mismatch between the destination number and the for loop iterator (although there shouldn't)
                     return True
     return False
 
 def verify_nodes_are_inserted(I: Solution, instance: ProblemInstance, node: int) -> None:
     inserted, vehicle = False, 0
-    while vehicle < instance.amount_of_vehicles and not inserted:
+    while vehicle < len(I.vehicles) and not inserted:
         length_of_route = len(I.vehicles[vehicle].destinations) - 2
         final_destination = I.vehicles[vehicle].destinations[length_of_route].node.number
         
