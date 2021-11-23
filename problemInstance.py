@@ -12,7 +12,7 @@ class ProblemInstance():
         self.nodes: Dict[int, Node]=nodes
 
     def __str__(self) -> str:
-        return f"{self.name}, {self.amountOfVehicles}, {self.capacityOfVehicles}, {[(key, value.__str__()) for key, value in self.nodes.items()]}"
+        return f"{self.name}, {self.amount_of_vehicles}, {self.capacity_of_vehicles}, {[(key, value.__str__()) for key, value in self.nodes.items()]}"
     
     def calculateDistances(self) -> None:
         for i in enumerate(self.destinations):
