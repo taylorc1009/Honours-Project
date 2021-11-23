@@ -40,12 +40,12 @@ class Solution():
             self.vehicles[i].current_capacity = temporary_capacity
 
     def calculate_length_of_routes(self, instance: ProblemInstance) -> None:
-        for i in enumerate(self.vehicles):
+        for i, _ in enumerate(self.vehicles):
             temporary_distance = 0.0
-            for j in enumerate(self.vehicles[i].destinations):
+            for j, _ in enumerate(self.vehicles[i].destinations):
                 previous_node = self.vehicles[i].destinations[j - 1].node.number
                 current_node = self.vehicles[i].destinations[j].node.number
-                temporary_distance += instance.distances[previous_node][current_node]
+                temporary_distance += instance.MMOEASA_distances[previous_node][current_node]
             self.vehicles[i].route_distance = temporary_distance
 
     def objective_function(self, instance: ProblemInstance) -> None:
