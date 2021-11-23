@@ -15,24 +15,24 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
 
     solution = Solution(
-        id=solution_id,
-        order_of_destinations=[Destination(node_args=list(*node)) for node in sorted_nodes],
+        _id=solution_id,
+        order_of_destinations=[Destination(node=node) for node in sorted_nodes],
         vehicles=list()
     )
     D_i = 1 # list of destinations iterator
 
-    for i in range(0, instance.amountOfVehicles - 1):
+    for i in range(0, instance.amount_of_vehicles - 1):
         if D_i >= len(instance.nodes) - 1:
             break
-        if solution.orderOfDestinations[D_i].number == 0:
+        if solution.order_of_destinations[D_i].node.number == 0:
             continue
 
         vehicle = Vehicle(i, instance.capacity_of_vehicles, destinations=list())
         vehicle.destinations.append(solution.order_of_destinations[0]) # have the route start at the depot
 
-        while vehicle.current_capacity + solution.order_of_destinations[D_i].demand < instance.capacity_of_vehicles and D_i < len(instance.nodes) - 1:
+        while vehicle.current_capacity + solution.order_of_destinations[D_i].node.demand < instance.capacity_of_vehicles and D_i < len(instance.nodes) - 1:
             vehicle.destinations.append(solution.order_of_destinations[D_i])
-            vehicle.current_capacity += solution.order_of_destinations[D_i].demand
+            vehicle.current_capacity += solution.order_of_destinations[D_i].node.demand
             #instance.destinations[solution.orderOfDestinations[D_i].number].assignedVehicle = vehicle
             D_i += 1
         

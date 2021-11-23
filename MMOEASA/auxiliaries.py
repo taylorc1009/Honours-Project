@@ -2,7 +2,8 @@ from MMOEASA.solution import Solution
 from problemInstance import ProblemInstance
 
 def solution_visits_destination(destination: int, instance: ProblemInstance, I: Solution) -> bool:
-    for j in range(0, instance.amountOfVehicles):
+    for j in range(0, instance.amount_of_vehicles - 1):
+        print(j)
         if len(I.vehicles[j].destinations) - 2 >= 1:
             for k in len(I.vehicles[j].destinations):
                 if I.vehicles[j].destinations[k].node.number == instance.destinations[destination].node.number: # directly get the destination number from the list of destinations in case there's a mismatch between the destination number and the for loop iterator (although there shouldn't)
@@ -11,6 +12,9 @@ def solution_visits_destination(destination: int, instance: ProblemInstance, I: 
 
 def verify_nodes_are_inserted(I: Solution, instance: ProblemInstance) -> None:
     for i in range(1, len(instance.nodes)):
+        # this "solution_visits_destination" search is not included in "functiones_inicializacion.h/construir_solucion_inicial_First_time_windows()" at line 792
+        # but, it is included in "operadores.h/crossover1" at lines 647-663
+        # is there an impact because of this?
         if not solution_visits_destination(i, instance, I):
             inserted, vehicle = False, 0
             while vehicle < instance.amount_of_vehicles and not inserted:
