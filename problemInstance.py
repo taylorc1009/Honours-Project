@@ -5,8 +5,8 @@ from numpy import array
 class ProblemInstance():
     def __init__(self, name: str, amount_of_vehicles: int, capacity_of_vehicles: int, nodes: Dict[int, Node]=dict()) -> None:
         self.name: str=name
-        self.amount_of_vehicles: int=amount_of_vehicles
-        self.capacity_of_vehicles: int=capacity_of_vehicles
+        self.amount_of_vehicles: int=int(amount_of_vehicles)
+        self.capacity_of_vehicles: int=int(capacity_of_vehicles)
         self.nodes: Dict[int, Node]=nodes
 
     def __str__(self) -> str:
