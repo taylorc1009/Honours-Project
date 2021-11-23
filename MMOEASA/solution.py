@@ -22,7 +22,7 @@ class Solution():
 
     def calculate_nodes_time_windows(self, instance: ProblemInstance) -> None:
         for i, _ in enumerate(self.vehicles):
-            for j, _ in range(1, self.vehicles[i].destinations):
+            for j, _ in range(1, len(self.vehicles[i].destinations)):
                 previous_node = self.vehicles[i].destinations[j - 1].node.number
                 current_node = self.vehicles[i].destinations[j].node.number
                 self.vehicles[i].destinations[j].arrival_time = self.vehicles[i].destinations[j - 1] + instance.distances[previous_node][current_node]
@@ -34,7 +34,7 @@ class Solution():
     def calculate_routes_capacities(self, instance: ProblemInstance) -> None:
         for i, _ in enumerate(self.vehicles):
             temporary_capacity = 0.0
-            for j, _ in range(1, self.vehicles[i].destinations - 1):
+            for j, _ in range(1, len(self.vehicles[i].destinations) - 1):
                 node_number = self.vehicles[i].destinations[j].node.number
                 temporary_capacity += instance.nodes[node_number].demand
             self.vehicles[i].current_capacity = temporary_capacity
@@ -53,7 +53,7 @@ class Solution():
         while vehicle < len(self.vehicles) and self.feasible:
             self.total_distance += self.vehicles[vehicle].route_distance
 
-            for i in range(1, self.vehicles[i].destinations):
+            for i in range(1, len(self.vehicles[i].destinations)):
                 node_number = self.vehicles[vehicle].destinations[i].node.number
                 if self.vehicles[vehicle].destinations[i].arrival_time > instance.nodes[node_number].due_date or self.vehicles[i].current_capacity > instance.capacity_of_vehicles:
                     self.feasible = False
