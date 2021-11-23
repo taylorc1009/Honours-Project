@@ -33,7 +33,7 @@ if __name__ == '__main__':
     else:
         problemInstances = openIterationsOfProblemSet(*sys.argv[1:])
         
-        if not problemInstances == []: # this output will be removed later; it only exists now to show that the problem instances were loaded correctly
+        if len(problemInstances) > 0: # this output will be removed later; it only exists now to show that the problem instances were loaded correctly
             print([problemInstance.__str__() for problemInstance in problemInstances])
         
         # Terminating Condition (TC) is set to 40 seconds
