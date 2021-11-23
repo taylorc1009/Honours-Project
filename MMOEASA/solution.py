@@ -21,8 +21,8 @@ class Solution():
         self.vehicles: List[Vehicle]=vehicles
 
     def calculate_nodes_time_windows(self, instance: ProblemInstance) -> None:
-        for i in enumerate(self.vehicles):
-            for j in range(1, self.vehicles[i].destinations):
+        for i, _ in enumerate(self.vehicles):
+            for j, _ in range(1, self.vehicles[i].destinations):
                 previous_node = self.vehicles[i].destinations[j - 1].node.number
                 current_node = self.vehicles[i].destinations[j].node.number
                 self.vehicles[i].destinations[j].arrival_time = self.vehicles[i].destinations[j - 1] + instance.distances[previous_node][current_node]
@@ -32,9 +32,9 @@ class Solution():
                 self.vehicles[i].destinations[j].departure_time = self.vehicles[i].destinations[j].arrival_time + instance.nodes[current_node].service_duration
 
     def calculate_routes_capacities(self, instance: ProblemInstance) -> None:
-        for i in enumerate(self.vehicles):
+        for i, _ in enumerate(self.vehicles):
             temporary_capacity = 0.0
-            for j in range(1, self.vehicles[i].destinations - 1):
+            for j, _ in range(1, self.vehicles[i].destinations - 1):
                 node_number = self.vehicles[i].destinations[j].node.number
                 temporary_capacity += instance.nodes[node_number].demand
             self.vehicles[i].current_capacity = temporary_capacity
@@ -69,7 +69,7 @@ class Solution():
             minimum_cargo = MMOEASA_INFINITY
             maximum_cargo = 0
 
-            for i in enumerate(self.vehicles):
+            for i, _ in enumerate(self.vehicles):
                 """if self.vehicle[i].route_distance < minimum_distance: # these cannot be converted to "if ... elif" because we may miss, for example, our "maximum_distance" as on the first iteration it will also be less than "MMOEASA_INFINITY" ("minimum_distance")
                     minimum_distance = self.vehicle[i].route_distance
                 if self.vehicle[i].route_distance > maximum_distance:
