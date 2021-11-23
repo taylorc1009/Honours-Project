@@ -11,35 +11,31 @@ def solution_visits_destination(destination: int, instance: ProblemInstance, I: 
     return False
 
 def verify_nodes_are_inserted(I: Solution, instance: ProblemInstance) -> None:
-    for i in range(1, len(instance.nodes)):
-        # this "solution_visits_destination" search is not included in "functiones_inicializacion.h/construir_solucion_inicial_First_time_windows()" at line 792
-        # but, it is included in "operadores.h/crossover1" at lines 647-663
-        # is there an impact because of this?
-        if not solution_visits_destination(i, instance, I):
-            inserted, vehicle = False, 0
-            while vehicle < instance.amount_of_vehicles and not inserted:
-                length_of_route = len(I.vehicles[vehicle].destinations) - 2
-                final_destination = I.vehicles[vehicle].destinations[length_of_route].node.number
-                
-                I.vehicles[vehicle].destinations[length_of_route + 1].node = instance.nodes[i]
-                I.vehicles[vehicle].current_capacity += instance.destinations[i].node.demand
+    inserted, vehicle = False, 0
+    while vehicle < instance.amount_of_vehicles and not inserted:
+        length_of_route = len(I.vehicles[vehicle].destinations) - 2
+        final_destination = I.vehicles[vehicle].destinations[length_of_route].node.number
+        
+        I.vehicles[vehicle].destinations[length_of_route + 1].node = instance.nodes[i]
+        I.vehicles[vehicle].current_capacity += instance.destinations[i].node.demand
 
-                I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time = I.vehicles[vehicle].destinations[length_of_route].departure_time + instance.MMOEASA_distances[final_destination][i]
-                I.vehicles[vehicle].destinations[length_of_route + 1].wait_time = 0.0
-                if I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time < instance.destinations[i].ready_time:
-                    I.vehicles[vehicle].destinations[length_of_route + 1].wait_time = instance.destinations[i].ready_time - I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time
-                    I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time = instance.destinations[i].ready_time
-                
-                if I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time <= instance.destinations[i].due_date:
-                    I.vehicles[vehicle].destinations[length_of_route + 1].departure_time = instance.destinations[i].serve_time + I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time
+        I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time = I.vehicles[vehicle].destinations[length_of_route].departure_time + instance.MMOEASA_distances[final_destination][i]
+        I.vehicles[vehicle].destinations[length_of_route + 1].wait_time = 0.0
+        if I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time < instance.destinations[i].ready_time:
+            I.vehicles[vehicle].destinations[length_of_route + 1].wait_time = instance.destinations[i].ready_time - I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time
+            I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time = instance.destinations[i].ready_time
+        
+        if I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time <= instance.destinations[i].due_date:
+            I.vehicles[vehicle].destinations[length_of_route + 1].departure_time = instance.destinations[i].serve_time + I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time
 
-                    I.calculate_route_lengths()
+            I.calculate_route_lengths()
 
-                    inserted = True
-                elif I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time > instance.destinations[i].due_date or I.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
-                    del I.vehicles[vehicle].destinations[length_of_route + 1]
-                    vehicle += 1
+            inserted = True
+        elif I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time > instance.destinations[i].due_date or I.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
+            del I.vehicles[vehicle].destinations[length_of_route + 1]
+            vehicle += 1
 
+def reinitialize_depot_return(I: Solution, instance: ProblemInstance):
     vehicle = 0
     for i in range(I.vehicles):
         I.vehicles[vehicle].destinations.append(instance.destinations[0])

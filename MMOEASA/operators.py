@@ -1,6 +1,6 @@
 #from MMOEASA.mmoeasa import MO_Metropolis
 from MMOEASA.solution import Solution
-from MMOEASA.auxiliaries import verify_nodes_are_inserted
+from MMOEASA.auxiliaries import verify_nodes_are_inserted, solution_visits_destination, reinitialize_depot_return
 from problemInstance import ProblemInstance
 from typing import List
 from numpy import random
@@ -148,7 +148,10 @@ def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Sol
                 I_c.vehicles[routes_inserted].destinations = P[random_solution].vehicles[i].destinations
                 routes_inserted += 1
     
-    verify_nodes_are_inserted(I_c, instance)
+    for i in range(1, len(instance.nodes)):
+        if not solution_visits_destination(i, instance, I):
+            verify_nodes_are_inserted(I_c, instance, i)
+    reinitialize_depot_return(I_c, instance)
 
     I_c.calculate_number_of_routes()
     I_c.calculate_time_window_paths()

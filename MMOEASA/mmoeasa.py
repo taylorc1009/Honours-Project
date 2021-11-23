@@ -1,4 +1,4 @@
-from MMOEASA.auxiliaries import verify_nodes_are_inserted
+from MMOEASA.auxiliaries import verify_nodes_are_inserted, reinitialize_depot_return
 from MMOEASA.hypervolumes import Hypervolume_total_distance, Hypervolume_cargo_unbalance
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from MMOEASA.constants import INT_MAX
@@ -39,7 +39,9 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
         vehicle.destinations.append(solution.order_of_destinations[0]) # have the route end at the depot
         solution.vehicles.append(vehicle)
 
-    verify_nodes_are_inserted(solution, instance)
+    for i in range(1, len(instance.nodes)):
+        verify_nodes_are_inserted(solution, instance, i)
+    reinitialize_depot_return(solution, instance)
 
     solution.calculate_nodes_time_windows(instance)
     solution.calculate_routes_capacities(instance)
