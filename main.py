@@ -35,7 +35,7 @@ if __name__ == '__main__':
     else:
         problemInstances = openIterationsOfProblemSet(*sys.argv[1:])
         
-        if len(problemInstances) > 0: # this output will be removed later; it only exists now to show that the problem instances were loaded correctly
-            print([problemInstance.__str__() for problemInstance in problemInstances])
+        #if len(problemInstances) > 0: # this output will be removed later; it only exists now to show that the problem instances were loaded correctly
+            #print([problemInstance.__str__() for problemInstance in problemInstances])
 
         executeMMOEASA(problemInstances)
