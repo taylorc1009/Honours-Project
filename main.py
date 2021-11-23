@@ -7,9 +7,11 @@ from MMOEASA.mmoeasa import MMOEASA
 from MMOEASA.constants import MMOEASA_POPULATION_SIZE
 
 def executeMMOEASA(problemInstances: List[ProblemInstance]) -> None:
-    for i in enumerate(problemInstances):
+    for i, _ in enumerate(problemInstances):
+        #print(problemInstances[i].name, len(problemInstances[i].MMOEASA_distances))
         problemInstances[i].calculateDistances()
 
+    # Terminating Condition (TC) is set to 40 seconds
     MMOEASA(problemInstances[0], MMOEASA_POPULATION_SIZE, 10, 40, 0.25, 0.25, 100, 20, 10)
 
 if __name__ == '__main__':
@@ -35,7 +37,5 @@ if __name__ == '__main__':
         
         if len(problemInstances) > 0: # this output will be removed later; it only exists now to show that the problem instances were loaded correctly
             print([problemInstance.__str__() for problemInstance in problemInstances])
-        
-        # Terminating Condition (TC) is set to 40 seconds
 
         executeMMOEASA(problemInstances)

@@ -24,7 +24,7 @@ def loadInstance(filename) -> ProblemInstance:
                             problemInstance = ProblemInstance(problemName, *curLine)
                         else: # if the current line doesn't contain only two values, it will, instead, always contain seven and lines with seven values represent destinations
                             node = Node(*curLine)
-                            problemInstance.nodes[node.number] = node
+                            problemInstance.nodes[int(node.number)] = node
 
         return problemInstance
     except FileNotFoundError as e:
