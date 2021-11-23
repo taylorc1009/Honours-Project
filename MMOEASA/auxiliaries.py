@@ -1,5 +1,5 @@
 from MMOEASA.solution import Solution
-from ..problemInstance import ProblemInstance
+from problemInstance import ProblemInstance
 
 def solution_visits_destination(destination: int, instance: ProblemInstance, I: Solution) -> bool:
     for j in range(0, instance.amountOfVehicles):

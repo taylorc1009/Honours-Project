@@ -1,9 +1,9 @@
 from typing import List
 from MMOEASA.hypervolumes import Hypervolume_total_distance, Hypervolume_cargo_unbalance, update_Hypervolumes
 from MMOEASA.constants import MMOEASA_INFINITY
-from ..vehicle import Vehicle
-from ..problemInstance import ProblemInstance
-from ..destination import Destination
+from vehicle import Vehicle
+from problemInstance import ProblemInstance
+from destination import Destination
 
 class Solution():
     feasible: bool=True

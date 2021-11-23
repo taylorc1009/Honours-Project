@@ -1,7 +1,7 @@
 #from MMOEASA.mmoeasa import MO_Metropolis
 from MMOEASA.solution import Solution
 from MMOEASA.auxiliaries import verify_nodes_are_inserted
-from ..problemInstance import ProblemInstance
+from problemInstance import ProblemInstance
 from typing import List
 from numpy import random
 
