@@ -59,7 +59,7 @@ def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int,
         jumpTemperatures = (T_max - T_min)/(p - 1)
     
     T_2 = T_max - i * jumpTemperatures
-    error = 0
+    error = INT_MAX
     maxError = 0.005 * TC
     T_cooling = 0.995
 
@@ -115,7 +115,7 @@ def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probabilit
 def Euclidean_distance_dispersion(x1: int, y1: int, x2: int, y2: int):
     return sqrt(((x2 - x1) / 2 * Hypervolume_total_distance[0]) ** 2 + ((y2 - y1) / 2 * Hypervolume_cargo_unbalance[0]) ** 2)
 
-def Child_dominates(Parent: Solution, Child) -> bool:
+def Child_dominates(Parent: Solution, Child: Solution) -> bool:
     return True if Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance or Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance else False
 
 def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
@@ -165,7 +165,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
             #instance.destinations[I].T = T_min + i * ((T_max - T_min) / p - 1)
             #instance.destinations[I].T_cooling = Calculate_cooling(I, T_max, T_min, T_stop, p, TC)
         
-        current_multi_start = 1;
+        current_multi_start = 0
         while current_multi_start <= MS and not terminate:
             #for j in enumerate(P):
                 #P[j].t = P[j].T
