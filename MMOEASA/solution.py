@@ -7,9 +7,9 @@ from destination import Destination
 
 class Solution():
     feasible: bool=True
-    total_distance: float=None
+    total_distance: float=0.0
     #distance_unbalance: float=None
-    cargo_unbalance: float=None
+    cargo_unbalance: float=0.0
 
     T: float=None
     T_cooling: float=None
