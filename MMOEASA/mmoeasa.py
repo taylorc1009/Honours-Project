@@ -76,12 +76,11 @@ def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int,
     
     return T_cooling
 
-def Cooling(I: Solution, T_stop: float) -> bool:
-    #for I in P:
-        #if I.T <= T_stop:
-            #return False
-    #return True
-    return I.T > T_stop
+def Cooling(P: List[Solution], T_stop: float) -> bool:
+    for I in P:
+        if I.T <= T_stop:
+            return False
+    return True
 
 def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_crossover: int) -> Solution:
     return Crossover1(instance, I, P) if random.randint(1, 100) <= P_crossover else I
@@ -170,8 +169,8 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
             P[j].T = P[j].T_default
             print(j, P[j].T)
         
-        while Cooling(P[j], T_stop) and not terminate:
-            if P[0].T <= T_stop or iterations == TC:
+        while P[0].T > T_stop and not terminate:#Cooling(P[j], T_stop) and not terminate:
+            if iterations == TC:
                 terminate = True
 
             for j, I in enumerate(P):
@@ -185,7 +184,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 
                 P[j].T *= P[j].T_cooling
             iterations += 1
-            print(P[0].T)
+            print(P[0].T, current_multi_start)
         current_multi_start += 1
     
     return ND
