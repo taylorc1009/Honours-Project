@@ -53,12 +53,12 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
 
     return solution
 
-def Calculate_cooling(destination: int, T_max: float, T_min: float, T_stop: float, p: int, TC: int) -> float:
+def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int, TC: int) -> float:
     jumpTemperatures = 0
     if p > 1:
         jumpTemperatures = (T_max - T_min)/(p - 1)
     
-    T_2 = T_max - destination * jumpTemperatures
+    T_2 = T_max - i * jumpTemperatures
     error = 0
     maxError = 0.005 * TC
     T_cooling = 0.995
@@ -170,9 +170,9 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
             #for j in enumerate(P):
                 #P[j].t = P[j].T
             
-            for j in enumerate(P):
+            for j, I in enumerate(P):
                 P[j].T = T_min + i * ((T_max - T_min) / p - 1)
-                P[j].T_cooling = Calculate_cooling(I, T_max, T_min, T_stop, p, TC)
+                P[j].T_cooling = Calculate_cooling(j, T_max, T_min, T_stop, p, TC)
             
             while Cooling(P, T_stop):
                 if P[0].T < T_stop or iterations == TC:
@@ -180,14 +180,14 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
 
                 for j, I in enumerate(P):
                     #if j > 0: # I added this because I need to give Crossover and Mutation two parents; the pseudocode says to only give them one but if I do that then I don't have two parents to use in crossover/mutation
-                    I_c = Crossover(instance, P[j], P, P_crossover)
-                    I_m = Mutation(I_c, P_mutation, random.randint(1, 100))
+                    I_c = Crossover(instance, I, P, P_crossover)
+                    I_m = Mutation(instance, I_c, P_mutation, random.randint(1, 100))
                     P[j] = MO_Metropolis(I, I_m, I.T)
                     
                     if is_nondominated(P[j], ND): # this should be something like "if P[j] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
                         ND.append(P[j])
                     
-                    P[j].t *= P[j].T_cooling
+                    P[j].T *= P[j].T_cooling
                 iterations += 1
             current_multi_start += 1
     return ND
