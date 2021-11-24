@@ -54,25 +54,24 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
     return solution
 
 def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int, TC: int) -> float:
-    jumpTemperatures = 0
-    if p > 1:
-        jumpTemperatures = (T_max - T_min)/(p - 1)
-    
-    T_2 = T_max - i * jumpTemperatures
-    error = INT_MAX
-    maxError = 0.005 * TC
+    jump_temperatures = (T_max - T_min)/(float(p) - 1.0) if float(p) > 1.0 else 0.0
+    T_1, T_2 = 0.0, T_max - (float(i) * jump_temperatures)
+    error = float(INT_MAX)
+    maxError = 0.005 * float(TC)
     T_cooling = 0.995
+    auxiliary_iterations = INT_MAX
 
-    while abs(error) > maxError:
+    while abs(error) > maxError and not auxiliary_iterations < TC: # the original MMOEASA "Calculate_cooling" doesn't have the second condition, but mines (without it) gets an infinite loop (use the "print"s below to see)
+        #print(abs(error), maxError, T_cooling, auxiliary_iterations)
         T_1 = T_2
-        auxiliaryIterations = 0
+        auxiliary_iterations = 0.0
 
         while T_1 > T_stop:
             T_1 *= T_cooling
-            auxiliaryIterations += 1
-        
-        error = TC - auxiliaryIterations
-        T_cooling = (T_cooling + 0.05 / TC) if error > 0 else (T_cooling - 0.05 / TC)
+            auxiliary_iterations += 1.0
+        #print(TC, auxiliary_iterations)
+        error = float(TC) - auxiliary_iterations
+        T_cooling = T_cooling + (0.05 / float(TC)) if error > 0.0 else T_cooling - (0.05 / float(TC))
     
     return T_cooling
 
@@ -171,11 +170,11 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 #P[j].t = P[j].T
             
             for j, I in enumerate(P):
-                P[j].T = T_min + i * ((T_max - T_min) / p - 1)
+                P[j].T = T_min + float(j) * ((T_max - T_min) / float(p) - 1)
                 P[j].T_cooling = Calculate_cooling(j, T_max, T_min, T_stop, p, TC)
             
-            while Cooling(P, T_stop) and not terminate:
-                if P[0].T < T_stop or iterations == TC:
+            while P[0].T > T_stop and not terminate:#Cooling(P[i], T_stop) and not terminate:
+                if P[0].T <= T_stop or iterations == TC:
                     terminate = True
 
                 for j, I in enumerate(P):
@@ -189,5 +188,6 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                     
                     P[j].T *= P[j].T_cooling
                 iterations += 1
+                print(P[0].T)
             current_multi_start += 1
     return ND

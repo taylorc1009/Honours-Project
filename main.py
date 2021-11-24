@@ -15,7 +15,7 @@ def executeMMOEASA(problemInstances: List[ProblemInstance]) -> None:
     #for instance in problemInstances:
     #print(instance.name)
     # Terminating Condition (TC) is set to 40 iterations
-    ND_solutions = MMOEASA(problemInstances[0], MMOEASA_POPULATION_SIZE, 10, 40, 0.25, 0.25, 100, 20, 10)
+    ND_solutions = MMOEASA(problemInstances[0], MMOEASA_POPULATION_SIZE, 10, 100, 0.25, 0.25, 100, 50, 10)
     for solution in ND_solutions:
         print(solution.__str__())
 
