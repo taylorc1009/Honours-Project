@@ -7,8 +7,9 @@ from problemInstance import ProblemInstance
 class Solution():
     feasible: bool=True
 
-    T: float=None
-    T_cooling: float=None
+    T_default: float=0.0
+    T: float=0.0
+    T_cooling: float=0.0
 
     total_distance: float=0.0
     #distance_unbalance: float=None

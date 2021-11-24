@@ -54,14 +54,14 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
     return solution
 
 def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int, TC: int) -> float:
-    jump_temperatures = (T_max - T_min)/(float(p) - 1.0) if float(p) > 1.0 else 0.0
-    T_1, T_2 = 0.0, T_max - (float(i) * jump_temperatures)
+    jump_temperatures = (T_max - T_min)/(float(p) - 1.0) if p > 1 else 0.0
+    T_2 = T_max - (float(i) * jump_temperatures)
     error = float(INT_MAX)
     maxError = 0.005 * float(TC)
     T_cooling = 0.995
-    auxiliary_iterations = INT_MAX
+    auxiliary_iterations = 0.0
 
-    while abs(error) > maxError and not auxiliary_iterations < TC: # the original MMOEASA "Calculate_cooling" doesn't have the second condition, but mines (without it) gets an infinite loop (use the "print"s below to see)
+    while abs(error) > maxError and not auxiliary_iterations > TC: # the original MMOEASA "Calculate_cooling" doesn't have the second condition, but mines (without it) gets an infinite loop (use the "print"s below to see)
         #print(abs(error), maxError, T_cooling, auxiliary_iterations)
         T_1 = T_2
         auxiliary_iterations = 0.0
@@ -69,17 +69,19 @@ def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int,
         while T_1 > T_stop:
             T_1 *= T_cooling
             auxiliary_iterations += 1.0
+        
         #print(TC, auxiliary_iterations)
         error = float(TC) - auxiliary_iterations
         T_cooling = T_cooling + (0.05 / float(TC)) if error > 0.0 else T_cooling - (0.05 / float(TC))
     
     return T_cooling
 
-def Cooling(P: List[Solution], T_stop: float) -> bool:
-    for I in P:
-        if I.T <= T_stop:
-            return False
-    return True
+def Cooling(I: Solution, T_stop: float) -> bool:
+    #for I in P:
+        #if I.T <= T_stop:
+            #return False
+    #return True
+    return I.T > T_stop
 
 def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_crossover: int) -> Solution:
     return Crossover1(instance, I, P) if random.randint(1, 100) <= P_crossover else I
@@ -141,7 +143,7 @@ def is_nondominated(I: Solution, ND: List[Solution]) -> bool:
             return False
     return True
 
-def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_min: float, T_max: float, T_stop: float) -> List[Solution]:
+def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float) -> List[Solution]:
     #for i, I in enumerate(instance.destinations, start=1):
     P: List[Solution]=list()
     ND: List[Solution]=list()
@@ -156,38 +158,34 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
 
     for i in range(p):
         P.insert(i, TWIH(instance, i))
+        P[i].T_default = T_max - float(i) * ((T_max - T_min) / float(p) - 1.0)
+        P[i].T_cooling = Calculate_cooling(i, T_max, T_min, T_stop, p, TC)
     
-    for i in range(len(P)):
-        #for I in instance.destinations.keys:
-            ##P[i].T = T_min + i * ((T_max - T_min) / p - 1)
-            ##P[i].T_cooling[I] = Calculate_cooling(I, T_max, T_min, T_stop, p, TC)
-            #instance.destinations[I].T = T_min + i * ((T_max - T_min) / p - 1)
-            #instance.destinations[I].T_cooling = Calculate_cooling(I, T_max, T_min, T_stop, p, TC)
+    for i in P:
+        print(i.id)
         
-        current_multi_start = 0
-        while current_multi_start <= MS and not terminate:
-            #for j in enumerate(P):
-                #P[j].t = P[j].T
-            
-            for j, I in enumerate(P):
-                P[j].T = T_min + float(j) * ((T_max - T_min) / float(p) - 1)
-                P[j].T_cooling = Calculate_cooling(j, T_max, T_min, T_stop, p, TC)
-            
-            while P[0].T > T_stop and not terminate:#Cooling(P[i], T_stop) and not terminate:
-                if P[0].T <= T_stop or iterations == TC:
-                    terminate = True
+    current_multi_start = 1
+    while current_multi_start <= MS and not terminate:
+        for j, _ in enumerate(P):
+            P[j].T = P[j].T_default
+            print(j, P[j].T)
+        
+        while Cooling(P[j], T_stop) and not terminate:
+            if P[0].T <= T_stop or iterations == TC:
+                terminate = True
 
-                for j, I in enumerate(P):
-                    #if j > 0: # I added this because I need to give Crossover and Mutation two parents; the pseudocode says to only give them one but if I do that then I don't have two parents to use in crossover/mutation
-                    I_c = Crossover(instance, I, P, P_crossover)
-                    I_m = Mutation(instance, I_c, P_mutation, random.randint(1, 100))
-                    P[j] = MO_Metropolis(I, I_m, I.T)
-                    
-                    if is_nondominated(P[j], ND): # this should be something like "if P[j] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
-                        ND.append(P[j])
-                    
-                    P[j].T *= P[j].T_cooling
-                iterations += 1
-                print(P[0].T)
-            current_multi_start += 1
+            for j, I in enumerate(P):
+                #if j > 0: # I added this because I need to give Crossover and Mutation two parents; the pseudocode says to only give them one but if I do that then I don't have two parents to use in crossover/mutation
+                I_c = Crossover(instance, I, P, P_crossover)
+                I_m = Mutation(instance, I_c, P_mutation, random.randint(1, 100))
+                P[j] = MO_Metropolis(I, I_m, I.T)
+                
+                if is_nondominated(P[j], ND): # this should be something like "if P[j] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
+                    ND.append(P[j])
+                
+                P[j].T *= P[j].T_cooling
+            iterations += 1
+            print(P[0].T)
+        current_multi_start += 1
+    
     return ND
