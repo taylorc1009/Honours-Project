@@ -34,7 +34,7 @@ class Solution():
     def calculate_routes_capacities(self, instance: ProblemInstance) -> None:
         for i, _ in enumerate(self.vehicles):
             temporary_capacity = 0.0
-            for j, _ in range(1, len(self.vehicles[i].destinations) - 1):
+            for j in range(1, len(self.vehicles[i].destinations) - 1):
                 node_number = self.vehicles[i].destinations[j].node.number
                 temporary_capacity += instance.nodes[node_number].demand
             self.vehicles[i].current_capacity = temporary_capacity
