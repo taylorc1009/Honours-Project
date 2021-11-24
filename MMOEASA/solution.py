@@ -53,7 +53,7 @@ class Solution():
         while vehicle < len(self.vehicles) and self.feasible:
             self.total_distance += self.vehicles[vehicle].route_distance
 
-            for i in range(1, len(self.vehicles[i].destinations)):
+            for i in range(1, len(self.vehicles[vehicle].destinations)):
                 node_number = self.vehicles[vehicle].destinations[i].node.number
                 if self.vehicles[vehicle].destinations[i].arrival_time > instance.nodes[node_number].due_date or self.vehicles[i].current_capacity > instance.capacity_of_vehicles:
                     self.feasible = False
