@@ -136,7 +136,7 @@ def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
 
 def is_nondominated(I: Solution, ND: List[Solution]) -> bool:
     for nondominated in ND:
-        if I.total_distance < nondominated.total_distance and I.cargo_unbalance <= nondominated.cargo_unbalance or I.total_distance < nondominated.total_distance and I.cargo_unbalance < nondominated.cargo_unbalance:
+        if I.total_distance < nondominated.total_distance and I.cargo_unbalance <= nondominated.cargo_unbalance or I.total_distance <= nondominated.total_distance and I.cargo_unbalance < nondominated.cargo_unbalance:
             continue
         else:
             return False
