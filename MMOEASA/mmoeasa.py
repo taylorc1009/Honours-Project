@@ -128,7 +128,8 @@ def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probabilit
     return I
 
 def Euclidean_distance_dispersion(x1: int, y1: int, x2: int, y2: int):
-    return sqrt(((x2 - x1) / 2 * Hypervolume_total_distance[0]) ** 2 + ((y2 - y1) / 2 * Hypervolume_cargo_unbalance[0]) ** 2)
+    global Hypervolume_total_distance, Hypervolume_cargo_unbalance
+    return sqrt(((x2 - x1) / 2 * Hypervolume_total_distance) ** 2 + ((y2 - y1) / 2 * Hypervolume_cargo_unbalance) ** 2)
 
 def Child_dominates(Parent: Solution, Child: Solution) -> bool:
     return True if Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance or Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance else False
