@@ -10,8 +10,9 @@ def solution_visits_destination(node: int, instance: ProblemInstance, I: Solutio
                     return True
     return False
 
-def verify_nodes_are_inserted(I: Solution, instance: ProblemInstance, node: int) -> None:
+def verify_nodes_are_inserted(I: Solution, instance: ProblemInstance, node: int) -> Solution:
     inserted, vehicle = False, 0
+
     while vehicle < len(I.vehicles) and not inserted:
         length_of_route = len(I.vehicles[vehicle].destinations) - 2
         final_destination = I.vehicles[vehicle].destinations[length_of_route].node.number
@@ -34,9 +35,12 @@ def verify_nodes_are_inserted(I: Solution, instance: ProblemInstance, node: int)
         elif I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time > instance.nodes[node].due_date or I.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
             del I.vehicles[vehicle].destinations[length_of_route + 1]
             vehicle += 1
+    
+    return I
 
-def reinitialize_depot_return(I: Solution, instance: ProblemInstance):
+def reinitialize_depot_return(I: Solution, instance: ProblemInstance) -> Solution:
     vehicle = 0
+
     for i in range(len(I.vehicles)):
         I.vehicles[vehicle].destinations.append(Destination(node=instance.nodes[0]))
 
@@ -46,3 +50,5 @@ def reinitialize_depot_return(I: Solution, instance: ProblemInstance):
         I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time = I.vehicles[vehicle].destinations[length_of_route + 1].departure_time + instance.MMOEASA_distances[final_destination][0]
         I.vehicles[vehicle].destinations[length_of_route + 1].departure_time = I.vehicles[vehicle].destinations[length_of_route + 1].departure_time + instance.MMOEASA_distances[final_destination][0]
         I.vehicles[vehicle].destinations[length_of_route + 1].wait_time = 0.0
+    
+    return I

@@ -11,15 +11,17 @@ def rand(start: int, end: int, exclude_values: List[int]=list()) -> int:
         random_val = random.randint(start, end)
     return random_val
 
-def shift_left(I: Solution, vehicle: int, node_number: int, displacement: int=1) -> None:
+def shift_left(I: Solution, vehicle: int, node_number: int, displacement: int=1) -> Solution:
     for i in range(I.vehicles[vehicle].getIndexOfDestinationByNode(node_number), len(I.vehicles[vehicle].destinations)):
         I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i + displacement].node
+    return I
 
-def shift_right(I: Solution, vehicle: int, node_number: int, displacement: int=1) -> None:
+def shift_right(I: Solution, vehicle: int, node_number: int, displacement: int=1) -> Solution:
     for i in range(len(I.vehicles[vehicle].destinations), I.vehicles[vehicle].getIndexOfDestinationByNode(node_number), -1):
         I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i - displacement].node
+    return I
 
-def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, origin: int, vehicle_2: int, destination: int) -> None:
+def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, origin: int, vehicle_2: int, destination: int) -> Solution:
     num_nodes = len(instance.nodes)
     
     origin_node = I.vehicles[vehicle_1].destinations[origin].node
@@ -32,13 +34,13 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
             I.vehicles[vehicle_2].destinations[destination].node = origin_node
             I.vehicles[vehicle_1].destinations[origin].node = destination_node
         elif omd_absolute > 1:
-            shift_right(I, vehicle_2, destination)
+            I = shift_right(I, vehicle_2, destination)
             I.vehicles[vehicle_2].destinations[destination].node = origin_node
 
             if origin > destination:
-                shift_left(I, vehicle_1, origin + 1)
+                I = shift_left(I, vehicle_1, origin + 1)
             elif origin < destination:
-                shift_left(I, vehicle_1, origin)
+                I = shift_left(I, vehicle_1, origin)
     else:
         if len(I.vehicles[vehicle_2].destinations) - 2 <= 0: # "- 2" to discount the two depot entries
             I.vehicles[vehicle_2].destinations[0].node = instance.node[0]
@@ -49,17 +51,19 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
                 for i in range(3, len(I.vehicles[vehicle_2].destinations)):
                     del I.vehicles[vehicle_2].destinations[i]
             
-            shift_left(num_nodes, I, vehicle_1, origin)
+            I = shift_left(num_nodes, I, vehicle_1, origin)
         elif len(I.vehicles[vehicle_1].destinations) - 2 == 0:
             shift_right(num_nodes, I, vehicle_2, destination)
 
             I.vehicles[vehicle_2].destinations[destination].node = origin_node
-            shift_left(num_nodes, I, vehicle_1, origin)
+            I = shift_left(num_nodes, I, vehicle_1, origin)
     
     I.calculate_nodes_time_windows(instance)
     I.calculate_routes_capacities(instance)
     I.calculate_length_of_routes(instance)
     I.objective_function(instance)
+
+    return I
 
 def Mutation1(instance: ProblemInstance, I: Solution) -> Solution:
     I_m = I
@@ -73,7 +77,7 @@ def Mutation1(instance: ProblemInstance, I: Solution) -> Solution:
     #while origin_position == destination_position:
         #destination_position = rand(0, len(I_m.vehicles[vehicle_randomize].destinations))
 
-    move_destination(instance, I_m, vehicle_randomize, origin_position, vehicle_randomize, destination_position)
+    I_m = move_destination(instance, I_m, vehicle_randomize, origin_position, vehicle_randomize, destination_position)
     
     # I don't think this "if" is necessary as the MMOEASA main algorithm performs the metropolis function anyway
     #if MO_Metropolis(MMOEASA_POPULATION_SIZE, I_m, I, I_m.T):
@@ -111,7 +115,6 @@ def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Sol
     I_c = I
 
     routes_to_safeguard = list()
-
     for i in enumerate(I_c.vehicles):
         if rand(0, 100) < 50:
             routes_to_safeguard.append(i)
@@ -150,8 +153,8 @@ def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Sol
     
     for i in range(1, len(instance.nodes)):
         if not solution_visits_destination(i, instance, I):
-            verify_nodes_are_inserted(I_c, instance, i)
-    reinitialize_depot_return(I_c, instance)
+            I_c = verify_nodes_are_inserted(I_c, instance, i)
+    I_c = reinitialize_depot_return(I_c, instance)
 
     I_c.calculate_number_of_routes()
     I_c.calculate_time_window_paths()

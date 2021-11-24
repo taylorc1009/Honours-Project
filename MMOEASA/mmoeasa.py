@@ -14,11 +14,7 @@ from numpy import random, sqrt, exp
 def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
 
-    solution = Solution(
-        _id=solution_id,
-        #order_of_destinations=[Destination(node=node) for node in sorted_nodes],
-        vehicles=list()
-    )
+    solution = Solution(_id=solution_id, vehicles=list())
     D_i = 1 # list of destinations iterator
 
     for i in range(0, instance.amount_of_vehicles - 1):
@@ -40,8 +36,8 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
         solution.vehicles.append(vehicle)
 
     for i in range(1, len(instance.nodes)):
-        verify_nodes_are_inserted(solution, instance, i)
-    reinitialize_depot_return(solution, instance)
+        solution = verify_nodes_are_inserted(solution, instance, i)
+    solution = reinitialize_depot_return(solution, instance)
 
     solution.calculate_nodes_time_windows(instance)
     solution.calculate_routes_capacities(instance)
@@ -120,15 +116,19 @@ def Child_dominates(Parent: Solution, Child: Solution) -> bool:
 
 def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
     if Child_dominates(Parent, Child):
+        print("dominates")
         return Child
     elif T <= 0.00001:
+        print("it's cold")
         return Parent
     else:
+        print(Hypervolume_total_distance, Hypervolume_cargo_unbalance)
         d_df = Euclidean_distance_dispersion(Child.total_distance, Child.cargo_unbalance, Parent.total_distance, Parent.cargo_unbalance)
         random_val = random.randint(0, INT_MAX) / INT_MAX
         d_pt_pt = d_df / T ** 2
         pt_exp = exp(-1 * d_pt_pt)
 
+        print("if is true then return child: ", random_val < pt_exp)
         if random_val < pt_exp:
             return Child
         else:
