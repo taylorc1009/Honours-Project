@@ -3,22 +3,23 @@ from MMOEASA.hypervolumes import Hypervolume_total_distance, Hypervolume_cargo_u
 from MMOEASA.constants import MMOEASA_INFINITY
 from vehicle import Vehicle
 from problemInstance import ProblemInstance
-from destination import Destination
 
 class Solution():
     feasible: bool=True
+
+    T: float=None
+    T_cooling: float=None
+
     total_distance: float=0.0
     #distance_unbalance: float=None
     cargo_unbalance: float=0.0
 
-    T: float=None
-    T_cooling: float=None
-    #t: float=None
-
-    def __init__(self, _id: int=None, order_of_destinations: List[Destination]=list(), vehicles: List[Vehicle]=list()) -> None:
+    def __init__(self, _id: int=None, vehicles: List[Vehicle]=list()) -> None:
         self.id: int=_id
-        self.order_of_destinations: List[Destination]=order_of_destinations
         self.vehicles: List[Vehicle]=vehicles
+
+    def __str__(self) -> str:
+        return f"{self.id}, {self.feasible}, {self.T}, {self.T_cooling}, {self.total_distance}, {self.cargo_unbalance}, {[v.__str__() for v in self.vehicles]}"
 
     def calculate_nodes_time_windows(self, instance: ProblemInstance) -> None:
         for i, _ in enumerate(self.vehicles):

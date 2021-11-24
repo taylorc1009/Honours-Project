@@ -10,7 +10,7 @@ class Vehicle():
         self.destinations: List[Destination]=destinations
 
     def __str__(self) -> str:
-        return f"{self.number}, {self.max_capacity}, {self.current_capacity}, {[destination.node.number for destination in self.destinations]}"
+        return f"{self.number}, {self.current_capacity}, {[destination.node.number for destination in self.destinations]}"
     
     def getIndexOfDestinationByNode(self, node_number: int) -> int:
         #for i, d in enumerate(self.destinations):

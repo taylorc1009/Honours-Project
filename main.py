@@ -4,6 +4,7 @@ from typing import List
 from problemInstance import ProblemInstance
 from data import openIterationsOfProblemSet
 from MMOEASA.mmoeasa import MMOEASA
+from MMOEASA.solution import Solution
 from MMOEASA.constants import MMOEASA_POPULATION_SIZE
 
 def executeMMOEASA(problemInstances: List[ProblemInstance]) -> None:
@@ -11,8 +12,12 @@ def executeMMOEASA(problemInstances: List[ProblemInstance]) -> None:
         #print(problemInstances[i].name, len(problemInstances[i].MMOEASA_distances))
         problemInstances[i].calculateDistances()
 
-    # Terminating Condition (TC) is set to 40 seconds
-    MMOEASA(problemInstances[0], MMOEASA_POPULATION_SIZE, 10, 40, 0.25, 0.25, 100, 20, 10)
+    #for instance in problemInstances:
+    #print(instance.name)
+    # Terminating Condition (TC) is set to 40 iterations
+    ND_solutions = MMOEASA(problemInstances[0], MMOEASA_POPULATION_SIZE, 10, 40, 0.25, 0.25, 100, 20, 10)
+    for solution in ND_solutions:
+        print(solution.__str__())
 
 if __name__ == '__main__':
     if not len(sys.argv) > 1:
