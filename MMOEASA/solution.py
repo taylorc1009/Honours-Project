@@ -22,10 +22,10 @@ class Solution():
 
     def calculate_nodes_time_windows(self, instance: ProblemInstance) -> None:
         for i, _ in enumerate(self.vehicles):
-            for j, _ in range(1, len(self.vehicles[i].destinations)):
+            for j in range(1, len(self.vehicles[i].destinations)):
                 previous_node = self.vehicles[i].destinations[j - 1].node.number
                 current_node = self.vehicles[i].destinations[j].node.number
-                self.vehicles[i].destinations[j].arrival_time = self.vehicles[i].destinations[j - 1] + instance.distances[previous_node][current_node]
+                self.vehicles[i].destinations[j].arrival_time = self.vehicles[i].destinations[j - 1].departure_time + instance.MMOEASA_distances[previous_node][current_node]
                 if self.vehicles[i].destinations[j].arrival_time < instance.nodes[current_node].ready_time:
                     self.vehicles[i].destinations[j].wait_time = instance.nodes[current_node].ready_time - self.vehicles[i].destinations[j].arrival_time
                     self.vehicles[i].destinations[j].arrival_time = instance.nodes[current_node].ready_time
