@@ -159,32 +159,29 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
         P.insert(i, TWIH(instance, i))
         P[i].T_default = T_max - float(i) * ((T_max - T_min) / float(p) - 1.0)
         P[i].T_cooling = Calculate_cooling(i, T_max, T_min, T_stop, p, TC)
-    
-    for i in P:
-        print(i.id)
         
     current_multi_start = 1
     while current_multi_start <= MS and not terminate:
-        for j, _ in enumerate(P):
-            P[j].T = P[j].T_default
-            print(j, P[j].T)
+        for i, _ in enumerate(P):
+            P[i].T = P[i].T_default
+            #print(i, P[i].T)
         
-        while P[0].T > T_stop and not terminate:#Cooling(P[j], T_stop) and not terminate:
+        while P[0].T > T_stop and not terminate:#Cooling(P[i], T_stop) and not terminate:
             if iterations == TC:
                 terminate = True
 
-            for j, I in enumerate(P):
-                #if j > 0: # I added this because I need to give Crossover and Mutation two parents; the pseudocode says to only give them one but if I do that then I don't have two parents to use in crossover/mutation
+            for i, I in enumerate(P):
+                #if i > 0: # I added this because I need to give Crossover and Mutation two parents; the pseudocode says to only give them one but if I do that then I don't have two parents to use in crossover/mutation
                 I_c = Crossover(instance, I, P, P_crossover)
                 I_m = Mutation(instance, I_c, P_mutation, random.randint(1, 100))
-                P[j] = MO_Metropolis(I, I_m, I.T)
+                P[i] = MO_Metropolis(I, I_m, I.T)
                 
-                if is_nondominated(P[j], ND): # this should be something like "if P[j] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
-                    ND.append(P[j])
+                if is_nondominated(P[i], ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
+                    ND.append(P[i])
                 
-                P[j].T *= P[j].T_cooling
+                P[i].T *= P[i].T_cooling
             iterations += 1
-            print(P[0].T, current_multi_start)
+            #print(P[0].T, current_multi_start)
         current_multi_start += 1
     
     return ND
