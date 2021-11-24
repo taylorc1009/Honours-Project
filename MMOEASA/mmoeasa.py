@@ -166,7 +166,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
             #instance.destinations[I].T_cooling = Calculate_cooling(I, T_max, T_min, T_stop, p, TC)
         
         current_multi_start = 1;
-        while (current_multi_start <= MS):
+        while current_multi_start <= MS and not terminate:
             #for j in enumerate(P):
                 #P[j].t = P[j].T
             
@@ -174,7 +174,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 P[j].T = T_min + i * ((T_max - T_min) / p - 1)
                 P[j].T_cooling = Calculate_cooling(j, T_max, T_min, T_stop, p, TC)
             
-            while Cooling(P, T_stop):
+            while Cooling(P, T_stop) and not terminate:
                 if P[0].T < T_stop or iterations == TC:
                     terminate = True
 
