@@ -1,5 +1,4 @@
-from typing import List
-from MMOEASA.hypervolumes import Hypervolume_total_distance, Hypervolume_cargo_unbalance, update_Hypervolumes
+from typing import List, Union
 from MMOEASA.constants import MMOEASA_INFINITY
 from vehicle import Vehicle
 from problemInstance import ProblemInstance
@@ -50,7 +49,7 @@ class Solution():
                 temporary_distance += instance.MMOEASA_distances[previous_node][current_node]
             self.vehicles[i].route_distance = temporary_distance
 
-    def objective_function(self, instance: ProblemInstance) -> None:
+    def objective_function(self, instance: ProblemInstance) -> Union[float, float]:
         vehicle = 0
         while vehicle < len(self.vehicles) and self.feasible:
             self.total_distance += self.vehicles[vehicle].route_distance
@@ -82,9 +81,5 @@ class Solution():
                     maximum_cargo = self.vehicle[i].route_distance
             #self.distance_unbalance = maximum_distance - minimum_distance
             self.cargo_unbalance = maximum_cargo - minimum_cargo
-
-            update_Hypervolumes(
-                total_distance=self.total_distance if self.total_distance > Hypervolume_total_distance[0] else 0.0,
-                #distance_unbalance=self.distance_unbalance if self.distance_unbalance > Hypervolume_distance_unbalance else 0.0,
-                cargo_unbalance=self.cargo_unbalance if self.cargo_unbalance > Hypervolume_cargo_unbalance[0] else 0.0
-            )
+        
+        return self.total_distance, self.cargo_unbalance

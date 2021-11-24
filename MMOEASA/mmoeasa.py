@@ -1,5 +1,4 @@
 from MMOEASA.auxiliaries import verify_nodes_are_inserted, reinitialize_depot_return
-from MMOEASA.hypervolumes import Hypervolume_total_distance, Hypervolume_cargo_unbalance
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from MMOEASA.constants import INT_MAX
 from MMOEASA.solution import Solution
@@ -9,7 +8,18 @@ from vehicle import Vehicle
 from typing import List
 from numpy import random, sqrt, exp
 
-#Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance = 1, 1, 1
+Hypervolume_total_distance: float=0.0
+Hypervolume_distance_unbalance: float=0.0
+Hypervolume_cargo_unbalance: float=0.0
+
+def update_Hypervolumes(potentialHV_TD: float=0.0, potentialHV_DU: float=0.0, potentialHV_CU: float=0.0):
+    global Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance
+    if potentialHV_TD > Hypervolume_total_distance:
+        Hypervolume_total_distance = potentialHV_TD
+    if potentialHV_DU > Hypervolume_distance_unbalance:
+        Hypervolume_distance_unbalance = potentialHV_DU
+    if potentialHV_CU > Hypervolume_cargo_unbalance:
+        Hypervolume_cargo_unbalance = potentialHV_CU
 
 def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
@@ -42,7 +52,9 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
     solution.calculate_nodes_time_windows(instance)
     solution.calculate_routes_capacities(instance)
     solution.calculate_length_of_routes(instance)
-    solution.objective_function(instance)
+    potentialHV_TD, potentialHV_CU = solution.objective_function(instance)
+
+    update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
 
     #for vehicle in solution.vehicles:
     #    print(f"{vehicle.number}, {[destination.number for destination in vehicle.destinations]}")
@@ -79,14 +91,19 @@ def Cooling(P: List[Solution], T_stop: float) -> bool:
     return True
 
 def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_crossover: int) -> Solution:
-    return Crossover1(instance, I, P) if random.randint(1, 100) <= P_crossover else I
+    if random.randint(1, 100) <= P_crossover:
+        I_c, potentialHV_TD, potentialHV_CU = Crossover1(instance, I, P)
+        update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
+        return I_c
+    return I
 
 def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probability: int) -> Solution:
-    I_m = I
-
     if random.randint(1, 100) <= P_mutation:
+        I_m = I
+        potentialHV_TD, potentialHV_CU = 0.0, 0.0
+
         if probability >= 1 and probability <= 10:
-            Mutation1(instance, I_m)
+            I_m, potentialHV_TD, potentialHV_CU = Mutation1(instance, I_m)
         elif probability >= 11 and probability <= 20:
             Mutation2()
         elif probability >= 21 and probability <= 30:
@@ -105,8 +122,10 @@ def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probabilit
             Mutation9()
         elif probability >= 91 and probability <= 100:
             Mutation10()
-    
-    return I_m
+        
+        update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
+        return I_m
+    return I
 
 def Euclidean_distance_dispersion(x1: int, y1: int, x2: int, y2: int):
     return sqrt(((x2 - x1) / 2 * Hypervolume_total_distance[0]) ** 2 + ((y2 - y1) / 2 * Hypervolume_cargo_unbalance[0]) ** 2)
