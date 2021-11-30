@@ -38,7 +38,7 @@ if __name__ == '__main__':
         
         print(f"To execute a problem set, please enter a set's details. The details required, and in this order, are:{os.linesep} 1. Amount of customers - can be either '25', '50' or '100'{os.linesep} 2. Type of problem - can be either 'C', 'R', or 'RC'{os.linesep} 3. Problem set - can be either '1' or '2'{os.linesep}An example command is: \"main.py 25 RC 2\"")
     else:
-        problemInstances = openIterationsOfProblemSet(*sys.argv[1:])
+        problemInstances = openIterationsOfProblemSet(sys.argv[1])#*sys.argv[1:])
         
         #if len(problemInstances) > 0: # this output will be removed later; it only exists now to show that the problem instances were loaded correctly
             #print([problemInstance.__str__() for problemInstance in problemInstances])

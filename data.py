@@ -6,7 +6,7 @@ from typing import List
 
 def loadInstance(filename) -> ProblemInstance:
     try:
-        with open(filename) as file:
+        with open(filename, 'r') as file:
             problemInstance = None
             problemName = file.readline().strip() # because the problem name is the first line in the text files, this line quickly adds it to a variable (so we can add it to a "ProblemInstance" object later"
             next(file) # skips the first line (containing the problem name), preventing it from being iterated over
@@ -25,9 +25,9 @@ def loadInstance(filename) -> ProblemInstance:
     except FileNotFoundError as e:
         raise FileNotFoundError(f"Couldn't open file \"{filename}\"\nCause: {e}")
 
-def openIterationsOfProblemSet(amountOfCustomers, typeOfProblem, problemSet) -> List[ProblemInstance]:
-    problemInstances = []
-    partialPath = f"solomon_{amountOfCustomers}/{typeOfProblem.upper()}{problemSet}"
+def openIterationsOfProblemSet(filename) -> ProblemInstance:#amountOfCustomers, typeOfProblem, problemSet) -> List[ProblemInstance]:
+    #problemInstances = []
+    #partialPath = f"solomon_{amountOfCustomers}/{typeOfProblem.upper()}{problemSet}"
 
     # is this neater than the for loop below? 
     # the for loop allows for a more helpful error as it shows which specific directory the file couldn't be found in and the file name it was searching for
@@ -42,12 +42,13 @@ def openIterationsOfProblemSet(amountOfCustomers, typeOfProblem, problemSet) -> 
     #if i == 1:
     #    print(f"Couldn't open file set \"solomon_{amountOfCustomers}/{typeOfProblem}{problemSet}xx.txt\"\n")
     
-    for i in range(1, sys.maxsize): # "sys.maxsize" is almost the same as "INT_MAX"; it's a dummy value that will never be reached
-        try:
-            problemInstances.append(loadInstance(f"{partialPath}{i:02}.txt"))
-        except FileNotFoundError as e: # if the file is not found, then we've either iterated over every file in the problem set or the problem set details entered are incorrect
-            if i == 1: # if the problem set's details are incorrect then "i" will still be 1, so, if it is, output an error message
-                print(e)
-            break
+    #for i in range(1, sys.maxsize): # "sys.maxsize" is almost the same as "INT_MAX"; it's a dummy value that will never be reached
+    try:
+        return loadInstance(filename)#f"{partialPath}{i:02}.txt")
+        #problemInstances.append(loadInstance(f"{partialPath}{i:02}.txt"))
+    except FileNotFoundError as e: # if the file is not found, then we've either iterated over every file in the problem set or the problem set details entered are incorrect
+        #if i == 1: # if the problem set's details are incorrect then "i" will still be 1, so, if it is, output an error message
+        print(e)
+        #break
 
-    return problemInstances
+    #return problemInstances
