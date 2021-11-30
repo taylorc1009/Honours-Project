@@ -2,9 +2,11 @@ from MMOEASA.solution import Solution
 from problemInstance import ProblemInstance
 from destination import Destination
 
+
+
 def solution_visits_destination(node: int, instance: ProblemInstance, I: Solution) -> bool:
     for i, _ in enumerate(I.vehicles):
-        if len(I.vehicles[i].destinations[1:len(I.vehicles[i].destinations) - 1]) >= 1:
+        if I.vehicles[i].getNumOfCustomersVisited() >= 1:
             for j, _ in enumerate(I.vehicles[i].destinations):
                 if I.vehicles[i].destinations[j].node.number == instance.nodes[node].number: # directly get the destination number from the list of destinations in case there's a mismatch between the destination number and the for loop iterator (although there shouldn't)
                     return True
@@ -15,7 +17,7 @@ def verify_nodes_are_inserted(I: Solution, instance: ProblemInstance, node: int)
     vehicle = 0
 
     while vehicle < len(I.vehicles) and not inserted:
-        length_of_route = len(I.vehicles[vehicle].destinations) - 2
+        length_of_route = I.vehicles[vehicle].getNumOfCustomersVisited()
         final_destination = I.vehicles[vehicle].destinations[length_of_route].node.number
         
         I.vehicles[vehicle].destinations[length_of_route + 1].node = instance.nodes[node]
@@ -45,7 +47,7 @@ def reinitialize_depot_return(I: Solution, instance: ProblemInstance) -> Solutio
     for i in range(len(I.vehicles)):
         I.vehicles[vehicle].destinations.append(Destination(node=instance.nodes[0]))
 
-        length_of_route = len(I.vehicles[i].destinations) - 3
+        length_of_route = I.vehicles[i].getNumOfCustomersVisited() - 1
         final_destination = I.vehicles[vehicle].destinations[length_of_route].node.number
 
         I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time = I.vehicles[vehicle].destinations[length_of_route + 1].departure_time + instance.MMOEASA_distances[final_destination][0]

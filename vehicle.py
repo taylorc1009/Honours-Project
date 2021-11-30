@@ -11,6 +11,10 @@ class Vehicle():
 
     def __str__(self) -> str:
         return f"{self.number}, {self.current_capacity}, {[destination.node.number for destination in self.destinations]}"
+
+    def getNumOfCustomersVisited(self) -> int:
+        # indexes 0 and n - 1 (the last) will be depot nodes
+        return len(self.destinations[1:len(self.destinations) - 1])
     
     def getIndexOfDestinationByNode(self, node_number: int) -> int:
         #for i, d in enumerate(self.destinations):
