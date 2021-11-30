@@ -10,13 +10,15 @@ def solution_visits_destination(node: int, instance: ProblemInstance, I: Solutio
                     return True
     return False
 
-def verify_nodes_are_inserted(I: Solution, instance: ProblemInstance, node: int) -> Solution:
+def insert_unvisited_node(I: Solution, instance: ProblemInstance, node: int) -> Solution:
     inserted = False
     vehicle = 0
 
     while vehicle < len(I.vehicles) and not inserted:
         length_of_route = I.vehicles[vehicle].getNumOfCustomersVisited()
+        print(len(I.vehicles[vehicle].destinations), length_of_route, vehicle)
         final_destination = I.vehicles[vehicle].destinations[length_of_route].node.number
+        vehicle_backup = I.vehicles[vehicle]
         
         I.vehicles[vehicle].destinations[length_of_route + 1].node = instance.nodes[node]
         I.vehicles[vehicle].current_capacity += instance.nodes[node].demand
@@ -34,22 +36,22 @@ def verify_nodes_are_inserted(I: Solution, instance: ProblemInstance, node: int)
 
             inserted = True
         elif I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time > instance.nodes[node].due_date or I.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
-            del I.vehicles[vehicle].destinations[length_of_route + 1]
+            I.vehicles[vehicle] = vehicle_backup
             vehicle += 1
 
     return I
 
-def reinitialize_depot_return(I: Solution, instance: ProblemInstance) -> Solution:
-    vehicle = 0
-
+def reinitialize_return_to_depot(I: Solution, instance: ProblemInstance) -> Solution:
     for i in range(len(I.vehicles)):
-        I.vehicles[vehicle].destinations.append(Destination(node=instance.nodes[0]))
+        I.vehicles[i].destinations.append(Destination(node=instance.nodes[0]))
 
-        length_of_route = I.vehicles[i].getNumOfCustomersVisited() - 1
-        final_destination = I.vehicles[vehicle].destinations[length_of_route].node.number
+        length_of_route = I.vehicles[i].getNumOfCustomersVisited()
+        print(len(I.vehicles), i, len(I.vehicles[i].destinations), length_of_route)
+        final_destination = I.vehicles[i].destinations[length_of_route].node.number
 
-        I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time = I.vehicles[vehicle].destinations[length_of_route + 1].departure_time + instance.MMOEASA_distances[final_destination][0]
-        I.vehicles[vehicle].destinations[length_of_route + 1].departure_time = I.vehicles[vehicle].destinations[length_of_route + 1].departure_time + instance.MMOEASA_distances[final_destination][0]
-        I.vehicles[vehicle].destinations[length_of_route + 1].wait_time = 0.0
+        print(len(instance.MMOEASA_distances), len(instance.MMOEASA_distances[final_destination]), final_destination)
+        I.vehicles[i].destinations[length_of_route + 1].arrival_time = I.vehicles[i].destinations[length_of_route + 1].departure_time + instance.MMOEASA_distances[final_destination][0]
+        I.vehicles[i].destinations[length_of_route + 1].departure_time = I.vehicles[i].destinations[length_of_route + 1].departure_time + instance.MMOEASA_distances[final_destination][0]
+        I.vehicles[i].destinations[length_of_route + 1].wait_time = 0.0
     
     return I
