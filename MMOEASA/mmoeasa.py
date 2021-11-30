@@ -1,4 +1,4 @@
-from MMOEASA.auxiliaries import verify_nodes_are_inserted, reinitialize_depot_return
+from MMOEASA.auxiliaries import insert_unvisited_node, reinitialize_return_to_depot
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from MMOEASA.constants import INT_MAX
 from MMOEASA.solution import Solution
@@ -12,7 +12,7 @@ Hypervolume_total_distance: float=0.0
 Hypervolume_distance_unbalance: float=0.0
 Hypervolume_cargo_unbalance: float=0.0
 
-def update_Hypervolumes(potentialHV_TD: float=0.0, potentialHV_DU: float=0.0, potentialHV_CU: float=0.0):
+def update_Hypervolumes(potentialHV_TD: float=0.0, potentialHV_DU: float=0.0, potentialHV_CU: float=0.0) -> None:
     global Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance
     if float(potentialHV_TD) > Hypervolume_total_distance:
         Hypervolume_total_distance = float(potentialHV_TD)
