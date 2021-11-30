@@ -14,12 +14,12 @@ Hypervolume_cargo_unbalance: float=0.0
 
 def update_Hypervolumes(potentialHV_TD: float=0.0, potentialHV_DU: float=0.0, potentialHV_CU: float=0.0):
     global Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance
-    if potentialHV_TD > Hypervolume_total_distance:
-        Hypervolume_total_distance = potentialHV_TD
-    if potentialHV_DU > Hypervolume_distance_unbalance:
-        Hypervolume_distance_unbalance = potentialHV_DU
-    if potentialHV_CU > Hypervolume_cargo_unbalance:
-        Hypervolume_cargo_unbalance = potentialHV_CU
+    if float(potentialHV_TD) > Hypervolume_total_distance:
+        Hypervolume_total_distance = float(potentialHV_TD)
+    if float(potentialHV_DU) > Hypervolume_distance_unbalance:
+        Hypervolume_distance_unbalance = float(potentialHV_DU)
+    if float(potentialHV_CU) > Hypervolume_cargo_unbalance:
+        Hypervolume_cargo_unbalance = float(potentialHV_CU)
 
 def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
@@ -45,9 +45,9 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
         vehicle.destinations.append(Destination(node=sorted_nodes[0])) # have the route end at the depot
         solution.vehicles.append(vehicle)
 
-    for i in range(1, len(instance.nodes)):
+    """for i in range(1, len(instance.nodes)):
         solution = verify_nodes_are_inserted(solution, instance, i)
-    solution = reinitialize_depot_return(solution, instance)
+    solution = reinitialize_depot_return(solution, instance)"""
 
     solution.calculate_nodes_time_windows(instance)
     solution.calculate_routes_capacities(instance)
@@ -57,7 +57,7 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
     update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
 
     #for vehicle in solution.vehicles:
-    #    print(f"{vehicle.number}, {[destination.number for destination in vehicle.destinations]}")
+        #print(f"{vehicle.number}, {[destination.node.number for destination in vehicle.destinations]}")
 
     return solution
 
@@ -135,6 +135,10 @@ def Child_dominates(Parent: Solution, Child: Solution) -> bool:
     return True if Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance or Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance else False
 
 def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
+    for vehicle in Parent.vehicles:
+        print(f"{vehicle.number}, {[destination.node.number for destination in vehicle.destinations]}")
+    for vehicle in Child.vehicles:
+        print(f"{vehicle.number}, {[destination.node.number for destination in vehicle.destinations]}")
     if Child_dominates(Parent, Child):
         print("dominates")
         return Child

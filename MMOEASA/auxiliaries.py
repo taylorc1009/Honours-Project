@@ -2,8 +2,6 @@ from MMOEASA.solution import Solution
 from problemInstance import ProblemInstance
 from destination import Destination
 
-
-
 def solution_visits_destination(node: int, instance: ProblemInstance, I: Solution) -> bool:
     for i, _ in enumerate(I.vehicles):
         if I.vehicles[i].getNumOfCustomersVisited() >= 1:
