@@ -3,15 +3,16 @@ from problemInstance import ProblemInstance
 from destination import Destination
 
 def solution_visits_destination(node: int, instance: ProblemInstance, I: Solution) -> bool:
-    for j in range(0, instance.amount_of_vehicles - 1):
-        if len(I.vehicles[j].destinations) - 2 >= 1:
-            for k in range(0, len(I.vehicles[j].destinations)):
-                if I.vehicles[j].destinations[k].node.number == instance.nodes[node].number: # directly get the destination number from the list of destinations in case there's a mismatch between the destination number and the for loop iterator (although there shouldn't)
+    for i, _ in enumerate(I.vehicles):
+        if len(I.vehicles[i].destinations[1:len(I.vehicles[i].destinations) - 1]) >= 1:
+            for j, _ in enumerate(I.vehicles[i].destinations):
+                if I.vehicles[i].destinations[j].node.number == instance.nodes[node].number: # directly get the destination number from the list of destinations in case there's a mismatch between the destination number and the for loop iterator (although there shouldn't)
                     return True
     return False
 
 def verify_nodes_are_inserted(I: Solution, instance: ProblemInstance, node: int) -> Solution:
-    inserted, vehicle = False, 0
+    inserted = False
+    vehicle = 0
 
     while vehicle < len(I.vehicles) and not inserted:
         length_of_route = len(I.vehicles[vehicle].destinations) - 2
@@ -35,7 +36,7 @@ def verify_nodes_are_inserted(I: Solution, instance: ProblemInstance, node: int)
         elif I.vehicles[vehicle].destinations[length_of_route + 1].arrival_time > instance.nodes[node].due_date or I.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
             del I.vehicles[vehicle].destinations[length_of_route + 1]
             vehicle += 1
-    
+
     return I
 
 def reinitialize_depot_return(I: Solution, instance: ProblemInstance) -> Solution:
