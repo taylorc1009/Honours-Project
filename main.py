@@ -7,15 +7,16 @@ from MMOEASA.mmoeasa import MMOEASA
 from MMOEASA.solution import Solution
 from MMOEASA.constants import MMOEASA_POPULATION_SIZE
 
-def executeMMOEASA(problemInstances: List[ProblemInstance]) -> None:
-    for i, _ in enumerate(problemInstances):
+def executeMMOEASA(problemInstance: ProblemInstance) -> None:
+    #for i, _ in enumerate(problemInstances):
         #print(problemInstances[i].name, len(problemInstances[i].MMOEASA_distances))
-        problemInstances[i].calculateDistances()
+    #problemInstances[i].calculateDistances()
+    problemInstance.calculateDistances()
 
     #for instance in problemInstances:
     #print(instance.name)
     # Terminating Condition (TC) is set to 40 iterations
-    ND_solutions = MMOEASA(problemInstances[0], MMOEASA_POPULATION_SIZE, 10, 100000, 25, 25, 100.0, 50.0, 10.0)
+    ND_solutions = MMOEASA(problemInstance, MMOEASA_POPULATION_SIZE, 10, 100000, 25, 25, 100.0, 50.0, 10.0)
     for solution in ND_solutions:
         print(solution.__str__())
 
@@ -40,7 +41,7 @@ if __name__ == '__main__':
     else:
         problemInstances = openIterationsOfProblemSet(sys.argv[1])#*sys.argv[1:])
         
-        #if len(problemInstances) > 0: # this output will be removed later; it only exists now to show that the problem instances were loaded correctly
+        #if len(problemInstances) > 0:
             #print([problemInstance.__str__() for problemInstance in problemInstances])
 
         executeMMOEASA(problemInstances)
