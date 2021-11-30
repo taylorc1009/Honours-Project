@@ -50,8 +50,8 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
     solution = reinitialize_depot_return(solution, instance)"""
 
     solution.calculate_nodes_time_windows(instance)
-    solution.calculate_routes_capacities(instance)
-    solution.calculate_length_of_routes(instance)
+    solution.calculate_vehicles_loads(instance)
+    solution.calculate_lengths_of_routes(instance)
     potentialHV_TD, potentialHV_CU = solution.objective_function(instance)
 
     update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)

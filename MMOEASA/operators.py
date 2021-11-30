@@ -2,7 +2,7 @@
 from MMOEASA.solution import Solution
 from MMOEASA.auxiliaries import insert_unvisited_node, solution_visits_destination, reinitialize_return_to_depot
 from problemInstance import ProblemInstance
-from typing import List, Union
+from typing import List, Tuple
 from numpy import random
 
 def rand(start: int, end: int, exclude_values: List[int]=list()) -> int:
@@ -12,18 +12,16 @@ def rand(start: int, end: int, exclude_values: List[int]=list()) -> int:
     return random_val
 
 def shift_left(I: Solution, vehicle: int, node_number: int, displacement: int=1) -> Solution:
-    for i in range(I.vehicles[vehicle].getIndexOfDestinationByNode(node_number), len(I.vehicles[vehicle].destinations)):
+    for i in range(I.vehicles[vehicle].getIndexOfNode(node_number), len(I.vehicles[vehicle].destinations)):
         I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i + displacement].node
     return I
 
 def shift_right(I: Solution, vehicle: int, node_number: int, displacement: int=1) -> Solution:
-    for i in range(len(I.vehicles[vehicle].destinations), I.vehicles[vehicle].getIndexOfDestinationByNode(node_number), -1):
+    for i in range(len(I.vehicles[vehicle].destinations), I.vehicles[vehicle].getIndexOfNode(node_number), -1):
         I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i - displacement].node
     return I
 
-def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, origin: int, vehicle_2: int, destination: int) -> Solution:
-    num_nodes = len(instance.nodes)
-    
+def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, origin: int, vehicle_2: int, destination: int) -> Tuple[Solution, float, float]:
     origin_node = I.vehicles[vehicle_1].destinations[origin].node
     destination_node = I.vehicles[vehicle_2].destinations[destination].node
 
@@ -42,30 +40,35 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
             elif origin < destination:
                 I = shift_left(I, vehicle_1, origin)
     else:
-        if len(I.vehicles[vehicle_2].destinations) - 2 <= 0: # "- 2" to discount the two depot entries
-            I.vehicles[vehicle_2].destinations[0].node = instance.node[0]
-            I.vehicles[vehicle_2].destinations[1].node = origin_node.node
-            I.vehicles[vehicle_2].destinations[2].node = instance.node[0]
+        num_nodes_with_displacement = I.vehicles[vehicle_2].getNumOfCustomersVisited() - 1
+        if num_nodes_with_displacement - 1 <= 0: # "- 2" to discount the two depot entries
+            I.vehicles[vehicle_2].destinations[0].node = instance.nodes[0]
+            I.vehicles[vehicle_2].destinations[1].node = origin_node
+            I.vehicles[vehicle_2].destinations[2].node = instance.nodes[0]
 
             if len(I.vehicles[vehicle_2].destinations) > 3:
                 for i in range(3, len(I.vehicles[vehicle_2].destinations)):
                     del I.vehicles[vehicle_2].destinations[i]
             
-            I = shift_left(num_nodes, I, vehicle_1, origin)
-        elif len(I.vehicles[vehicle_1].destinations) - 2 == 0:
-            shift_right(num_nodes, I, vehicle_2, destination)
+            I = shift_left(I, vehicle_1, origin)
+        elif num_nodes_with_displacement > 0:
+            I = shift_right(I, vehicle_2, destination)
+            I.vehicles[vehicle_2].destinations[destination].node = origin_node
+            I = shift_left(I, vehicle_1, origin)
+        elif num_nodes_with_displacement == 0:
+            shift_right(I, vehicle_2, destination)
 
             I.vehicles[vehicle_2].destinations[destination].node = origin_node
-            I = shift_left(num_nodes, I, vehicle_1, origin)
+            I = shift_left(I, vehicle_1, origin)
     
     I.calculate_nodes_time_windows(instance)
-    I.calculate_routes_capacities(instance)
-    I.calculate_length_of_routes(instance)
+    I.calculate_vehicles_loads(instance)
+    I.calculate_lengths_of_routes(instance)
     potentialHV_TD, potentialHV_CU = I.objective_function(instance)
 
     return I, potentialHV_TD, potentialHV_CU
 
-def Mutation1(instance: ProblemInstance, I: Solution) -> Union[Solution, float, float]:
+def Mutation1(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, float]:
     I_m = I
 
     vehicle_randomize = rand(0, len(I_m.vehicles) - 1)
@@ -111,7 +114,7 @@ def Mutation9():
 def Mutation10():
     pass
 
-def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Union[Solution, float, float]:
+def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Tuple[Solution, float, float]:
     I_c = I
 
     routes_to_safeguard = list()
@@ -156,11 +159,10 @@ def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Uni
     for i in range(1, len(instance.nodes)):
         if not solution_visits_destination(i, instance, I):
             I_c = insert_unvisited_node(I_c, instance, i)
-    I_c = reinitialize_return_to_depot(I_c, instance)
 
     I_c.calculate_nodes_time_windows(instance)
-    I_c.calculate_routes_capacities(instance)
-    I_c.calculate_length_of_routes(instance)
+    I_c.calculate_vehicles_loads(instance)
+    I_c.calculate_lengths_of_routes(instance)
     potentialHV_TD, potentialHV_CU = I_c.objective_function(instance)
 
     # I don't think this line is necessary as the MMOEASA main algorithm performs the metropolis function anyway

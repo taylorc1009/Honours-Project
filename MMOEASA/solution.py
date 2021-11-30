@@ -23,31 +23,15 @@ class Solution():
 
     def calculate_nodes_time_windows(self, instance: ProblemInstance) -> None:
         for i, _ in enumerate(self.vehicles):
-            for j in range(1, len(self.vehicles[i].destinations)):
-                previous_node = self.vehicles[i].destinations[j - 1].node.number
-                current_node = self.vehicles[i].destinations[j].node.number
-                self.vehicles[i].destinations[j].arrival_time = self.vehicles[i].destinations[j - 1].departure_time + instance.MMOEASA_distances[previous_node][current_node]
-                if self.vehicles[i].destinations[j].arrival_time < instance.nodes[current_node].ready_time:
-                    self.vehicles[i].destinations[j].wait_time = instance.nodes[current_node].ready_time - self.vehicles[i].destinations[j].arrival_time
-                    self.vehicles[i].destinations[j].arrival_time = instance.nodes[current_node].ready_time
-                self.vehicles[i].destinations[j].departure_time = self.vehicles[i].destinations[j].arrival_time + instance.nodes[current_node].service_duration
+            self.vehicles[i].calculate_destinations_time_windows(instance)
 
-    def calculate_routes_capacities(self, instance: ProblemInstance) -> None:
+    def calculate_vehicles_loads(self, instance: ProblemInstance) -> None:
         for i, _ in enumerate(self.vehicles):
-            temporary_capacity = 0.0
-            for j in range(1, len(self.vehicles[i].destinations) - 1):
-                node_number = self.vehicles[i].destinations[j].node.number
-                temporary_capacity += instance.nodes[node_number].demand
-            self.vehicles[i].current_capacity = temporary_capacity
+            self.vehicles[i].calculate_vehicle_load(instance)
 
-    def calculate_length_of_routes(self, instance: ProblemInstance) -> None:
+    def calculate_lengths_of_routes(self, instance: ProblemInstance) -> None:
         for i, _ in enumerate(self.vehicles):
-            temporary_distance = 0.0
-            for j, _ in enumerate(self.vehicles[i].destinations):
-                previous_node = self.vehicles[i].destinations[j - 1].node.number
-                current_node = self.vehicles[i].destinations[j].node.number
-                temporary_distance += instance.MMOEASA_distances[previous_node][current_node]
-            self.vehicles[i].route_distance = temporary_distance
+            self.vehicles[i].calculate_length_of_route(instance)
 
     def objective_function(self, instance: ProblemInstance) -> Union[float, float]:
         vehicle = 0
