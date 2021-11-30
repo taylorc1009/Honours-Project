@@ -44,7 +44,7 @@ def insert_unvisited_node(I: Solution, instance: ProblemInstance, node: int) -> 
     if not inserted:
         destinations = [Destination(node=instance.nodes[0]), Destination(node=instance.nodes[node]), Destination(node=instance.nodes[0])]
         I.vehicles.append(Vehicle(number=vehicle, current_capacity=instance.nodes[node].demand, destinations=destinations))
-        I.vehicles[vehicle].calculate_destinations_time_windows()
+        I.vehicles[vehicle].calculate_destinations_time_windows(instance)
         return I
 
     I.vehicles[vehicle] = reinitialize_return_to_depot(I.vehicles[vehicle], instance)
