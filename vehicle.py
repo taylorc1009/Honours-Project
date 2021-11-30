@@ -13,15 +13,14 @@ class Vehicle():
         return f"{self.number}, {self.current_capacity}, {[destination.node.number for destination in self.destinations]}"
 
     def getNumOfCustomersVisited(self) -> int:
-        # indexes 0 and n - 1 (the last) will be depot nodes
-        return len(self.destinations[1:len(self.destinations) - 1])
+        return len(list(filter(lambda d: (d.node.number != 0), self.destinations)))
     
     def getIndexOfDestinationByNode(self, node_number: int) -> int:
-        #for i, d in enumerate(self.destinations):
-            #if d.number == destination:
-                #return i
-
-        return next(filter(lambda d: (d.node.number == node_number), self.destinations), None) # does this work and is it better than the for loop above?
+        for i, d in enumerate(self.destinations):
+            if d.node.number == node_number:
+                return i
+        return None
+        #return next(filter(lambda d: (d.node.number == node_number), self.destinations), 0) # does this work and is it better than the for loop above?
 
     """ this funcion is supposed to change "assignedVehicle" of every destination in "self.destinations" to "None", which would allow for quicker calculations of unvisited nodes, but this is very hard to track
     def clearAssignedDestinations(self) -> None:
