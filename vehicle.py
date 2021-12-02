@@ -6,7 +6,7 @@ class Vehicle():
     route_distance: float=None
     
     def __init__(self, number: int, current_capacity: int=0, destinations: List[Destination]=list()) -> None:
-        self.number: int=number
+        #self.number: int=number
         self.current_capacity: int=current_capacity
         self.destinations: List[Destination]=destinations
 
@@ -40,7 +40,7 @@ class Vehicle():
             temporary_capacity += instance.nodes[node_number].demand
         self.current_capacity = temporary_capacity
             
-    def calculate_length_of_route(self, instance: ProblemInstance):
+    def calculate_customers_on_route(self, instance: ProblemInstance):
         temporary_distance = 0.0
         for j, _ in enumerate(self.destinations):
             previous_node = self.destinations[j - 1].node.number

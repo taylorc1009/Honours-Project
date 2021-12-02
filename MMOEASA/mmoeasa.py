@@ -1,3 +1,5 @@
+import copy
+
 from MMOEASA.auxiliaries import insert_unvisited_node, reinitialize_return_to_depot
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from MMOEASA.constants import INT_MAX
@@ -51,7 +53,7 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
 
     solution.calculate_nodes_time_windows(instance)
     solution.calculate_vehicles_loads(instance)
-    solution.calculate_lengths_of_routes(instance)
+    solution.calculate_customers_on_routes(instance)
     potentialHV_TD, potentialHV_CU = solution.objective_function(instance)
 
     update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
@@ -99,7 +101,7 @@ def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_cross
 
 def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probability: int) -> Solution:
     if random.randint(1, 100) <= P_mutation:
-        I_m = I
+        I_m = copy.deepcopy(I)
         potentialHV_TD, potentialHV_CU = 0.0, 0.0
 
         if probability >= 1 and probability <= 10:
@@ -127,7 +129,7 @@ def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probabilit
         return I_m
     return I
 
-def Euclidean_distance_dispersion(x1: int, y1: int, x2: int, y2: int):
+def Euclidean_distance_dispersion(x1: float, y1: float, x2: float, y2: float):
     global Hypervolume_total_distance, Hypervolume_cargo_unbalance
     return sqrt(((x2 - x1) / 2 * Hypervolume_total_distance) ** 2 + ((y2 - y1) / 2 * Hypervolume_cargo_unbalance) ** 2)
 
@@ -135,10 +137,10 @@ def Child_dominates(Parent: Solution, Child: Solution) -> bool:
     return True if Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance or Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance else False
 
 def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
-    for vehicle in Parent.vehicles:
-        print(f"{vehicle.number}, {[destination.node.number for destination in vehicle.destinations]}")
-    for vehicle in Child.vehicles:
-        print(f"{vehicle.number}, {[destination.node.number for destination in vehicle.destinations]}")
+    for i, vehicle in enumerate(Parent.vehicles):
+        print(f"{i}, {[destination.node.number for destination in vehicle.destinations]}")
+    for i, vehicle in enumerate(Child.vehicles):
+        print(f"{i}, {[destination.node.number for destination in vehicle.destinations]}")
     if Child_dominates(Parent, Child):
         print("dominates")
         return Child

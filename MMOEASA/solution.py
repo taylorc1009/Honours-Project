@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Tuple
 from MMOEASA.constants import MMOEASA_INFINITY
 from vehicle import Vehicle
 from problemInstance import ProblemInstance
@@ -29,11 +29,11 @@ class Solution():
         for i, _ in enumerate(self.vehicles):
             self.vehicles[i].calculate_vehicle_load(instance)
 
-    def calculate_lengths_of_routes(self, instance: ProblemInstance) -> None:
+    def calculate_customers_on_routes(self, instance: ProblemInstance) -> None:
         for i, _ in enumerate(self.vehicles):
-            self.vehicles[i].calculate_length_of_route(instance)
+            self.vehicles[i].calculate_customers_on_route(instance)
 
-    def objective_function(self, instance: ProblemInstance) -> Union[float, float]:
+    def objective_function(self, instance: ProblemInstance) -> Tuple[float, float]:
         vehicle = 0
         while vehicle < len(self.vehicles) and self.feasible:
             self.total_distance += self.vehicles[vehicle].route_distance
@@ -59,10 +59,10 @@ class Solution():
                     minimum_distance = self.vehicle[i].route_distance
                 if self.vehicle[i].route_distance > maximum_distance:
                     maximum_distance = self.vehicle[i].route_distance"""
-                if self.vehicle[i].current_capacity < minimum_cargo:
-                    minimum_cargo = self.vehicle[i].current_capacity
-                if self.vehicle[i].current_capacity > maximum_cargo:
-                    maximum_cargo = self.vehicle[i].route_distance
+                if self.vehicles[i].current_capacity < minimum_cargo:
+                    minimum_cargo = self.vehicles[i].current_capacity
+                if self.vehicles[i].current_capacity > maximum_cargo:
+                    maximum_cargo = self.vehicles[i].route_distance
             #self.distance_unbalance = maximum_distance - minimum_distance
             self.cargo_unbalance = maximum_cargo - minimum_cargo
         
