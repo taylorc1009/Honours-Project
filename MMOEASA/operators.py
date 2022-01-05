@@ -118,6 +118,15 @@ def Mutation9():
 def Mutation10():
     pass
 
+def vehicle_insertion_possible(I_c: Solution, P: List[Solution], random_solution: int, i: int) -> bool:
+    for j in range(1, len(P[random_solution].vehicles[i].destinations) - 1): # start at one and end one before the end of the list to discount depot nodes
+        for k, _ in enumerate(I_c.vehicles):
+            if I_c.vehicles[k].getNumOfCustomersVisited() >= 1:
+                for l in range(1, len(I_c.vehicles[k].destinations) - 1):
+                    if I_c.vehicles[k].destinations[l].node.number == P[random_solution].vehicles[i].destinations[j].node.number: # make sure "I_c" does not already visit a node from "P[random_solution].vehicles[i]"
+                        return False
+    return True
+
 def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Tuple[Solution, float, float]:
     I_c = copy.deepcopy(I)
 
@@ -128,40 +137,26 @@ def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Tup
             routes_to_safeguard.append(i)
             i += 1 # only increment the for loop in this case; if it's incremented in the "else" block then a vehicle will be skipped (because the "else" removes one vehicle from the list)
         else:
-            #I.vehicles[i].clearAssignedDestinations()
             del I_c.vehicles[i]
             #i -= 1
 
+    """ this block of code from the original MMOEASA (written in C) appears to be unnecessary here as it's only moving the last vehicle in the list to an earlier point in the list
     for i in range(len(I_c.vehicles) - 1, -1, -1):
         if i in routes_to_safeguard:
             for j, _ in enumerate(I_c.vehicles):
                 if j not in routes_to_safeguard:
-                    #I.vehicles[j].clearAssignedDestinations()
                     I_c.vehicles[j] = I_c.vehicles[i]
                     routes_to_safeguard.append(j)
-                    #I.vehicles[i].clearAssignedDestinations()
                     del I_c.vehicles[i]
                     routes_to_safeguard.remove(i)
-                    #print(i, len(routes_to_safeguard))
-                    break
+                    break"""
     
     random_solution = rand(0, len(P), exclude_values=[I_c.id])
-    #routes_inserted = len(routes_to_safeguard)
 
     for i, _ in enumerate(P[random_solution].vehicles):
         if P[random_solution].vehicles[i].getNumOfCustomersVisited() >= 1:
-            insertion_possible = True
-            for j in range(1, len(P[random_solution].vehicles[i].destinations) - 1): # start at one and end one before the end of the list to discount depot nodes
-                for k, _ in enumerate(I_c.vehicles):
-                    if I_c.vehicles[k].getNumOfCustomersVisited() >= 1:
-                        for l in range(1, len(I_c.vehicles[k].destinations) - 1):
-                            if I_c.vehicles[k].destinations[l].node.number == P[random_solution].vehicles[i].destinations[j].node.number: # make sure "I_c" does not already visit a node from "P[random_solution].vehicles[i]"
-                                insertion_possible = False
-            if insertion_possible:# and routes_inserted < len(I_c.vehicles):
-                #print(len(I_c.vehicles), routes_inserted)
-                #I_c.vehicles[routes_inserted] = P[random_solution].vehicles[i]
+            if vehicle_insertion_possible(I_c, P, random_solution, i) and len(I_c.vehicles) < instance.amount_of_vehicles:
                 I_c.vehicles.append(P[random_solution].vehicles[i])
-                #routes_inserted += 1
     
     for i in range(1, len(instance.nodes)):
         if not solution_visits_destination(i, instance, I_c):
