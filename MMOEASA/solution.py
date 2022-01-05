@@ -65,5 +65,9 @@ class Solution():
                     maximum_cargo = self.vehicles[i].route_distance
             #self.distance_unbalance = maximum_distance - minimum_distance
             self.cargo_unbalance = maximum_cargo - minimum_cargo
-        
-        return self.total_distance, self.cargo_unbalance
+
+            # these values are potentially the next Hypervolumes;
+            # if they're greater than any previously recorded total distances and unbalances in the vehicles' cargo, then they will be set as the new Hypervolumes by the function "update_Hypervolumes" in "mmoeasa.py"
+            # but if, and only if, the solution is feasible...
+            return self.total_distance, self.cargo_unbalance
+        return 0, 0 # ... and if the solution isn't feasible, then return zero values so that the previously recorded Hypervolumes aren't changed
