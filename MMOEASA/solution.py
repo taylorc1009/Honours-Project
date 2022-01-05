@@ -14,7 +14,7 @@ class Solution():
     #distance_unbalance: float=None
     cargo_unbalance: float=0.0
 
-    def __init__(self, _id: int=None, vehicles: List[Vehicle]=list()) -> None:
+    def __init__(self, _id: int=None, vehicles: List[Vehicle]=None) -> None:
         self.id: int=_id
         self.vehicles: List[Vehicle]=vehicles
 
@@ -35,12 +35,15 @@ class Solution():
 
     def objective_function(self, instance: ProblemInstance) -> Tuple[float, float]:
         vehicle = 0
+        self.total_distance = 0.0
+        self.feasible = True # set the solution as feasible temporarily
+
         while vehicle < len(self.vehicles) and self.feasible:
             self.total_distance += self.vehicles[vehicle].route_distance
 
-            for i in range(1, len(self.vehicles[vehicle].destinations)):
+            for i in range(1, len(self.vehicles[vehicle].destinations) - 1):
                 node_number = self.vehicles[vehicle].destinations[i].node.number
-                if self.vehicles[vehicle].destinations[i].arrival_time > instance.nodes[node_number].due_date or self.vehicles[i].current_capacity > instance.capacity_of_vehicles:
+                if self.vehicles[vehicle].destinations[i].arrival_time > instance.nodes[node_number].due_date or self.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
                     self.feasible = False
                     self.total_distance = MMOEASA_INFINITY
                     #self.distance_unbalance = MMOEASA_INFINITY
@@ -70,4 +73,4 @@ class Solution():
             # if they're greater than any previously recorded total distances and unbalances in the vehicles' cargo, then they will be set as the new Hypervolumes by the function "update_Hypervolumes" in "mmoeasa.py"
             # but if, and only if, the solution is feasible...
             return self.total_distance, self.cargo_unbalance
-        return 0, 0 # ... and if the solution isn't feasible, then return zero values so that the previously recorded Hypervolumes aren't changed
+        return 0.0, 0.0 # ... and if the solution isn't feasible, then return zero values so that the previously recorded Hypervolumes aren't changed
