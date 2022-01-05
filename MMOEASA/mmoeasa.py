@@ -86,11 +86,11 @@ def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int,
     
     return T_cooling
 
-def Cooling(P: List[Solution], T_stop: float) -> bool:
+"""def Cooling(P: List[Solution], T_stop: float) -> bool:
     for I in P:
         if I.T <= T_stop:
             return False
-    return True
+    return True"""
 
 def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_crossover: int) -> Solution:
     if random.randint(1, 100) <= P_crossover:
@@ -137,25 +137,16 @@ def Child_dominates(Parent: Solution, Child: Solution) -> bool:
     return True if Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance or Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance else False
 
 def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
-    for i, vehicle in enumerate(Parent.vehicles):
-        print(f"{i}, {[destination.node.number for destination in vehicle.destinations]}")
-    for i, vehicle in enumerate(Child.vehicles):
-        print(f"{i}, {[destination.node.number for destination in vehicle.destinations]}")
-
     if Child_dominates(Parent, Child):
-        print("dominates")
         return Child
     elif T <= 0.00001:
-        print("it's cold")
         return Parent
     else:
-        print(Hypervolume_total_distance, Hypervolume_cargo_unbalance)
         d_df = Euclidean_distance_dispersion(Child.total_distance, Child.cargo_unbalance, Parent.total_distance, Parent.cargo_unbalance)
         random_val = random.randint(0, INT_MAX) / INT_MAX
         d_pt_pt = d_df / T ** 2
         pt_exp = exp(-1 * d_pt_pt)
 
-        print(f"if is true then return child: {random_val < pt_exp}")
         if random_val < pt_exp:
             return Child
         else:
@@ -202,7 +193,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 I_c = Crossover(instance, I, P, P_crossover)
                 I_m = copy.deepcopy(I_c)
                 for j in range(0, random.randint(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
-                    I_m = Mutation(instance, I_m, P_mutation, random.randint(1, 100))
+                    I_m = Mutation(instance, I_m, P_mutation, random.randint(1, 10))
                 P[i] = MO_Metropolis(I, I_m, I.T)
                 
                 if is_nondominated(P[i], ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
