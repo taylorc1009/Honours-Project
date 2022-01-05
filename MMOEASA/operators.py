@@ -6,14 +6,13 @@ from problemInstance import ProblemInstance
 from typing import List, Tuple
 from numpy import random
 
-def rand(start: int, end: int, exclude_values: List[int]=list()) -> int:
+def rand(start: int, end: int, exclude_values: List[int]=None) -> int:
     random_val = random.randint(start, end)
-    while random_val in exclude_values:
+    while exclude_values is not None and random_val in exclude_values:
         random_val = random.randint(start, end)
     return random_val
 
 def shift_left(I: Solution, vehicle: int, index: int, displacement: int=1) -> Solution:
-    print(f"vehicle={vehicle} len(I.vehicles)={len(I.vehicles)}")
     for i in range(index, len(I.vehicles[vehicle].destinations) - 1):
         I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i + displacement].node
     return I
