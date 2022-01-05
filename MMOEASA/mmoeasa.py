@@ -1,8 +1,8 @@
 import copy
 
-from MMOEASA.auxiliaries import insert_unvisited_node, reinitialize_return_to_depot
+#from MMOEASA.auxiliaries import insert_unvisited_node, reinitialize_return_to_depot
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
-from MMOEASA.constants import INT_MAX
+from MMOEASA.constants import INT_MAX, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS
 from MMOEASA.solution import Solution
 from problemInstance import ProblemInstance
 from destination import Destination
@@ -48,7 +48,7 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
         solution.vehicles.append(vehicle)
 
     """for i in range(1, len(instance.nodes)):
-        solution = verify_nodes_are_inserted(solution, instance, i)
+        solution = insert_unvisited_node(solution, instance, i)
     solution = reinitialize_depot_return(solution, instance)"""
 
     solution.calculate_nodes_time_windows(instance)
@@ -200,7 +200,9 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
             for i, I in enumerate(P):
                 #if i > 0: # I added this because I need to give Crossover and Mutation two parents; the pseudocode says to only give them one but if I do that then I don't have two parents to use in crossover/mutation
                 I_c = Crossover(instance, I, P, P_crossover)
-                I_m = Mutation(instance, I_c, P_mutation, random.randint(1, 100))
+                I_m = copy.deepcopy(I_c)
+                for j in range(0, random.randint(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
+                    I_m = Mutation(instance, I_m, P_mutation, random.randint(1, 100))
                 P[i] = MO_Metropolis(I, I_m, I.T)
                 
                 if is_nondominated(P[i], ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
