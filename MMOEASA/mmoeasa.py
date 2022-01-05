@@ -38,10 +38,9 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
         vehicle = Vehicle(i, destinations=list())
         vehicle.destinations.append(Destination(node=sorted_nodes[0])) # have the route start at the depot
 
-        while vehicle.current_capacity + sorted_nodes[D_i].demand < instance.capacity_of_vehicles and D_i < len(instance.nodes) - 1:
+        while D_i < len(instance.nodes) and vehicle.current_capacity + sorted_nodes[D_i].demand < instance.capacity_of_vehicles:
             vehicle.destinations.append(Destination(node=sorted_nodes[D_i]))
             vehicle.current_capacity += sorted_nodes[D_i].demand
-            #instance.destinations[solution.orderOfDestinations[D_i].number].assignedVehicle = vehicle
             D_i += 1
         
         vehicle.destinations.append(Destination(node=sorted_nodes[0])) # have the route end at the depot
