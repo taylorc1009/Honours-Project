@@ -1,7 +1,7 @@
 #from MMOEASA.mmoeasa import MO_Metropolis
 import copy
 from MMOEASA.solution import Solution
-from MMOEASA.auxiliaries import insert_unvisited_node, solution_visits_destination, reinitialize_return_to_depot
+from MMOEASA.auxiliaries import insert_unvisited_node, solution_visits_destination
 from problemInstance import ProblemInstance
 from typing import List, Tuple
 from numpy import random
@@ -13,7 +13,8 @@ def rand(start: int, end: int, exclude_values: List[int]=list()) -> int:
     return random_val
 
 def shift_left(I: Solution, vehicle: int, index: int, displacement: int=1) -> Solution:
-    for i in range(index, len(I.vehicles[vehicle].destinations)):
+    print(f"vehicle={vehicle} len(I.vehicles)={len(I.vehicles)}")
+    for i in range(index, len(I.vehicles[vehicle].destinations) - 1):
         I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i + displacement].node
     return I
 

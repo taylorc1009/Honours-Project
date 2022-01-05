@@ -141,6 +141,7 @@ def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
         print(f"{i}, {[destination.node.number for destination in vehicle.destinations]}")
     for i, vehicle in enumerate(Child.vehicles):
         print(f"{i}, {[destination.node.number for destination in vehicle.destinations]}")
+
     if Child_dominates(Parent, Child):
         print("dominates")
         return Child
@@ -154,7 +155,7 @@ def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
         d_pt_pt = d_df / T ** 2
         pt_exp = exp(-1 * d_pt_pt)
 
-        print("if is true then return child: ", random_val < pt_exp)
+        print(f"if is true then return child: {random_val < pt_exp}")
         if random_val < pt_exp:
             return Child
         else:
@@ -193,7 +194,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
             #print(i, P[i].T)
         
         while P[0].T > T_stop and not terminate:#Cooling(P[i], T_stop) and not terminate:
-            if iterations == TC:
+            if iterations >= TC:
                 terminate = True
 
             for i, I in enumerate(P):
@@ -209,5 +210,5 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
             iterations += 1
             #print(P[0].T, current_multi_start)
         current_multi_start += 1
-    
+
     return ND
