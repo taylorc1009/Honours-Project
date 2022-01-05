@@ -41,6 +41,8 @@ def insert_unvisited_node(I: Solution, instance: ProblemInstance, node: int) -> 
             I.vehicles[vehicle] = vehicle_backup
             vehicle += 1
 
+    # TODO: this "if-else" is not in the original MMOEASA source code; why?
+    #   it's purpose is to create a new vehicle for the unvisited node when it could not be added to any existing vehicles' routes
     if not inserted: # in this case, the unvisited node doesn't fit into any of the existing routes, so it needs a new vehicle
         destinations = [Destination(node=instance.nodes[0]), Destination(node=instance.nodes[node]), Destination(node=instance.nodes[0])]
         I.vehicles.append(Vehicle(number=vehicle, current_capacity=instance.nodes[node].demand, destinations=destinations))
