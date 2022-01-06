@@ -1,5 +1,6 @@
 #from MMOEASA.mmoeasa import MO_Metropolis
 import copy
+from MMOEASA.constants import MMOEASA_INFINITY
 from MMOEASA.solution import Solution
 from MMOEASA.auxiliaries import insert_unvisited_node, solution_visits_destination
 from problemInstance import ProblemInstance
@@ -92,8 +93,44 @@ def Mutation1(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, 
     return I_m, potentialHV_TD, potentialHV_CU
     #return I
 
-def Mutation2():
-    pass
+def Mutation2(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, float]:
+    I_m = copy.deepcopy(I)
+    potentialHV_TD, potentialHV_CU = 0.0, 0.0
+    tempHV_TD, tempHV_CU = 0.0, 0.0
+
+    vehicle_randomize = rand(0, len(I_m.vehicles) - 1)
+    while I_m.vehicles[vehicle_randomize].getNumOfCustomersVisited() < 2:
+        vehicle_randomize = rand(0, len(I_m.vehicles) - 1)
+
+    num_customers = I_m.vehicles[vehicle_randomize].getNumOfCustomersVisited()
+    origin_position = rand(1, num_customers)
+
+    best_location, fitness_of_best_location = origin_position, MMOEASA_INFINITY
+    for i in range(1, num_customers + 1):
+        if i != origin_position:
+            I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, vehicle_randomize, origin_position, vehicle_randomize, i)
+            if I_m.total_distance >= 0 and I_m.total_distance < fitness_of_best_location:
+                fitness_of_best_location = I_m.total_distance
+                best_location = i
+            I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, vehicle_randomize, i, vehicle_randomize, origin_position)
+
+            if tempHV_TD > potentialHV_TD:
+                potentialHV_TD = tempHV_TD
+            if tempHV_CU > potentialHV_CU:
+                potentialHV_CU = tempHV_CU
+
+    if best_location != origin_position:
+        I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, vehicle_randomize, origin_position, vehicle_randomize, best_location)
+
+        if tempHV_TD > potentialHV_TD:
+            potentialHV_TD = tempHV_TD
+        if tempHV_CU > potentialHV_CU:
+            potentialHV_CU = tempHV_CU
+
+    # I don't think this "if" is necessary as the MMOEASA main algorithm performs the metropolis function anyway
+    # if MO_Metropolis(MMOEASA_POPULATION_SIZE, I_m, I, I_m.T):
+    return I_m, potentialHV_TD, potentialHV_CU
+    # return I
 
 def Mutation3():
     pass
