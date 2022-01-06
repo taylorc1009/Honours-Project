@@ -4,6 +4,7 @@ from MMOEASA.constants import MMOEASA_INFINITY
 from MMOEASA.solution import Solution
 from MMOEASA.auxiliaries import insert_unvisited_node, solution_visits_destination
 from problemInstance import ProblemInstance
+from destination import Destination
 from typing import List, Tuple
 from numpy import random
 
@@ -47,24 +48,16 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
             # TODO: this may also belong in the "else" section below? Test this theory when more mutators are added
             I.vehicles[vehicle_1].destinations[-1].node = instance.nodes[0]
     else:
-        num_nodes_with_displacement = I.vehicles[vehicle_2].getNumOfCustomersVisited() - 1
-        if num_nodes_with_displacement - 1 <= 0: # "- 2" to discount the two depot entries
-            I.vehicles[vehicle_2].destinations[0].node = instance.nodes[0]
-            I.vehicles[vehicle_2].destinations[1].node = origin_node
-            I.vehicles[vehicle_2].destinations[2].node = instance.nodes[0]
-
-            if len(I.vehicles[vehicle_2].destinations) > 3:
-                for i in range(3, len(I.vehicles[vehicle_2].destinations)):
-                    del I.vehicles[vehicle_2].destinations[i]
+        num_customers_destination = I.vehicles[vehicle_2].getNumOfCustomersVisited()
+        if num_customers_destination <= 0:
+            I.vehicles[vehicle_2].destinations.clear()
+            I.vehicles[vehicle_2].destinations.insert(0, Destination(node=instance.nodes[0]))
+            I.vehicles[vehicle_2].destinations.insert(1, Destination(node=origin_node))
+            I.vehicles[vehicle_2].destinations.insert(2, Destination(node=instance.nodes[0]))
             
             I = shift_left(I, vehicle_1, origin)
-        elif num_nodes_with_displacement > 0:
+        elif num_customers_destination > 0:
             I = shift_right(I, vehicle_2, destination)
-            I.vehicles[vehicle_2].destinations[destination].node = origin_node
-            I = shift_left(I, vehicle_1, origin)
-        elif num_nodes_with_displacement == 0:
-            shift_right(I, vehicle_2, destination)
-
             I.vehicles[vehicle_2].destinations[destination].node = origin_node
             I = shift_left(I, vehicle_1, origin)
     
@@ -75,18 +68,22 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
 
     return I, potentialHV_TD, potentialHV_CU
 
+def get_random_vehicle(I: Solution) -> int:
+    random_vehicle = rand(0, len(I.vehicles) - 1)
+    while I.vehicles[random_vehicle].getNumOfCustomersVisited() < 2:
+        random_vehicle = rand(0, len(I.vehicles) - 1)
+    return random_vehicle
+
 def Mutation1(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, float]:
     I_m = copy.deepcopy(I)
 
-    vehicle_randomize = rand(0, len(I_m.vehicles) - 1)
-    while I_m.vehicles[vehicle_randomize].getNumOfCustomersVisited() < 2:
-        vehicle_randomize = rand(0, len(I_m.vehicles) - 1)
+    random_vehicle = get_random_vehicle(I_m)
 
-    num_customers = I_m.vehicles[vehicle_randomize].getNumOfCustomersVisited()
+    num_customers = I_m.vehicles[random_vehicle].getNumOfCustomersVisited()
     origin_position = rand(1, num_customers)
     destination_position = rand(1, num_customers, exclude_values=[origin_position])
 
-    I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, vehicle_randomize, origin_position, vehicle_randomize, destination_position)
+    I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, destination_position)
     
     # I don't think this "if" is necessary as the MMOEASA main algorithm performs the metropolis function anyway
     #if MO_Metropolis(MMOEASA_POPULATION_SIZE, I_m, I, I_m.T):
@@ -98,21 +95,19 @@ def Mutation2(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, 
     potentialHV_TD, potentialHV_CU = 0.0, 0.0
     tempHV_TD, tempHV_CU = 0.0, 0.0
 
-    vehicle_randomize = rand(0, len(I_m.vehicles) - 1)
-    while I_m.vehicles[vehicle_randomize].getNumOfCustomersVisited() < 2:
-        vehicle_randomize = rand(0, len(I_m.vehicles) - 1)
+    random_vehicle = get_random_vehicle(I_m)
 
-    num_customers = I_m.vehicles[vehicle_randomize].getNumOfCustomersVisited()
+    num_customers = I_m.vehicles[random_vehicle].getNumOfCustomersVisited()
     origin_position = rand(1, num_customers)
 
     best_location, fitness_of_best_location = origin_position, MMOEASA_INFINITY
     for i in range(1, num_customers + 1):
         if i != origin_position:
-            I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, vehicle_randomize, origin_position, vehicle_randomize, i)
+            I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, i)
             if I_m.total_distance >= 0 and I_m.total_distance < fitness_of_best_location:
                 fitness_of_best_location = I_m.total_distance
                 best_location = i
-            I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, vehicle_randomize, i, vehicle_randomize, origin_position)
+            I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_vehicle, i, random_vehicle, origin_position)
 
             if tempHV_TD > potentialHV_TD:
                 potentialHV_TD = tempHV_TD
@@ -120,7 +115,7 @@ def Mutation2(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, 
                 potentialHV_CU = tempHV_CU
 
     if best_location != origin_position:
-        I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, vehicle_randomize, origin_position, vehicle_randomize, best_location)
+        I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, best_location)
 
         if tempHV_TD > potentialHV_TD:
             potentialHV_TD = tempHV_TD
@@ -132,8 +127,22 @@ def Mutation2(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, 
     return I_m, potentialHV_TD, potentialHV_CU
     # return I
 
-def Mutation3():
-    pass
+def Mutation3(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, float]:
+    I_m = copy.deepcopy(I)
+    
+    random_origin_vehicle = get_random_vehicle(I_m)
+    num_customers_origin = I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited()
+    origin_position = rand(1, num_customers_origin)
+
+    random_destination_vehicle = get_random_vehicle(I_m)
+    num_customers_destination = I_m.vehicles[random_destination_vehicle].getNumOfCustomersVisited()
+    destination_position = rand(1, num_customers_destination)
+
+    I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, destination_position)
+
+    if I_m.total_distance >= MMOEASA_INFINITY:
+        I_m = I
+    return I_m, potentialHV_TD, potentialHV_CU
 
 def Mutation4():
     pass
