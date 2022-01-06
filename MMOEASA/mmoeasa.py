@@ -190,6 +190,8 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 P[i] = MO_Metropolis(I, I_m, I.T)
                 
                 if is_nondominated(P[i], ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
+                    if len(ND) >= p:
+                        ND.pop(0)
                     ND.append(P[i])
                 
                 P[i].T *= P[i].T_cooling
