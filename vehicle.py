@@ -22,7 +22,8 @@ class Vehicle():
                 return i
         return None
         #return next(filter(lambda d: (d.node.number == node_number), self.destinations), 0) # does this work and is it better than the for loop above?
-    
+
+    # TODO: you probably don't need to give these methods the problem instance as each Node object holds the values you're looking for (such as the "ready_time") and they're all in "self.destinations"
     def calculate_destinations_time_windows(self, instance: ProblemInstance) -> None:
         for i in range(1, len(self.destinations)):
             previous_node = self.destinations[i - 1].node.number
@@ -31,6 +32,8 @@ class Vehicle():
             if self.destinations[i].arrival_time < instance.nodes[current_node].ready_time: # if the vehicle arrives before "ready_time" then it will have to wait for that moment before serving the node
                 self.destinations[i].wait_time = instance.nodes[current_node].ready_time - self.destinations[i].arrival_time
                 self.destinations[i].arrival_time = instance.nodes[current_node].ready_time
+            else:
+                self.destinations[i].wait_time = 0.0
             self.destinations[i].departure_time = self.destinations[i].arrival_time + instance.nodes[current_node].service_duration
     
     def calculate_vehicle_load(self, instance: ProblemInstance):

@@ -43,6 +43,7 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
 
             # during debugging, I noticed that the final node is not being reset to the depot node (as the following, new line does)
             # the original MMOEASA code doesn't do this either, but I imagine it should?
+            # TODO: this may also belong in the "else" section below? Test this theory when more mutators are added
             I.vehicles[vehicle_1].destinations[-1].node = instance.nodes[0]
     else:
         num_nodes_with_displacement = I.vehicles[vehicle_2].getNumOfCustomersVisited() - 1

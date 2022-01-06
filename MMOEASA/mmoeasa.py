@@ -153,7 +153,7 @@ def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
 
 def is_nondominated(I: Solution, ND: List[Solution]) -> bool:
     for nondominated in ND:
-        if I.total_distance < nondominated.total_distance and I.cargo_unbalance <= nondominated.cargo_unbalance or I.total_distance <= nondominated.total_distance and I.cargo_unbalance < nondominated.cargo_unbalance:
+        if (I.total_distance < nondominated.total_distance and I.cargo_unbalance <= nondominated.cargo_unbalance) or (I.total_distance <= nondominated.total_distance and I.cargo_unbalance < nondominated.cargo_unbalance):
             continue
         else:
             return False
@@ -180,15 +180,12 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
     del TWIH_initialiser
         
     current_multi_start = 1
-    while current_multi_start <= MS and not terminate:
+    while current_multi_start <= MS and not iterations >= TC:
         for i, _ in enumerate(P):
             P[i].T = P[i].T_default
             #print(i, P[i].T)
         
-        while P[0].T > T_stop and not terminate:#Cooling(P[i], T_stop) and not terminate:
-            if iterations >= TC:
-                terminate = True
-
+        while P[0].T > T_stop and not iterations >= TC:#Cooling(P[i], T_stop) and not terminate:
             for i, I in enumerate(P):
                 #if i > 0: # I added this because I need to give Crossover and Mutation two parents; the pseudocode says to only give them one but if I do that then I don't have two parents to use in crossover/mutation
                 I_c = Crossover(instance, I, P, P_crossover)
