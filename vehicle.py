@@ -42,9 +42,7 @@ class Vehicle():
             
     def calculate_customers_on_route(self, instance: ProblemInstance):
         temporary_distance = 0.0
-        for i, _ in enumerate(self.destinations):
-            if i is 0:
-                continue
+        for i in range(1, len(self.destinations)):
             previous_node = self.destinations[i - 1].node.number
             current_node = self.destinations[i].node.number
             temporary_distance += instance.MMOEASA_distances[previous_node][current_node]
