@@ -34,7 +34,7 @@ def insert_unvisited_node(I: Solution, instance: ProblemInstance, node: int) -> 
         if I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time <= instance.nodes[node].due_date:
             I.vehicles[vehicle].destinations[customers_on_route + 1].departure_time = instance.nodes[node].service_duration + I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time
 
-            I.calculate_customers_on_routes(instance)
+            I.calculate_length_of_routes(instance)
 
             inserted = True
         elif I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time > instance.nodes[node].due_date or I.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
@@ -50,7 +50,7 @@ def insert_unvisited_node(I: Solution, instance: ProblemInstance, node: int) -> 
         # these may not be necessary as the operator that invokes this "insert_unvisited_node()" function will likely perform these invocations on the entire solution
         I.vehicles[vehicle].calculate_destinations_time_windows(instance)
         I.vehicles[vehicle].calculate_vehicle_load(instance)
-        I.vehicles[vehicle].calculate_customers_on_route(instance)
+        I.vehicles[vehicle].calculate_length_of_route(instance)
     else:
         I.vehicles[vehicle] = reinitialize_return_to_depot(I.vehicles[vehicle], instance)
 

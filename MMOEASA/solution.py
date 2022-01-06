@@ -29,9 +29,9 @@ class Solution():
         for i, _ in enumerate(self.vehicles):
             self.vehicles[i].calculate_vehicle_load(instance)
 
-    def calculate_customers_on_routes(self, instance: ProblemInstance) -> None:
+    def calculate_length_of_routes(self, instance: ProblemInstance) -> None:
         for i, _ in enumerate(self.vehicles):
-            self.vehicles[i].calculate_customers_on_route(instance)
+            self.vehicles[i].calculate_length_of_route(instance)
 
     def objective_function(self, instance: ProblemInstance) -> Tuple[float, float]:
         vehicle = 0

@@ -68,7 +68,7 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
     
     I.calculate_nodes_time_windows(instance)
     I.calculate_vehicles_loads(instance)
-    I.calculate_customers_on_routes(instance)
+    I.calculate_length_of_routes(instance)
     potentialHV_TD, potentialHV_CU = I.objective_function(instance)
 
     return I, potentialHV_TD, potentialHV_CU
@@ -164,7 +164,7 @@ def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Tup
 
     I_c.calculate_nodes_time_windows(instance)
     I_c.calculate_vehicles_loads(instance)
-    I_c.calculate_customers_on_routes(instance)
+    I_c.calculate_length_of_routes(instance)
     potentialHV_TD, potentialHV_CU = I_c.objective_function(instance)
 
     # I don't think this line is necessary as the MMOEASA main algorithm performs the metropolis function anyway

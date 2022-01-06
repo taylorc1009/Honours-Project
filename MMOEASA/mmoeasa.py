@@ -52,7 +52,7 @@ def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
 
     solution.calculate_nodes_time_windows(instance)
     solution.calculate_vehicles_loads(instance)
-    solution.calculate_customers_on_routes(instance)
+    solution.calculate_length_of_routes(instance)
     potentialHV_TD, potentialHV_CU = solution.objective_function(instance)
 
     update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
@@ -199,6 +199,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                     ND.append(P[i])
                 
                 P[i].T *= P[i].T_cooling
+                print(f"len(ND)={len(ND)}")
             iterations += 1
             #print(P[0].T, current_multi_start)
         current_multi_start += 1
