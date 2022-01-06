@@ -23,10 +23,10 @@ def update_Hypervolumes(potentialHV_TD: float=0.0, potentialHV_DU: float=0.0, po
     if float(potentialHV_CU) > Hypervolume_cargo_unbalance:
         Hypervolume_cargo_unbalance = float(potentialHV_CU)
 
-def TWIH(instance: ProblemInstance, solution_id: int) -> Solution:
+def TWIH(instance: ProblemInstance) -> Solution:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
 
-    solution = Solution(_id=solution_id, vehicles=list())
+    solution = Solution(_id=0, vehicles=list())
     D_i = 1 # list of destinations iterator
 
     for i in range(0, instance.amount_of_vehicles - 1):
@@ -160,7 +160,6 @@ def is_nondominated(I: Solution, ND: List[Solution]) -> bool:
     return True
 
 def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float) -> List[Solution]:
-    #for i, I in enumerate(instance.destinations, start=1):
     P: List[Solution]=list()
     ND: List[Solution]=list()
 
@@ -172,10 +171,13 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
     ##Hypervolume_distance_unbalance = 113.491 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
     #Hypervolume_cargo_unbalance = 171.000 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
 
+    TWIH_initialiser = TWIH(instance)
     for i in range(p):
-        P.insert(i, TWIH(instance, i))
+        TWIH_initialiser.id = i
+        P.insert(i, copy.deepcopy(TWIH_initialiser))
         P[i].T_default = T_max - float(i) * ((T_max - T_min) / float(p) - 1.0)
         P[i].T_cooling = Calculate_cooling(i, T_max, T_min, T_stop, p, TC)
+    del TWIH_initialiser
         
     current_multi_start = 1
     while current_multi_start <= MS and not terminate:
