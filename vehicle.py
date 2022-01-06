@@ -35,16 +35,18 @@ class Vehicle():
     
     def calculate_vehicle_load(self, instance: ProblemInstance):
         temporary_capacity = 0.0
-        for j in range(1, len(self.destinations) - 1):
-            node_number = self.destinations[j].node.number
+        for i in range(1, len(self.destinations) - 1):
+            node_number = self.destinations[i].node.number
             temporary_capacity += instance.nodes[node_number].demand
         self.current_capacity = temporary_capacity
             
     def calculate_customers_on_route(self, instance: ProblemInstance):
         temporary_distance = 0.0
-        for j, _ in enumerate(self.destinations):
-            previous_node = self.destinations[j - 1].node.number
-            current_node = self.destinations[j].node.number
+        for i, _ in enumerate(self.destinations):
+            if i is 0:
+                continue
+            previous_node = self.destinations[i - 1].node.number
+            current_node = self.destinations[i].node.number
             temporary_distance += instance.MMOEASA_distances[previous_node][current_node]
         self.route_distance = temporary_distance
 
