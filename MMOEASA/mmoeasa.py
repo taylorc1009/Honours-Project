@@ -1,5 +1,4 @@
 import copy
-
 #from MMOEASA.auxiliaries import insert_unvisited_node, reinitialize_return_to_depot
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from MMOEASA.constants import INT_MAX, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS
@@ -162,14 +161,13 @@ def is_nondominated(I: Solution, ND: List[Solution]) -> bool:
 def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float) -> List[Solution]:
     P: List[Solution]=list()
     ND: List[Solution]=list()
-
-    terminate = False
     iterations = 0
 
     # temporary Hypervolume initialization
-    #Hypervolume_total_distance = 2378.924 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
-    ##Hypervolume_distance_unbalance = 113.491 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
-    #Hypervolume_cargo_unbalance = 171.000 if instance.name == "r101.txt" and not len(instance.destinations) < 100 else 1
+    #global Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance
+    #Hypervolume_total_distance = 2378.924 if instance.name == "R101.txt" and not len(instance.nodes) < 100 else 1
+    #Hypervolume_distance_unbalance = 113.491 if instance.name == "R101.txt" and not len(instance.nodes) < 100 else 1
+    #Hypervolume_cargo_unbalance = 171.000 if instance.name == "R101.txt" and not len(instance.nodes) < 100 else 1
 
     TWIH_initialiser = TWIH(instance)
     for i in range(p):
@@ -183,11 +181,9 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
     while current_multi_start <= MS and not iterations >= TC:
         for i, _ in enumerate(P):
             P[i].T = P[i].T_default
-            #print(i, P[i].T)
         
         while P[0].T > T_stop and not iterations >= TC:#Cooling(P[i], T_stop) and not terminate:
             for i, I in enumerate(P):
-                #if i > 0: # I added this because I need to give Crossover and Mutation two parents; the pseudocode says to only give them one but if I do that then I don't have two parents to use in crossover/mutation
                 I_c = Crossover(instance, I, P, P_crossover)
                 I_m = copy.deepcopy(I_c)
                 for j in range(0, random.randint(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
@@ -200,7 +196,5 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 P[i].T *= P[i].T_cooling
                 print(f"len(ND)={len(ND)}")
             iterations += 1
-            #print(P[0].T, current_multi_start)
         current_multi_start += 1
-
     return ND
