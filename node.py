@@ -1,4 +1,4 @@
-class Node():
+class Node:
     def __init__(self, number: int, x: int, y: int, demand: int, ready_time: int, due_date: int, service_duration: int) -> None:
         self.number: int=int(number)
         self.x: int=int(x)

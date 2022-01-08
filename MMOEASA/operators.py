@@ -1,19 +1,10 @@
-#from MMOEASA.mmoeasa import MO_Metropolis
 import copy
 from MMOEASA.constants import MMOEASA_INFINITY
 from MMOEASA.solution import Solution
-from MMOEASA.auxiliaries import insert_unvisited_node, solution_visits_destination
+from MMOEASA.auxiliaries import insert_unvisited_node, solution_visits_destination, rand
 from problemInstance import ProblemInstance
 from destination import Destination
 from typing import List, Tuple
-from numpy import random
-
-def rand(start: int, end: int, exclude_values: List[int]=None) -> int:
-    # '+ 1' to make the random number generator inclusive of the "end" value
-    random_val = random.randint(start, end + 1)
-    while exclude_values is not None and random_val in exclude_values:
-        random_val = random.randint(start, end + 1)
-    return random_val
 
 def shift_left(I: Solution, vehicle: int, index: int, displacement: int=1) -> Solution:
     for i in range(index, len(I.vehicles[vehicle].destinations) - 1):

@@ -1,5 +1,5 @@
 import copy
-#from MMOEASA.auxiliaries import insert_unvisited_node, reinitialize_return_to_depot
+from MMOEASA.auxiliaries import rand
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from MMOEASA.constants import INT_MAX, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS
 from MMOEASA.solution import Solution
@@ -7,7 +7,7 @@ from problemInstance import ProblemInstance
 from destination import Destination
 from vehicle import Vehicle
 from typing import List
-from numpy import random, sqrt, exp
+from numpy import sqrt, exp
 
 Hypervolume_total_distance: float=0.0
 Hypervolume_distance_unbalance: float=0.0
@@ -45,19 +45,12 @@ def TWIH(instance: ProblemInstance) -> Solution:
         vehicle.destinations.append(Destination(node=sorted_nodes[0])) # have the route end at the depot
         solution.vehicles.append(vehicle)
 
-    """for i in range(1, len(instance.nodes)):
-        solution = insert_unvisited_node(solution, instance, i)
-    solution = reinitialize_depot_return(solution, instance)"""
-
     solution.calculate_nodes_time_windows(instance)
     solution.calculate_vehicles_loads(instance)
     solution.calculate_length_of_routes(instance)
     potentialHV_TD, potentialHV_CU = solution.objective_function(instance)
 
     update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
-
-    #for vehicle in solution.vehicles:
-        #print(f"{vehicle.number}, {[destination.node.number for destination in vehicle.destinations]}")
 
     return solution
 
@@ -84,21 +77,15 @@ def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int,
     
     return T_cooling
 
-"""def Cooling(P: List[Solution], T_stop: float) -> bool:
-    for I in P:
-        if I.T <= T_stop:
-            return False
-    return True"""
-
 def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_crossover: int) -> Solution:
-    if random.randint(1, 101) <= P_crossover:
+    if rand(1, 100) <= P_crossover:
         I_c, potentialHV_TD, potentialHV_CU = Crossover1(instance, I, P)
         update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
         return I_c
     return I
 
 def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probability: int) -> Solution:
-    if random.randint(1, 101) <= P_mutation:
+    if rand(1, 100) <= P_mutation:
         I_m = I
         potentialHV_TD, potentialHV_CU = 0.0, 0.0
 
@@ -141,7 +128,7 @@ def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
         return Parent
     else:
         d_df = Euclidean_distance_dispersion(Child.total_distance, Child.cargo_unbalance, Parent.total_distance, Parent.cargo_unbalance)
-        random_val = random.randint(0, INT_MAX) / INT_MAX
+        random_val = rand(0, INT_MAX - 1) / INT_MAX
         d_pt_pt = d_df / T ** 2
         pt_exp = exp(-1 * d_pt_pt)
 
@@ -182,12 +169,12 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
         for i, _ in enumerate(P):
             P[i].T = P[i].T_default
         
-        while P[0].T > T_stop and not iterations >= TC:#Cooling(P[i], T_stop) and not terminate:
+        while P[0].T > T_stop and not iterations >= TC:
             for i, I in enumerate(P):
                 I_c = Crossover(instance, I, P, P_crossover)
                 I_m = I_c
-                for j in range(0, random.randint(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS + 1)):
-                    I_m = Mutation(instance, I_m, P_mutation, random.randint(1, 31)) # TODO: remember to change 31 to 101 once all 10 mutation operators have been implemented
+                for j in range(0, rand(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
+                    I_m = Mutation(instance, I_m, P_mutation, rand(1, 30)) # TODO: remember to change 30 to 100 once all 10 mutation operators have been implemented
                 P[i] = MO_Metropolis(I, I_m, I.T)
                 
                 if is_nondominated(P[i], ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"

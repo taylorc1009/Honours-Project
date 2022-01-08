@@ -1,13 +1,10 @@
-import copy
-
 from destination import Destination
 from typing import List, Dict
-
 from node import Node
 from problemInstance import ProblemInstance
 
-class Vehicle():
-    def __init__(self, current_capacity: int=0, destinations: List[Destination]=list(), route_distance: float=0.0) -> None:
+class Vehicle:
+    def __init__(self, current_capacity: int=0, destinations: List[Destination]=None, route_distance: float=0.0) -> None:
         self.current_capacity: int=current_capacity
         self.destinations: List[Destination]=destinations
         self.route_distance: float=float(route_distance)
@@ -52,12 +49,6 @@ class Vehicle():
             current_node = self.destinations[i].node.number
             temporary_distance += instance.MMOEASA_distances[previous_node][current_node]
         self.route_distance = temporary_distance
-
-    """ this funcion is supposed to change "assignedVehicle" of every destination in "self.destinations" to "None", which would allow for quicker calculations of unvisited nodes, but this is very hard to track
-    def clearAssignedDestinations(self) -> None:
-        for i in enumerate(self.destinations):
-            self.destinations[i].assignedVehicle = None
-        self.destinations.clear()"""
 
     def __deepcopy__(self, memodict: Dict=None):
         obj_copy = Vehicle(

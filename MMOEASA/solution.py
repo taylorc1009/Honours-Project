@@ -1,4 +1,3 @@
-import copy
 from typing import List, Tuple, Dict
 from MMOEASA.constants import MMOEASA_INFINITY
 from destination import Destination
@@ -6,7 +5,7 @@ from node import Node
 from vehicle import Vehicle
 from problemInstance import ProblemInstance
 
-class Solution():
+class Solution:
     feasible: bool=True
 
     T_default: float=0.0
@@ -79,6 +78,14 @@ class Solution():
         return 0.0, 0.0 # ... and if the solution isn't feasible, then return zero values so that the previously recorded Hypervolumes aren't changed
 
     def __deepcopy__(self, memodict: Dict=None):
+        """ this does not work due to the following error: "RecursionError: maximum recursion depth exceeded while calling a Python object"
+        obj_copy=copy.deepcopy(self)
+        obj_copy.vehicles = copy.deepcopy(self.vehicles)
+        for i, _ in enumerate(self.vehicles):
+            obj_copy.vehicles[i].destinations = copy.deepcopy(self.vehicles[i].destinations)
+            for j, _ in enumerate(self.vehicles[i].destinations):
+                obj_copy.vehicles[i].destinations[j].node = copy.deepcopy(self.vehicles[i].destinations[j].node)"""
+
         obj_copy = Solution(
             _id=self.id,
             vehicles=[
@@ -104,7 +111,6 @@ class Solution():
                 ) for v in self.vehicles
             ]
         )
-
         obj_copy.feasible = self.feasible
         obj_copy.T_default = self.T_default
         obj_copy.T = self.T
@@ -112,11 +118,4 @@ class Solution():
         obj_copy.total_distance = self.total_distance
         obj_copy.cargo_unbalance = self.cargo_unbalance
 
-        """ this does not work due to the following error: "RecursionError: maximum recursion depth exceeded while calling a Python object"
-        obj_copy=copy.deepcopy(self)
-        obj_copy.vehicles = copy.deepcopy(self.vehicles)
-        for i, _ in enumerate(self.vehicles):
-            obj_copy.vehicles[i].destinations = copy.deepcopy(self.vehicles[i].destinations)
-            for j, _ in enumerate(self.vehicles[i].destinations):
-                obj_copy.vehicles[i].destinations[j].node = copy.deepcopy(self.vehicles[i].destinations[j].node)"""
         return obj_copy
