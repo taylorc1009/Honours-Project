@@ -16,7 +16,7 @@ def loadInstance(filename) -> ProblemInstance:
                     curLine = line.split()
                     if curLine: # prevents any work being done with empty lines (lines that contained only a new line; '\n')
                         if len(curLine) == 2: # if the current line only contains two numbers then it's the line that holds only the amount of vehicles and vehicles' capacity, so use them to make a "ProblemInstance"
-                            problemInstance = ProblemInstance(problemName, *curLine)
+                            problemInstance = ProblemInstance(problemName, *curLine, nodes=dict())
                         else: # if the current line doesn't contain only two values, it will, instead, always contain seven and lines with seven values represent destinations
                             node = Node(*curLine)
                             problemInstance.nodes[int(node.number)] = node
