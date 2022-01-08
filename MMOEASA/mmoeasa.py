@@ -79,7 +79,7 @@ def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int,
 
 def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_crossover: int) -> Solution:
     if rand(1, 100) <= P_crossover:
-        I_c, potentialHV_TD, potentialHV_CU = Crossover1(instance, I, P)
+        I_c, potentialHV_TD, potentialHV_CU = Crossover1(instance, copy.deepcopy(I), P)
         update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
         return I_c
     return I

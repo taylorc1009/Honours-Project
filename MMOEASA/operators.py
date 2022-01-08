@@ -204,9 +204,7 @@ def vehicle_insertion_possible(I_c: Solution, P: List[Solution], random_solution
                         return False
     return True
 
-def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Tuple[Solution, float, float]:
-    I_c = copy.deepcopy(I)
-
+def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> Tuple[Solution, float, float]:
     routes_to_safeguard = list()
     i = 0
     while i < len(I_c.vehicles): # use a while loop here instead of a for loop as a Python for loop iterator cannot be decremented
