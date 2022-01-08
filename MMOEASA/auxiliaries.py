@@ -32,9 +32,7 @@ def insert_unvisited_node(I: Solution, instance: ProblemInstance, node: int) -> 
         
         if I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time <= instance.nodes[node].due_date:
             I.vehicles[vehicle].destinations[customers_on_route + 1].departure_time = instance.nodes[node].service_duration + I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time
-
             I.calculate_length_of_routes(instance)
-
             inserted = True
         elif I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time > instance.nodes[node].due_date or I.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
             I.vehicles[vehicle] = vehicle_backup
@@ -42,9 +40,13 @@ def insert_unvisited_node(I: Solution, instance: ProblemInstance, node: int) -> 
 
     # TODO: this "if-else" is not in the original MMOEASA source code; why?
     #   it's purpose is to create a new vehicle for the unvisited node when it could not be added to any existing vehicles' routes
+    #   UPDATE: MMOEASA does do this, but inside the while loop above; it has an array of size N (N being amount of vehicles in the
+    #   problem instance, unused vehicles being 0) and if all currently active vehicles cannot accomodate the new destination, it
+    #   moves to one of the inactive vehicles and checks that (which is kind of redundant as an unused vehicle wouldn't need to be
+    #   checked to see if the new destination would make a route too long)
     if not inserted: # in this case, the unvisited node doesn't fit into any of the existing routes, so it needs a new vehicle
         destinations = [Destination(node=instance.nodes[0]), Destination(node=instance.nodes[node]), Destination(node=instance.nodes[0])]
-        I.vehicles.append(Vehicle(number=vehicle, current_capacity=instance.nodes[node].demand, destinations=destinations))
+        I.vehicles.append(Vehicle(current_capacity=instance.nodes[node].demand, destinations=destinations))
 
         # these may not be necessary as the operator that invokes this "insert_unvisited_node()" function will likely perform these invocations on the entire solution
         I.vehicles[vehicle].calculate_destinations_time_windows(instance)
