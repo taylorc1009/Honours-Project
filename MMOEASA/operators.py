@@ -61,9 +61,9 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
 
     return I, potentialHV_TD, potentialHV_CU
 
-def get_random_vehicle(I: Solution, exclude_values: List[int]=None) -> int:
+def get_random_vehicle(I: Solution, exclude_values: List[int]=None, vehicles_required: int=1) -> int:
     random_vehicle = rand(0, len(I.vehicles) - 1, exclude_values=exclude_values)
-    while I.vehicles[random_vehicle].getNumOfCustomersVisited() < 2:
+    while I.vehicles[random_vehicle].getNumOfCustomersVisited() < vehicles_required:
         random_vehicle = rand(0, len(I.vehicles) - 1, exclude_values=exclude_values)
     return random_vehicle
 
@@ -73,8 +73,7 @@ def compare_Hypervolumes(TD_1: float=0.0, TD_2: float=0.0, CU_1: float=0.0, CU_2
     return finalHV_TD, finalHV_CU
 
 def Mutation1(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
-    random_vehicle = get_random_vehicle(I_m)
-
+    random_vehicle = get_random_vehicle(I_m, vehicles_required=2)
     num_customers = I_m.vehicles[random_vehicle].getNumOfCustomersVisited()
     origin_position = rand(1, num_customers)
     destination_position = rand(1, num_customers, exclude_values=[origin_position])
@@ -89,8 +88,7 @@ def Mutation1(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 def Mutation2(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
     potentialHV_TD, potentialHV_CU = 0.0, 0.0
 
-    random_vehicle = get_random_vehicle(I_m)
-
+    random_vehicle = get_random_vehicle(I_m, vehicles_required=2)
     num_customers = I_m.vehicles[random_vehicle].getNumOfCustomersVisited()
     origin_position = rand(1, num_customers)
 
