@@ -189,7 +189,7 @@ def Mutation7(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
         if not random_origin_vehicle == destination_vehicle:
             num_customers = I_m.vehicles[destination_vehicle].getNumOfCustomersVisited()
             if num_customers > 0:
-                for i in range(1, num_customers + 1):
+                for i in range(1, num_customers + 2): # TODO: MMOEASA does +2 to include the depot-return node in this mutation; is this correct and does it work?
                     I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, destination_vehicle, i)
                     potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
                     time_window_difference = abs(I_m.vehicles[random_origin_vehicle].destinations[origin_position].arrival_time - I_m.vehicles[destination_vehicle].destinations[i].arrival_time)
@@ -204,8 +204,29 @@ def Mutation7(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
     return I_m, potentialHV_TD, potentialHV_CU
 
-def Mutation8() -> Tuple[Solution, float, float]:
-    pass
+def Mutation8(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
+    potentialHV_TD, potentialHV_CU = 0.0, 0.0
+
+    random_origin_vehicle = get_random_vehicle(I_m, vehicles_required=2)
+    random_destination_vehicle, search_attempts = 0, 0
+    while search_attempts < instance.amount_of_vehicles * 10:
+        random_destination_vehicle = get_random_vehicle(I_m, exclude_values=[random_origin_vehicle]) # TODO: should "random_origin_vehicle" be excluded? originally MMOEASA doesn't exclude it
+        search_attempts += 1
+
+    # TODO: should we return here? MMOEASA doesn't, but if an available vehicle isn't found then what else can happen?
+    if search_attempts >= instance.amount_of_vehicles * 10:
+        return I_m, potentialHV_TD, potentialHV_CU
+
+    if I_m.vehicles[random_destination_vehicle].getNumOfCustomersVisited() == 0:
+        num_customers_origin = I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited()
+        pivot_partition = rand(2, num_customers_origin)
+        destination_position = 1
+        for origin_position in range(pivot_partition, num_customers_origin):
+            I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, destination_position)
+            potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
+            destination_position += 1
+
+    return I_m, potentialHV_TD, potentialHV_CU
 
 def Mutation9() -> Tuple[Solution, float, float]:
     pass
