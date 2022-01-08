@@ -42,17 +42,13 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
     else:
         if I.vehicles[vehicle_2].getNumOfCustomersVisited() <= 0:
             I.vehicles[vehicle_2].destinations = [Destination(node=instance.nodes[0]), Destination(node=origin_node), Destination(node=instance.nodes[0])]
-            
             I = shift_left(I, vehicle_1, origin)
-            # during debugging, I noticed that the final node is not being reset to the depot node (as the following, new line does)
-            # the original MMOEASA code doesn't do this either, but I imagine it should?
-            I.vehicles[vehicle_1].destinations[-1].node = instance.nodes[0]
         else:
             I = shift_right(I, vehicle_2, destination)
             I.vehicles[vehicle_2].destinations[destination].node = origin_node
             I.vehicles[vehicle_2].destinations.append(Destination(node=instance.nodes[0]))
             I = shift_left(I, vehicle_1, origin)
-            del I.vehicles[vehicle_1].destinations[-1]
+        del I.vehicles[vehicle_1].destinations[-1]
     
     I.calculate_nodes_time_windows(instance)
     I.calculate_vehicles_loads(instance)
