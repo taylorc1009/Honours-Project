@@ -91,7 +91,6 @@ def Mutation1(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, 
 def Mutation2(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, float]:
     I_m = copy.deepcopy(I)
     potentialHV_TD, potentialHV_CU = 0.0, 0.0
-    tempHV_TD, tempHV_CU = 0.0, 0.0
 
     random_vehicle = get_random_vehicle(I_m)
 
@@ -129,10 +128,9 @@ def Mutation3(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, 
 
     return I_m, potentialHV_TD, potentialHV_CU
 
-def Mutation4(instance: ProblemInstance, I: Solution):
+def Mutation4(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, float]:
     I_m = copy.deepcopy(I)
     potentialHV_TD, potentialHV_CU = 0.0, 0.0
-    tempHV_TD, tempHV_CU = 0.0, 0.0
 
     random_origin_vehicle = get_random_vehicle(I_m)
     origin_position = rand(1, I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited())
@@ -153,22 +151,35 @@ def Mutation4(instance: ProblemInstance, I: Solution):
 
     return I_m, potentialHV_TD, potentialHV_CU
 
-def Mutation5():
+def Mutation5(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, float]:
+    I_m = copy.deepcopy(I)
+
+    random_origin_vehicle = get_random_vehicle(I_m)
+    origin_position = rand(1, I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited())
+
+    random_destination_vehicle = get_random_vehicle(I_m, exclude_values=[random_origin_vehicle])
+    destination_position = rand(1, I_m.vehicles[random_destination_vehicle].getNumOfCustomersVisited())
+
+    I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, destination_position)
+    I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_destination_vehicle, destination_position + 1, random_origin_vehicle, origin_position)
+
+    potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
+
+    return I_m, potentialHV_TD, potentialHV_CU
+
+def Mutation6() -> Tuple[Solution, float, float]:
     pass
 
-def Mutation6():
+def Mutation7() -> Tuple[Solution, float, float]:
     pass
 
-def Mutation7():
+def Mutation8() -> Tuple[Solution, float, float]:
     pass
 
-def Mutation8():
+def Mutation9() -> Tuple[Solution, float, float]:
     pass
 
-def Mutation9():
-    pass
-
-def Mutation10():
+def Mutation10() -> Tuple[Solution, float, float]:
     pass
 
 def vehicle_insertion_possible(I_c: Solution, P: List[Solution], random_solution: int, i: int) -> bool:

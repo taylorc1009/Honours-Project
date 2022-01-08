@@ -98,7 +98,7 @@ def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probabilit
         elif 31 <= probability <= 40:
             I_m, potentialHV_TD, potentialHV_CU = Mutation4(instance, I)
         elif 41 <= probability <= 50:
-            Mutation5()
+            I_m, potentialHV_TD, potentialHV_CU = Mutation5(instance, I)
         elif 51 <= probability <= 60:
             Mutation6()
         elif 61 <= probability <= 70:
@@ -174,7 +174,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 I_c = Crossover(instance, I, P, P_crossover)
                 I_m = I_c
                 for j in range(0, rand(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
-                    I_m = Mutation(instance, I_m, P_mutation, rand(1, 30)) # TODO: remember to change 30 to 100 once all 10 mutation operators have been implemented
+                    I_m = Mutation(instance, I_m, P_mutation, rand(1, 50)) # TODO: remember to change 30 to 100 once all 10 mutation operators have been implemented
                 P[i] = MO_Metropolis(I, I_m, I.T)
                 
                 if is_nondominated(P[i], ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
