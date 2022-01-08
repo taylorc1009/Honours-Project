@@ -5,6 +5,7 @@ from MMOEASA.auxiliaries import insert_unvisited_node, solution_visits_destinati
 from problemInstance import ProblemInstance
 from destination import Destination
 from typing import List, Tuple
+from vehicle import Vehicle
 
 def shift_left(I: Solution, vehicle: int, index: int, displacement: int=1) -> Solution:
     for i in range(index, len(I.vehicles[vehicle].destinations) - 1):
@@ -16,6 +17,7 @@ def shift_right(I: Solution, vehicle: int, index: int, displacement: int=1) -> S
         I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i - displacement].node
     return I
 
+# TODO: this could be heavily improved using the list's ".insert()" method; the MMOEASA in C needs to move elements the same way they're being moved now as C doesn't have append/pop methods
 def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, origin: int, vehicle_2: int, destination: int) -> Tuple[Solution, float, float]:
     origin_node = I.vehicles[vehicle_1].destinations[origin].node
     destination_node = I.vehicles[vehicle_2].destinations[destination].node
@@ -207,29 +209,38 @@ def Mutation7(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 def Mutation8(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
     potentialHV_TD, potentialHV_CU = 0.0, 0.0
 
-    random_origin_vehicle = get_random_vehicle(I_m, vehicles_required=2)
-    random_destination_vehicle, search_attempts = 0, 0
-    while search_attempts < instance.amount_of_vehicles * 10:
-        random_destination_vehicle = get_random_vehicle(I_m, exclude_values=[random_origin_vehicle]) # TODO: should "random_origin_vehicle" be excluded? originally MMOEASA doesn't exclude it
-        search_attempts += 1
+    if len(I_m.vehicles) < instance.amount_of_vehicles:
+        random_vehicle = get_random_vehicle(I_m, vehicles_required=2)
+        origin_position = rand(1, I_m.vehicles[random_vehicle].getNumOfCustomersVisited())
 
-    # TODO: should we return here? MMOEASA doesn't, but if an available vehicle isn't found then what else can happen?
-    if search_attempts >= instance.amount_of_vehicles * 10:
-        return I_m, potentialHV_TD, potentialHV_CU
+        destinations = [Destination(node=instance.nodes[0]), *I_m.vehicles[random_vehicle].destinations[origin_position:-1], Destination(node=instance.nodes[0])]
+        I_m.vehicles.append(Vehicle(destinations=destinations))
+        del I_m.vehicles[random_vehicle].destinations[origin_position:-1]
 
-    if I_m.vehicles[random_destination_vehicle].getNumOfCustomersVisited() == 0:
-        num_customers_origin = I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited()
-        pivot_partition = rand(2, num_customers_origin)
-        destination_position = 1
-        for origin_position in range(pivot_partition, num_customers_origin):
-            I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, destination_position)
-            potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
-            destination_position += 1
+        I_m.calculate_nodes_time_windows(instance)
+        I_m.calculate_vehicles_loads(instance)
+        I_m.calculate_length_of_routes(instance)
+        potentialHV_TD, potentialHV_CU = I_m.objective_function(instance)
 
     return I_m, potentialHV_TD, potentialHV_CU
 
-def Mutation9() -> Tuple[Solution, float, float]:
-    pass
+def Mutation9(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
+    potentialHV_TD, potentialHV_CU = 0.0, 0.0
+
+    if len(I_m.vehicles) < instance.amount_of_vehicles:
+        random_vehicle = get_random_vehicle(I_m, vehicles_required=2)
+        origin_position = rand(1, I_m.vehicles[random_vehicle].getNumOfCustomersVisited())
+
+        destinations = [Destination(node=instance.nodes[0]), I_m.vehicles[random_vehicle].destinations[origin_position], Destination(node=instance.nodes[0])]
+        I_m.vehicles.append(Vehicle(destinations=destinations))
+        del I_m.vehicles[random_vehicle].destinations[origin_position]
+
+        I_m.calculate_nodes_time_windows(instance)
+        I_m.calculate_vehicles_loads(instance)
+        I_m.calculate_length_of_routes(instance)
+        potentialHV_TD, potentialHV_CU = I_m.objective_function(instance)
+
+    return I_m, potentialHV_TD, potentialHV_CU
 
 def Mutation10() -> Tuple[Solution, float, float]:
     pass
