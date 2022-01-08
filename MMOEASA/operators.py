@@ -97,12 +97,12 @@ def Mutation2(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
     best_location, fitness_of_best_location = origin_position, MMOEASA_INFINITY
     for i in range(1, num_customers + 1):
         if i != origin_position:
-            I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, i)
+            I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, i)
+            potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
             if 0 <= I_m.total_distance < fitness_of_best_location:
                 fitness_of_best_location = I_m.total_distance
                 best_location = i
-            I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_vehicle, i, random_vehicle, origin_position)
-            potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
+            I_m, _, _ = move_destination(instance, I_m, random_vehicle, i, random_vehicle, origin_position)
 
     if best_location != origin_position:
         I_m, _, _ = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, best_location)
@@ -133,12 +133,12 @@ def Mutation4(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
     best_location, fitness_of_best_location = -1, MMOEASA_INFINITY
     for i in range(1, I_m.vehicles[random_destination_vehicle].getNumOfCustomersVisited() + 1):
-        I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, i)
+        I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, i)
+        potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
         if 0 <= I_m.total_distance < fitness_of_best_location:
             fitness_of_best_location = I_m.total_distance
             best_location = i
-        I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_destination_vehicle, i, random_origin_vehicle, origin_position)
-        potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
+        I_m, _, _ = move_destination(instance, I_m, random_destination_vehicle, i, random_origin_vehicle, origin_position)
 
     if best_location >= 0:
         I_m, _, _ = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, best_location)
@@ -170,13 +170,13 @@ def Mutation6(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
         num_customers = I_m.vehicles[destination_vehicle].getNumOfCustomersVisited()
         if not random_origin_vehicle == destination_vehicle and num_customers > 0:
             for i in range(1, num_customers + 1):
-                I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, destination_vehicle, i)
+                I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, destination_vehicle, i)
+                potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
                 if 0 <= I_m.total_distance < fitness_of_best_location:
                     fitness_of_best_location = I_m.total_distance
                     best_vehicle = destination_vehicle
                     best_location = i
-                I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, destination_vehicle, i, random_origin_vehicle, origin_position)
-                potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
+                I_m, _, _ = move_destination(instance, I_m, destination_vehicle, i, random_origin_vehicle, origin_position)
 
     if best_location >= 0:
         I_m, _, _ = move_destination(instance, I_m, random_origin_vehicle, origin_position, best_vehicle, best_location)
