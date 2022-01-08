@@ -7,7 +7,7 @@ from destination import Destination
 from typing import List, Tuple
 from vehicle import Vehicle
 
-def shift_left(I: Solution, vehicle: int, index: int, displacement: int=1) -> Solution:
+"""def shift_left(I: Solution, vehicle: int, index: int, displacement: int=1) -> Solution:
     for i in range(index, len(I.vehicles[vehicle].destinations) - 1):
         I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i + displacement].node
     return I
@@ -15,21 +15,23 @@ def shift_left(I: Solution, vehicle: int, index: int, displacement: int=1) -> So
 def shift_right(I: Solution, vehicle: int, index: int, displacement: int=1) -> Solution:
     for i in range(len(I.vehicles[vehicle].destinations) - 1, index, -1):
         I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i - displacement].node
-    return I
+    return I"""
 
 # TODO: this could be heavily improved using the list's ".insert()" method; the MMOEASA in C needs to move elements the same way they're being moved now as C doesn't have append/pop methods
 def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, origin: int, vehicle_2: int, destination: int) -> Tuple[Solution, float, float]:
-    origin_node = I.vehicles[vehicle_1].destinations[origin].node
-    destination_node = I.vehicles[vehicle_2].destinations[destination].node
+    """origin_node = I.vehicles[vehicle_1].destinations[origin]
+    destination_node = I.vehicles[vehicle_2].destinations[destination]"""
+    origin_node = I.vehicles[vehicle_1].destinations[origin]
+    destination_node = I.vehicles[vehicle_2].destinations[destination]
 
     if vehicle_1 == vehicle_2:
         omd_absolute = abs(origin - destination)
 
         if omd_absolute == 1:
-            I.vehicles[vehicle_2].destinations[destination].node = origin_node
-            I.vehicles[vehicle_1].destinations[origin].node = destination_node
+            I.vehicles[vehicle_2].destinations[destination] = origin_node
+            I.vehicles[vehicle_1].destinations[origin] = destination_node
         elif omd_absolute > 1:
-            I = shift_right(I, vehicle_2, destination)
+            """I = shift_right(I, vehicle_2, destination)
             I.vehicles[vehicle_2].destinations[destination].node = origin_node
 
             if origin > destination:
@@ -40,17 +42,21 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
             # during debugging, I noticed that the final node is not being reset to the depot node (as the following, new line does)
             # the original MMOEASA code doesn't do this either, but I imagine it should?
             # TODO: this may also belong in the "else" section below? Test this theory when more mutators are added
-            I.vehicles[vehicle_1].destinations[-1].node = instance.nodes[0]
+            I.vehicles[vehicle_1].destinations[-1].node = instance.nodes[0]"""
+            I.vehicles[vehicle_2].destinations.insert(destination, origin_node)
+            del I.vehicles[vehicle_1].destinations[origin + 1 if origin > destination else origin]
     else:
         if I.vehicles[vehicle_2].getNumOfCustomersVisited() <= 0:
-            I.vehicles[vehicle_2].destinations = [Destination(node=instance.nodes[0]), Destination(node=origin_node), Destination(node=instance.nodes[0])]
-            I = shift_left(I, vehicle_1, origin)
+            I.vehicles[vehicle_2].destinations = [Destination(node=instance.nodes[0]), origin_node, Destination(node=instance.nodes[0])]
+            #I = shift_left(I, vehicle_1, origin)
         else:
-            I = shift_right(I, vehicle_2, destination)
+            """I = shift_right(I, vehicle_2, destination)
             I.vehicles[vehicle_2].destinations[destination].node = origin_node
             I.vehicles[vehicle_2].destinations.append(Destination(node=instance.nodes[0]))
             I = shift_left(I, vehicle_1, origin)
-        del I.vehicles[vehicle_1].destinations[-1]
+        del I.vehicles[vehicle_1].destinations[-1]"""
+            I.vehicles[vehicle_2].destinations.insert(destination, origin_node)
+        del I.vehicles[vehicle_1].destinations[origin]
     
     I.calculate_nodes_time_windows(instance)
     I.calculate_vehicles_loads(instance)
