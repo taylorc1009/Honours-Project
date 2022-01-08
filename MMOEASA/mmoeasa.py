@@ -86,19 +86,19 @@ def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_cross
 
 def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probability: int) -> Solution:
     if rand(1, 100) <= P_mutation:
-        I_m = I
+        I_m = copy.deepcopy(I)
         potentialHV_TD, potentialHV_CU = 0.0, 0.0
 
         if 1 <= probability <= 10:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation1(instance, I)
+            I_m, potentialHV_TD, potentialHV_CU = Mutation1(instance, I_m)
         elif 11 <= probability <= 20:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation2(instance, I)
+            I_m, potentialHV_TD, potentialHV_CU = Mutation2(instance, I_m)
         elif 21 <= probability <= 30:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation3(instance, I)
+            I_m, potentialHV_TD, potentialHV_CU = Mutation3(instance, I_m)
         elif 31 <= probability <= 40:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation4(instance, I)
+            I_m, potentialHV_TD, potentialHV_CU = Mutation4(instance, I_m)
         elif 41 <= probability <= 50:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation5(instance, I)
+            I_m, potentialHV_TD, potentialHV_CU = Mutation5(instance, I_m)
         elif 51 <= probability <= 60:
             Mutation6()
         elif 61 <= probability <= 70:

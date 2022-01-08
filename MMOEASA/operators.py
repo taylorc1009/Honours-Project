@@ -72,9 +72,7 @@ def compare_Hypervolumes(TD_1: float=0.0, TD_2: float=0.0, CU_1: float=0.0, CU_2
     finalHV_CU = CU_1 if CU_1 > CU_2 else CU_2
     return finalHV_TD, finalHV_CU
 
-def Mutation1(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, float]:
-    I_m = copy.deepcopy(I)
-
+def Mutation1(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
     random_vehicle = get_random_vehicle(I_m)
 
     num_customers = I_m.vehicles[random_vehicle].getNumOfCustomersVisited()
@@ -88,8 +86,7 @@ def Mutation1(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, 
     return I_m, potentialHV_TD, potentialHV_CU
     #return I
 
-def Mutation2(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, float]:
-    I_m = copy.deepcopy(I)
+def Mutation2(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
     potentialHV_TD, potentialHV_CU = 0.0, 0.0
 
     random_vehicle = get_random_vehicle(I_m)
@@ -115,9 +112,7 @@ def Mutation2(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, 
     return I_m, potentialHV_TD, potentialHV_CU
     # return I
 
-def Mutation3(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, float]:
-    I_m = copy.deepcopy(I)
-    
+def Mutation3(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
     random_origin_vehicle = get_random_vehicle(I_m)
     origin_position = rand(1, I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited())
 
@@ -128,8 +123,7 @@ def Mutation3(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, 
 
     return I_m, potentialHV_TD, potentialHV_CU
 
-def Mutation4(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, float]:
-    I_m = copy.deepcopy(I)
+def Mutation4(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
     potentialHV_TD, potentialHV_CU = 0.0, 0.0
 
     random_origin_vehicle = get_random_vehicle(I_m)
@@ -151,9 +145,7 @@ def Mutation4(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, 
 
     return I_m, potentialHV_TD, potentialHV_CU
 
-def Mutation5(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, float]:
-    I_m = copy.deepcopy(I)
-
+def Mutation5(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
     random_origin_vehicle = get_random_vehicle(I_m)
     origin_position = rand(1, I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited())
 
