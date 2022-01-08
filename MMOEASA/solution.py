@@ -84,6 +84,7 @@ class Solution():
             vehicles=[
                 Vehicle(
                     current_capacity=v.current_capacity,
+                    route_distance=v.route_distance,
                     destinations=[
                         Destination(
                             node=Node(
@@ -99,8 +100,7 @@ class Solution():
                             departure_time=d.departure_time,
                             wait_time=d.wait_time
                         ) for d in v.destinations
-                    ],
-                    route_distance=v.route_distance
+                    ]
                 ) for v in self.vehicles
             ]
         )

@@ -9,9 +9,10 @@ from typing import List, Tuple
 from numpy import random
 
 def rand(start: int, end: int, exclude_values: List[int]=None) -> int:
-    random_val = random.randint(start, end)
+    # '+ 1' to make the random number generator inclusive of the "end" value
+    random_val = random.randint(start, end + 1)
     while exclude_values is not None and random_val in exclude_values:
-        random_val = random.randint(start, end)
+        random_val = random.randint(start, end + 1)
     return random_val
 
 def shift_left(I: Solution, vehicle: int, index: int, displacement: int=1) -> Solution:
@@ -48,18 +49,19 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
             # TODO: this may also belong in the "else" section below? Test this theory when more mutators are added
             I.vehicles[vehicle_1].destinations[-1].node = instance.nodes[0]
     else:
-        num_customers_destination = I.vehicles[vehicle_2].getNumOfCustomersVisited()
-        if num_customers_destination <= 0:
-            I.vehicles[vehicle_2].destinations.clear()
-            I.vehicles[vehicle_2].destinations.insert(0, Destination(node=instance.nodes[0]))
-            I.vehicles[vehicle_2].destinations.insert(1, Destination(node=origin_node))
-            I.vehicles[vehicle_2].destinations.insert(2, Destination(node=instance.nodes[0]))
+        if I.vehicles[vehicle_2].getNumOfCustomersVisited() <= 0:
+            I.vehicles[vehicle_2].destinations = [Destination(node=instance.nodes[0]), Destination(node=origin_node), Destination(node=instance.nodes[0])]
             
             I = shift_left(I, vehicle_1, origin)
-        elif num_customers_destination > 0:
+            # during debugging, I noticed that the final node is not being reset to the depot node (as the following, new line does)
+            # the original MMOEASA code doesn't do this either, but I imagine it should?
+            I.vehicles[vehicle_1].destinations[-1].node = instance.nodes[0]
+        else:
             I = shift_right(I, vehicle_2, destination)
             I.vehicles[vehicle_2].destinations[destination].node = origin_node
+            I.vehicles[vehicle_2].destinations.append(Destination(node=instance.nodes[0]))
             I = shift_left(I, vehicle_1, origin)
+            del I.vehicles[vehicle_1].destinations[-1]
     
     I.calculate_nodes_time_windows(instance)
     I.calculate_vehicles_loads(instance)
@@ -68,10 +70,10 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
 
     return I, potentialHV_TD, potentialHV_CU
 
-def get_random_vehicle(I: Solution) -> int:
-    random_vehicle = rand(0, len(I.vehicles) - 1)
+def get_random_vehicle(I: Solution, exclude_values: List[int]=None) -> int:
+    random_vehicle = rand(0, len(I.vehicles) - 1, exclude_values=exclude_values)
     while I.vehicles[random_vehicle].getNumOfCustomersVisited() < 2:
-        random_vehicle = rand(0, len(I.vehicles) - 1)
+        random_vehicle = rand(0, len(I.vehicles) - 1, exclude_values=exclude_values)
     return random_vehicle
 
 def Mutation1(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, float]:
@@ -134,14 +136,12 @@ def Mutation3(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, 
     num_customers_origin = I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited()
     origin_position = rand(1, num_customers_origin)
 
-    random_destination_vehicle = get_random_vehicle(I_m)
+    random_destination_vehicle = get_random_vehicle(I_m, exclude_values=[random_origin_vehicle])
     num_customers_destination = I_m.vehicles[random_destination_vehicle].getNumOfCustomersVisited()
     destination_position = rand(1, num_customers_destination)
 
     I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, destination_position)
 
-    if I_m.total_distance >= MMOEASA_INFINITY:
-        I_m = I
     return I_m, potentialHV_TD, potentialHV_CU
 
 def Mutation4():
@@ -198,13 +198,13 @@ def Crossover1(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Tup
                     routes_to_safeguard.remove(i)
                     break"""
     
-    random_solution = rand(0, len(P), exclude_values=[I_c.id])
+    random_solution = rand(0, len(P) - 1, exclude_values=[I_c.id])
 
     for i, _ in enumerate(P[random_solution].vehicles):
         if P[random_solution].vehicles[i].getNumOfCustomersVisited() >= 1:
             if vehicle_insertion_possible(I_c, P, random_solution, i) and len(I_c.vehicles) < instance.amount_of_vehicles:
-                I_c.vehicles.append(P[random_solution].vehicles[i])
-    
+                I_c.vehicles.append(copy.deepcopy(P[random_solution].vehicles[i]))
+
     for i in range(1, len(instance.nodes)):
         if not solution_visits_destination(i, instance, I_c):
             I_c = insert_unvisited_node(I_c, instance, i)
