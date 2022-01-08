@@ -159,8 +159,29 @@ def Mutation5(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
     return I_m, potentialHV_TD, potentialHV_CU
 
-def Mutation6() -> Tuple[Solution, float, float]:
-    pass
+def Mutation6(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
+    potentialHV_TD, potentialHV_CU = 0.0, 0.0
+
+    random_origin_vehicle = get_random_vehicle(I_m)
+    origin_position = rand(1, I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited())
+
+    best_vehicle, best_location, fitness_of_best_location = -1, -1, MMOEASA_INFINITY
+    for destination_vehicle in range(0, len(I_m.vehicles)):
+        num_customers = I_m.vehicles[destination_vehicle].getNumOfCustomersVisited()
+        if not random_origin_vehicle == destination_vehicle and num_customers > 0:
+            for i in range(1, num_customers + 1):
+                I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, destination_vehicle, i)
+                if 0 <= I_m.total_distance < fitness_of_best_location:
+                    fitness_of_best_location = I_m.total_distance
+                    best_vehicle = destination_vehicle
+                    best_location = i
+                I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, destination_vehicle, i, random_origin_vehicle, origin_position)
+                potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
+
+    if best_location >= 0:
+        I_m, _, _ = move_destination(instance, I_m, random_origin_vehicle, origin_position, best_vehicle, best_location)
+
+    return I_m, potentialHV_TD, potentialHV_CU
 
 def Mutation7() -> Tuple[Solution, float, float]:
     pass
