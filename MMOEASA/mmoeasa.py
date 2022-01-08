@@ -96,7 +96,7 @@ def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probabilit
         elif 21 <= probability <= 30:
             I_m, potentialHV_TD, potentialHV_CU = Mutation3(instance, I)
         elif 31 <= probability <= 40:
-            Mutation4()
+            I_m, potentialHV_TD, potentialHV_CU = Mutation4(instance, I)
         elif 41 <= probability <= 50:
             Mutation5()
         elif 51 <= probability <= 60:

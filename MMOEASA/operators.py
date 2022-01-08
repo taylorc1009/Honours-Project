@@ -67,6 +67,11 @@ def get_random_vehicle(I: Solution, exclude_values: List[int]=None) -> int:
         random_vehicle = rand(0, len(I.vehicles) - 1, exclude_values=exclude_values)
     return random_vehicle
 
+def compare_Hypervolumes(TD_1: float=0.0, TD_2: float=0.0, CU_1: float=0.0, CU_2: float=0.0) -> Tuple[float, float]:
+    finalHV_TD = TD_1 if TD_1 > TD_2 else TD_2
+    finalHV_CU = CU_1 if CU_1 > CU_2 else CU_2
+    return finalHV_TD, finalHV_CU
+
 def Mutation1(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, float]:
     I_m = copy.deepcopy(I)
 
@@ -97,23 +102,14 @@ def Mutation2(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, 
     for i in range(1, num_customers + 1):
         if i != origin_position:
             I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, i)
-            if I_m.total_distance >= 0 and I_m.total_distance < fitness_of_best_location:
+            if 0 <= I_m.total_distance < fitness_of_best_location:
                 fitness_of_best_location = I_m.total_distance
                 best_location = i
             I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_vehicle, i, random_vehicle, origin_position)
-
-            if tempHV_TD > potentialHV_TD:
-                potentialHV_TD = tempHV_TD
-            if tempHV_CU > potentialHV_CU:
-                potentialHV_CU = tempHV_CU
+            potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
 
     if best_location != origin_position:
-        I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, best_location)
-
-        if tempHV_TD > potentialHV_TD:
-            potentialHV_TD = tempHV_TD
-        if tempHV_CU > potentialHV_CU:
-            potentialHV_CU = tempHV_CU
+        I_m, _, _ = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, best_location)
 
     # I don't think this "if" is necessary as the MMOEASA main algorithm performs the metropolis function anyway
     # if MO_Metropolis(MMOEASA_POPULATION_SIZE, I_m, I, I_m.T):
@@ -124,19 +120,38 @@ def Mutation3(instance: ProblemInstance, I: Solution) -> Tuple[Solution, float, 
     I_m = copy.deepcopy(I)
     
     random_origin_vehicle = get_random_vehicle(I_m)
-    num_customers_origin = I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited()
-    origin_position = rand(1, num_customers_origin)
+    origin_position = rand(1, I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited())
 
     random_destination_vehicle = get_random_vehicle(I_m, exclude_values=[random_origin_vehicle])
-    num_customers_destination = I_m.vehicles[random_destination_vehicle].getNumOfCustomersVisited()
-    destination_position = rand(1, num_customers_destination)
+    destination_position = rand(1, I_m.vehicles[random_destination_vehicle].getNumOfCustomersVisited())
 
     I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, destination_position)
 
     return I_m, potentialHV_TD, potentialHV_CU
 
-def Mutation4():
-    pass
+def Mutation4(instance: ProblemInstance, I: Solution):
+    I_m = copy.deepcopy(I)
+    potentialHV_TD, potentialHV_CU = 0.0, 0.0
+    tempHV_TD, tempHV_CU = 0.0, 0.0
+
+    random_origin_vehicle = get_random_vehicle(I_m)
+    origin_position = rand(1, I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited())
+
+    random_destination_vehicle = get_random_vehicle(I_m, exclude_values=[random_origin_vehicle])
+
+    best_location, fitness_of_best_location = -1, MMOEASA_INFINITY
+    for i in range(1, I_m.vehicles[random_destination_vehicle].getNumOfCustomersVisited() + 1):
+        I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, i)
+        if 0 <= I_m.total_distance < fitness_of_best_location:
+            fitness_of_best_location = I_m.total_distance
+            best_location = i
+        I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_destination_vehicle, i, random_origin_vehicle, origin_position)
+        potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
+
+    if best_location >= 0:
+        I_m, _, _ = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, best_location)
+
+    return I_m, potentialHV_TD, potentialHV_CU
 
 def Mutation5():
     pass
