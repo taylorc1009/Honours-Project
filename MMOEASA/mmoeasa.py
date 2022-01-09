@@ -138,12 +138,11 @@ def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
             return Parent
 
 def is_nondominated(I: Solution, ND: List[Solution]) -> bool:
-    for nondominated in ND:
-        if (I.total_distance < nondominated.total_distance and I.cargo_unbalance <= nondominated.cargo_unbalance) or (I.total_distance <= nondominated.total_distance and I.cargo_unbalance < nondominated.cargo_unbalance):
-            continue
-        else:
-            return False
-    return True
+    if len(ND) > 0:
+        nondominated = ND[-1] # the only non-dominated solution we need to check is the solution at the end of the non-dominated set; the last non-dominated solution will dominate every preceding solution
+        return (I.total_distance < nondominated.total_distance and I.cargo_unbalance <= nondominated.cargo_unbalance) or (I.total_distance <= nondominated.total_distance and I.cargo_unbalance < nondominated.cargo_unbalance)
+    else:
+        return I.feasible
 
 def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float) -> List[Solution]:
     P: List[Solution]=list()
@@ -180,7 +179,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 if is_nondominated(P[i], ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
                     if len(ND) >= p:
                         ND.pop(0)
-                    ND.append(P[i])
+                    ND.append(copy.deepcopy(P[i]))
                     print(f"len(ND)={len(ND)}, iterations={iterations}")
                 
                 P[i].T *= P[i].T_cooling
