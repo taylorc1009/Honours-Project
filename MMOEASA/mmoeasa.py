@@ -108,7 +108,7 @@ def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probabilit
         elif 81 <= probability <= 90:
             I_m, potentialHV_TD, potentialHV_CU = Mutation9(instance, I_m)
         elif 91 <= probability <= 100:
-            Mutation10()
+            I_m, potentialHV_TD, potentialHV_CU = Mutation10(instance, I_m)
         
         update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
         return I_m
@@ -174,7 +174,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 I_c = Crossover(instance, I, P, P_crossover)
                 I_m = I_c
                 for j in range(0, rand(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
-                    I_m = Mutation(instance, I_m, P_mutation, rand(1, 90)) # TODO: remember to change to 100 once all 10 mutation operators have been implemented
+                    I_m = Mutation(instance, I_m, P_mutation, rand(1, 100)) # TODO: remember to change to 100 once all 10 mutation operators have been implemented
                 P[i] = MO_Metropolis(I, I_m, I.T)
                 
                 if is_nondominated(P[i], ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"

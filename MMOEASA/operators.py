@@ -19,8 +19,8 @@ def shift_right(I: Solution, vehicle: int, index: int, displacement: int=1) -> S
 
 # TODO: this could be heavily improved using the list's ".insert()" method; the MMOEASA in C needs to move elements the same way they're being moved now as C doesn't have append/pop methods
 def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, origin: int, vehicle_2: int, destination: int) -> Tuple[Solution, float, float]:
-    """origin_node = I.vehicles[vehicle_1].destinations[origin]
-    destination_node = I.vehicles[vehicle_2].destinations[destination]"""
+    """origin_node = I.vehicles[vehicle_1].destinations[origin].node
+    destination_node = I.vehicles[vehicle_2].destinations[destination].node"""
     origin_node = I.vehicles[vehicle_1].destinations[origin]
     destination_node = I.vehicles[vehicle_2].destinations[destination]
 
@@ -248,8 +248,32 @@ def Mutation9(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
     return I_m, potentialHV_TD, potentialHV_CU
 
-def Mutation10() -> Tuple[Solution, float, float]:
-    pass
+def Mutation10(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
+    potentialHV_TD, potentialHV_CU = 0.0, 0.0
+
+    random_origin_vehicle = get_random_vehicle(I_m)
+
+    infeasible_node_reallocations = 0
+    for _ in range(1, I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited() + 1):
+        origin_position = 1 + infeasible_node_reallocations
+        node_reallocated = False
+        destination_vehicle = 0
+        while destination_vehicle < len(I_m.vehicles) and not node_reallocated:
+            num_customers_destination = I_m.vehicles[destination_vehicle].getNumOfCustomersVisited()
+            if random_origin_vehicle != destination_vehicle and num_customers_destination >= 1:
+                for destination_position in range(1, num_customers_destination + 1):
+                    I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, destination_vehicle, destination_position)
+                    if I_m.total_distance > MMOEASA_INFINITY / 2:
+                        I_m, _, _ = move_destination(instance, I_m, destination_vehicle, destination_position, random_origin_vehicle, origin_position)
+                    else:
+                        potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
+                        node_reallocated = True
+                        break
+            destination_vehicle += 1
+        if not node_reallocated:
+            infeasible_node_reallocations += 1
+
+    return I_m, potentialHV_TD, potentialHV_CU
 
 def vehicle_insertion_possible(I_c: Solution, P: List[Solution], random_solution: int, i: int) -> bool:
     for j in range(1, len(P[random_solution].vehicles[i].destinations) - 1): # start at one and end one before the end of the list to discount depot nodes
@@ -271,7 +295,7 @@ def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> T
             del I_c.vehicles[i]
             #i -= 1
 
-    """ this block of code from the original MMOEASA (written in C) appears to be unnecessary here as it's only moving the last vehicle in the list to an earlier point in the list
+    """ this block of code, from the original MMOEASA (written in C), appears to be unnecessary here as it's only moving the last vehicle in the list to an earlier point in the list
     for i in range(len(I_c.vehicles) - 1, -1, -1):
         if i in routes_to_safeguard:
             for j, _ in enumerate(I_c.vehicles):
@@ -290,7 +314,7 @@ def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> T
                 I_c.vehicles.append(copy.deepcopy(P[random_solution].vehicles[i]))
 
     for i in range(1, len(instance.nodes)):
-        if not solution_visits_destination(i, instance, I_c):
+        if not solution_visits_destination(i, instance, I_c): # TODO: this can be optimised by creating a list of visited nodes in the for loop above
             I_c = insert_unvisited_node(I_c, instance, i)
 
     I_c.calculate_nodes_time_windows(instance)
