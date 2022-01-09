@@ -67,7 +67,7 @@ class Solution:
                 if self.vehicles[i].current_capacity < minimum_cargo:
                     minimum_cargo = self.vehicles[i].current_capacity
                 if self.vehicles[i].current_capacity > maximum_cargo:
-                    maximum_cargo = self.vehicles[i].route_distance
+                    maximum_cargo = self.vehicles[i].current_capacity
             #self.distance_unbalance = maximum_distance - minimum_distance
             self.cargo_unbalance = maximum_cargo - minimum_cargo
 
