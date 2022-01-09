@@ -272,6 +272,8 @@ def Mutation10(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, floa
             destination_vehicle += 1
         if not node_reallocated:
             infeasible_node_reallocations += 1
+    if not infeasible_node_reallocations:
+        del I_m.vehicles[random_origin_vehicle]
 
     return I_m, potentialHV_TD, potentialHV_CU
 
