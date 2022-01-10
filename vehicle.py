@@ -12,6 +12,9 @@ class Vehicle:
     def __str__(self) -> str:
         return f"{self.current_capacity}, {[destination.node.number for destination in self.destinations]}"
 
+    def getCustomersVisited(self) -> List[Destination]:
+        return list(filter(lambda d: (d.node.number != 0), self.destinations))
+
     def getNumOfCustomersVisited(self) -> int:
         return len(list(filter(lambda d: (d.node.number != 0), self.destinations)))
     

@@ -310,14 +310,21 @@ def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> T
     
     random_solution = rand(0, len(P) - 1, exclude_values=[I_c.id])
 
+    unvisited_nodes = list(range(1, len(instance.nodes)))
+    for v in I_c.vehicles: # I tried combining the following for loops into the same line as the ".remove()" using list comprehension, but this meant that it was trying to remove a list from the list "nodes_not_visited" and not each number
+        for d in v.getCustomersVisited():
+            unvisited_nodes.remove(d.node.number)
+
     for i, _ in enumerate(P[random_solution].vehicles):
         if P[random_solution].vehicles[i].getNumOfCustomersVisited() >= 1:
             if vehicle_insertion_possible(I_c, P, random_solution, i) and len(I_c.vehicles) < instance.amount_of_vehicles:
                 I_c.vehicles.append(copy.deepcopy(P[random_solution].vehicles[i]))
+                for d in I_c.vehicles[-1].getCustomersVisited():
+                    unvisited_nodes.remove(d.node.number)
 
-    for i in range(1, len(instance.nodes)):
-        if not solution_visits_destination(i, instance, I_c): # TODO: this can be optimised by creating a list of visited nodes in the for loop above
-            I_c = insert_unvisited_node(I_c, instance, i)
+    for i in unvisited_nodes:
+        #if not solution_visits_destination(i, instance, I_c): # TODO: this has been optimised by creating a list of visited nodes in the for loop above
+        I_c = insert_unvisited_node(I_c, instance, i)
 
     I_c.calculate_nodes_time_windows(instance)
     I_c.calculate_vehicles_loads(instance)
