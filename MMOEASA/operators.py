@@ -40,9 +40,7 @@ def get_random_vehicle(I: Solution, exclude_values: List[int]=None, vehicles_req
     return random_vehicle
 
 def compare_Hypervolumes(TD_1: float=0.0, TD_2: float=0.0, CU_1: float=0.0, CU_2: float=0.0) -> Tuple[float, float]:
-    finalHV_TD = float(TD_1) if float(TD_1) > float(TD_2) else float(TD_2)
-    finalHV_CU = float(CU_1) if float(CU_1) > float(CU_2) else float(CU_2)
-    return finalHV_TD, finalHV_CU
+    return TD_1 if TD_1 > TD_2 else TD_2, CU_1 if CU_1 > CU_2 else CU_2
 
 def Mutation1(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
     random_vehicle = get_random_vehicle(I_m, vehicles_required=2)
