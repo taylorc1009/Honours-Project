@@ -138,7 +138,7 @@ def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
             return Parent
 
 def is_nondominated(I: Solution, ND: List[Solution]) -> bool:
-    if len(ND) > 0:
+    if ND:
         nondominated = ND[-1] # the only non-dominated solution we need to check is the solution at the end of the non-dominated set; the last non-dominated solution will dominate every preceding solution
         return (I.total_distance < nondominated.total_distance and I.cargo_unbalance <= nondominated.cargo_unbalance) or (I.total_distance <= nondominated.total_distance and I.cargo_unbalance < nondominated.cargo_unbalance)
     else:
