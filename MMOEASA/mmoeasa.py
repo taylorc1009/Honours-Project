@@ -157,8 +157,8 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
 
     TWIH_initialiser = TWIH(instance)
     for i in range(p):
-        TWIH_initialiser.id = i
         P.insert(i, copy.deepcopy(TWIH_initialiser))
+        P[i].id = i
         P[i].T_default = T_max - float(i) * ((T_max - T_min) / float(p) - 1.0)
         P[i].T_cooling = Calculate_cooling(i, T_max, T_min, T_stop, p, TC)
     del TWIH_initialiser

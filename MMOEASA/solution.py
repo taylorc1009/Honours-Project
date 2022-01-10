@@ -15,6 +15,7 @@ class Solution:
     total_distance: float=0.0
     #distance_unbalance: float=None
     cargo_unbalance: float=0.0
+    mut_list: List[int]=list()
 
     def __init__(self, _id: int=None, vehicles: List[Vehicle]=None) -> None:
         self.id: int=int(_id)
