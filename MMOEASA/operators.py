@@ -20,10 +20,7 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
             I.vehicles[vehicle_2].destinations.insert(destination, origin_node)
             del I.vehicles[vehicle_1].destinations[origin + 1 if origin > destination else origin]
     else:
-        if I.vehicles[vehicle_2].getNumOfCustomersVisited() <= 0:
-            I.vehicles[vehicle_2].destinations = [Destination(node=instance.nodes[0]), origin_node, Destination(node=instance.nodes[0])]
-        else:
-            I.vehicles[vehicle_2].destinations.insert(destination, origin_node)
+        I.vehicles[vehicle_2].destinations.insert(destination, origin_node)
         del I.vehicles[vehicle_1].destinations[origin]
     
     I.calculate_nodes_time_windows(instance)
