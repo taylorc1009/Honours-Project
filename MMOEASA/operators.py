@@ -67,6 +67,7 @@ def Mutation2(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
         if not i == origin_position:
             I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, i)
             potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
+
             if 0 <= I_m.total_distance < fitness_of_best_location:
                 fitness_of_best_location = I_m.total_distance
                 best_location = i
@@ -89,6 +90,9 @@ def Mutation3(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
     I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, destination_position)
 
+    if not I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited():
+        del I_m.vehicles[random_origin_vehicle]
+
     return I_m, potentialHV_TD, potentialHV_CU
 
 def Mutation4(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
@@ -103,6 +107,7 @@ def Mutation4(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
     for i in range(1, I_m.vehicles[random_destination_vehicle].getNumOfCustomersVisited() + 1):
         I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, i)
         potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
+
         if 0 <= I_m.total_distance < fitness_of_best_location:
             fitness_of_best_location = I_m.total_distance
             best_location = i
@@ -110,6 +115,8 @@ def Mutation4(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
     if best_location >= 0:
         I_m, _, _ = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, best_location)
+        if not I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited():
+            del I_m.vehicles[random_origin_vehicle]
 
     return I_m, potentialHV_TD, potentialHV_CU
 
@@ -137,10 +144,12 @@ def Mutation6(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
     for destination_vehicle in range(0, len(I_m.vehicles)):
         if not random_origin_vehicle == destination_vehicle:
             num_customers = I_m.vehicles[destination_vehicle].getNumOfCustomersVisited()
+
             if num_customers > 0:
                 for i in range(1, num_customers + 1):
                     I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, destination_vehicle, i)
                     potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
+
                     if 0 <= I_m.total_distance < fitness_of_best_location:
                         fitness_of_best_location = I_m.total_distance
                         best_vehicle = destination_vehicle
@@ -149,6 +158,8 @@ def Mutation6(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
     if best_location >= 0:
         I_m, _, _ = move_destination(instance, I_m, random_origin_vehicle, origin_position, best_vehicle, best_location)
+        if not I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited():
+            del I_m.vehicles[random_origin_vehicle]
 
     return I_m, potentialHV_TD, potentialHV_CU
 
@@ -162,11 +173,13 @@ def Mutation7(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
     for destination_vehicle in range(0, len(I_m.vehicles)):
         if not random_origin_vehicle == destination_vehicle:
             num_customers = I_m.vehicles[destination_vehicle].getNumOfCustomersVisited()
+
             if num_customers > 0:
                 for i in range(1, num_customers + 2): # TODO: MMOEASA does +2 to include the depot-return node in this mutation; is this correct and does it work?
                     I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, destination_vehicle, i)
                     potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
                     time_window_difference = abs(I_m.vehicles[random_origin_vehicle].destinations[origin_position].arrival_time - I_m.vehicles[destination_vehicle].destinations[i].arrival_time)
+
                     if I_m.total_distance >= 0 and time_window_difference < smallest_time_window_difference:
                         smallest_time_window_difference = time_window_difference
                         best_vehicle = destination_vehicle
@@ -175,6 +188,8 @@ def Mutation7(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
     if best_location >= 0:
         I_m, _, _ = move_destination(instance, I_m, random_origin_vehicle, origin_position, best_vehicle, best_location)
+        if not I_m.vehicles[random_origin_vehicle].getNumOfCustomersVisited():
+            del I_m.vehicles[random_origin_vehicle]
 
     return I_m, potentialHV_TD, potentialHV_CU
 
@@ -187,7 +202,7 @@ def Mutation8(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
         destinations = [Destination(node=instance.nodes[0]), *I_m.vehicles[random_vehicle].destinations[origin_position:-1], Destination(node=instance.nodes[0])]
         I_m.vehicles.append(Vehicle(destinations=destinations))
-        del I_m.vehicles[random_vehicle].destinations[origin_position:-1]
+        del I_m.vehicles[random_vehicle]
 
         I_m.calculate_nodes_time_windows(instance)
         I_m.calculate_vehicles_loads(instance)
@@ -201,11 +216,16 @@ def Mutation9(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
     if len(I_m.vehicles) < instance.amount_of_vehicles:
         random_vehicle = get_random_vehicle(I_m, vehicles_required=2)
-        origin_position = rand(1, I_m.vehicles[random_vehicle].getNumOfCustomersVisited())
+        num_customers = I_m.vehicles[random_vehicle].getNumOfCustomersVisited()
+        origin_position = rand(1, num_customers)
 
         destinations = [Destination(node=instance.nodes[0]), I_m.vehicles[random_vehicle].destinations[origin_position], Destination(node=instance.nodes[0])]
         I_m.vehicles.append(Vehicle(destinations=destinations))
-        del I_m.vehicles[random_vehicle].destinations[origin_position]
+
+        if not num_customers - 1:
+            del I_m.vehicles[random_vehicle]
+        else:
+            del I_m.vehicles[random_vehicle].destinations[origin_position]
 
         I_m.calculate_nodes_time_windows(instance)
         I_m.calculate_vehicles_loads(instance)
@@ -224,11 +244,14 @@ def Mutation10(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, floa
         origin_position = 1 + infeasible_node_reallocations
         node_reallocated = False
         destination_vehicle = 0
+
         while destination_vehicle < len(I_m.vehicles) and not node_reallocated:
             num_customers_destination = I_m.vehicles[destination_vehicle].getNumOfCustomersVisited()
+
             if not random_origin_vehicle == destination_vehicle and num_customers_destination >= 1:
                 for destination_position in range(1, num_customers_destination + 1):
                     I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, destination_vehicle, destination_position)
+
                     if I_m.total_distance > MMOEASA_INFINITY / 2:
                         I_m, _, _ = move_destination(instance, I_m, destination_vehicle, destination_position, random_origin_vehicle, origin_position)
                     else:
@@ -238,6 +261,7 @@ def Mutation10(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, floa
             destination_vehicle += 1
         if not node_reallocated:
             infeasible_node_reallocations += 1
+
     if not infeasible_node_reallocations:
         del I_m.vehicles[random_origin_vehicle]
 
