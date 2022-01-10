@@ -49,12 +49,7 @@ def Mutation1(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
     destination_position = rand(1, num_customers, exclude_values=[origin_position])
 
     I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, destination_position)
-    I_m.mut_list.append(1)
-    dup = list()
-    for v in I_m.vehicles:
-        dup.extend(v.getCustomersVisited())
-    if len(dup) != len(set(dup)):
-        exit()
+
     # I don't think this "if" is necessary as the MMOEASA main algorithm performs the metropolis function anyway
     #if MO_Metropolis(MMOEASA_POPULATION_SIZE, I_m, I, I_m.T):
     return I_m, potentialHV_TD, potentialHV_CU
@@ -69,7 +64,7 @@ def Mutation2(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
     best_location, fitness_of_best_location = origin_position, MMOEASA_INFINITY
     for i in range(1, num_customers + 1):
-        if i != origin_position:
+        if not i == origin_position:
             I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, i)
             potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
             if 0 <= I_m.total_distance < fitness_of_best_location:
@@ -77,14 +72,9 @@ def Mutation2(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
                 best_location = i
             I_m, _, _ = move_destination(instance, I_m, random_vehicle, i, random_vehicle, origin_position + 1 if origin_position > i else origin_position)
 
-    if best_location != origin_position:
+    if not best_location == origin_position:
         I_m, _, _ = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, best_location)
-    I_m.mut_list.append(2)
-    dup = list()
-    for v in I_m.vehicles:
-        dup.extend(v.getCustomersVisited())
-    if len(dup) != len(set(dup)):
-        exit()
+
     # I don't think this "if" is necessary as the MMOEASA main algorithm performs the metropolis function anyway
     # if MO_Metropolis(MMOEASA_POPULATION_SIZE, I_m, I, I_m.T):
     return I_m, potentialHV_TD, potentialHV_CU
@@ -98,12 +88,7 @@ def Mutation3(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
     destination_position = rand(1, I_m.vehicles[random_destination_vehicle].getNumOfCustomersVisited())
 
     I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, destination_position)
-    I_m.mut_list.append(3)
-    dup = list()
-    for v in I_m.vehicles:
-        dup.extend(v.getCustomersVisited())
-    if len(dup) != len(set(dup)):
-        exit()
+
     return I_m, potentialHV_TD, potentialHV_CU
 
 def Mutation4(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
@@ -125,12 +110,7 @@ def Mutation4(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
     if best_location >= 0:
         I_m, _, _ = move_destination(instance, I_m, random_origin_vehicle, origin_position, random_destination_vehicle, best_location)
-    I_m.mut_list.append(4)
-    dup = list()
-    for v in I_m.vehicles:
-        dup.extend(v.getCustomersVisited())
-    if len(dup) != len(set(dup)):
-        exit()
+
     return I_m, potentialHV_TD, potentialHV_CU
 
 def Mutation5(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
@@ -144,12 +124,7 @@ def Mutation5(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
     I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_destination_vehicle, destination_position + 1, random_origin_vehicle, origin_position)
 
     potentialHV_TD, potentialHV_CU = compare_Hypervolumes(TD_1=potentialHV_TD, TD_2=tempHV_TD, CU_1=potentialHV_CU, CU_2=tempHV_CU)
-    I_m.mut_list.append(5)
-    dup = list()
-    for v in I_m.vehicles:
-        dup.extend(v.getCustomersVisited())
-    if len(dup) != len(set(dup)):
-        exit()
+
     return I_m, potentialHV_TD, potentialHV_CU
 
 def Mutation6(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
@@ -174,12 +149,7 @@ def Mutation6(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
     if best_location >= 0:
         I_m, _, _ = move_destination(instance, I_m, random_origin_vehicle, origin_position, best_vehicle, best_location)
-    I_m.mut_list.append(6)
-    dup = list()
-    for v in I_m.vehicles:
-        dup.extend(v.getCustomersVisited())
-    if len(dup) != len(set(dup)):
-        exit()
+
     return I_m, potentialHV_TD, potentialHV_CU
 
 def Mutation7(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
@@ -205,12 +175,7 @@ def Mutation7(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
     if best_location >= 0:
         I_m, _, _ = move_destination(instance, I_m, random_origin_vehicle, origin_position, best_vehicle, best_location)
-    I_m.mut_list.append(7)
-    dup = list()
-    for v in I_m.vehicles:
-        dup.extend(v.getCustomersVisited())
-    if len(dup) != len(set(dup)):
-        exit()
+
     return I_m, potentialHV_TD, potentialHV_CU
 
 def Mutation8(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
@@ -228,12 +193,7 @@ def Mutation8(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
         I_m.calculate_vehicles_loads(instance)
         I_m.calculate_length_of_routes(instance)
         potentialHV_TD, potentialHV_CU = I_m.objective_function(instance)
-    I_m.mut_list.append(8)
-    dup = list()
-    for v in I_m.vehicles:
-        dup.extend(v.getCustomersVisited())
-    if len(dup) != len(set(dup)):
-        exit()
+
     return I_m, potentialHV_TD, potentialHV_CU
 
 def Mutation9(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
@@ -251,12 +211,7 @@ def Mutation9(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
         I_m.calculate_vehicles_loads(instance)
         I_m.calculate_length_of_routes(instance)
         potentialHV_TD, potentialHV_CU = I_m.objective_function(instance)
-    I_m.mut_list.append(9)
-    dup = list()
-    for v in I_m.vehicles:
-        dup.extend(v.getCustomersVisited())
-    if len(dup) != len(set(dup)):
-        exit()
+
     return I_m, potentialHV_TD, potentialHV_CU
 
 def Mutation10(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
@@ -271,7 +226,7 @@ def Mutation10(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, floa
         destination_vehicle = 0
         while destination_vehicle < len(I_m.vehicles) and not node_reallocated:
             num_customers_destination = I_m.vehicles[destination_vehicle].getNumOfCustomersVisited()
-            if random_origin_vehicle != destination_vehicle and num_customers_destination >= 1:
+            if not random_origin_vehicle == destination_vehicle and num_customers_destination >= 1:
                 for destination_position in range(1, num_customers_destination + 1):
                     I_m, tempHV_TD, tempHV_CU = move_destination(instance, I_m, random_origin_vehicle, origin_position, destination_vehicle, destination_position)
                     if I_m.total_distance > MMOEASA_INFINITY / 2:
@@ -285,12 +240,7 @@ def Mutation10(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, floa
             infeasible_node_reallocations += 1
     if not infeasible_node_reallocations:
         del I_m.vehicles[random_origin_vehicle]
-    I_m.mut_list.append(10)
-    dup = list()
-    for v in I_m.vehicles:
-        dup.extend(v.getCustomersVisited())
-    if len(dup) != len(set(dup)):
-        exit()
+
     return I_m, potentialHV_TD, potentialHV_CU
 
 def vehicle_insertion_possible(I_c: Solution, P: List[Solution], random_solution: int, i: int) -> bool:
@@ -315,22 +265,16 @@ def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> T
     random_solution = rand(0, len(P) - 1, exclude_values=[I_c.id])
 
     unvisited_nodes = list(range(1, len(instance.nodes)))
-    try:
-        for v in I_c.vehicles: # I tried combining the following for loops into the same line as the ".remove()" using list comprehension, but this meant that it was trying to remove a list from the list "nodes_not_visited" and not each number
-            for d in v.getCustomersVisited():
-                unvisited_nodes.remove(d.node.number)
-    except:
-        exit()
+    for v in I_c.vehicles: # I tried combining the following for loops into the same line as the ".remove()" using list comprehension, but this meant that it was trying to remove a list from the list "nodes_not_visited" and not each number
+        for d in v.getCustomersVisited():
+            unvisited_nodes.remove(d.node.number)
 
     for i, _ in enumerate(P[random_solution].vehicles):
         if P[random_solution].vehicles[i].getNumOfCustomersVisited() >= 1:
             if vehicle_insertion_possible(I_c, P, random_solution, i) and len(I_c.vehicles) < instance.amount_of_vehicles:
                 I_c.vehicles.append(copy.deepcopy(P[random_solution].vehicles[i]))
-                try:
-                    for d in I_c.vehicles[-1].getCustomersVisited():
-                        unvisited_nodes.remove(d.node.number)
-                except:
-                    exit()
+                for d in I_c.vehicles[-1].getCustomersVisited():
+                    unvisited_nodes.remove(d.node.number)
 
     for i in unvisited_nodes:
         I_c = insert_unvisited_node(I_c, instance, i)
@@ -342,10 +286,4 @@ def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> T
 
     # I don't think this line is necessary as the MMOEASA main algorithm performs the metropolis function anyway
     #return I if I_c.total_distance < 0 else MO_Metropolis(I, I_c, I.T)
-    I_c.mut_list.append(0)
-    dup = list()
-    for v in I_c.vehicles:
-        dup.extend(v.getCustomersVisited())
-    if len(dup) != len(set(dup)):
-        exit()
     return I_c, potentialHV_TD, potentialHV_CU
