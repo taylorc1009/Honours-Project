@@ -15,14 +15,6 @@ def rand(start: int, end: int, exclude_values: List[int]=None) -> int:
         random_val = random.randint(start, end + offset)
     return random_val
 
-def solution_visits_destination(node: int, instance: ProblemInstance, I: Solution) -> bool:
-    for i, _ in enumerate(I.vehicles):
-        if I.vehicles[i].getNumOfCustomersVisited() >= 1:
-            for j, _ in enumerate(I.vehicles[i].destinations):
-                if I.vehicles[i].destinations[j].node.number == instance.nodes[node].number: # directly get the destination number from the list of destinations in case there's a mismatch between the destination number and the for loop iterator (although there shouldn't)
-                    return True
-    return False
-
 def insert_unvisited_node(I: Solution, instance: ProblemInstance, node: int) -> Solution:
     inserted = False
     vehicle = 0

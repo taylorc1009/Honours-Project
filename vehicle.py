@@ -17,13 +17,6 @@ class Vehicle:
 
     def getNumOfCustomersVisited(self) -> int:
         return len(list(filter(lambda d: (d.node.number != 0), self.destinations)))
-    
-    def getIndexOfNode(self, node_number: int) -> int:
-        for i, d in enumerate(self.destinations):
-            if d.node.number == node_number:
-                return i
-        return None
-        #return next(filter(lambda d: (d.node.number == node_number), self.destinations), 0) # does this work and is it better than the for loop above?
 
     # TODO: you probably don't need to give these methods the problem instance as each Node object holds the values you're looking for (such as the "ready_time") and they're all in "self.destinations"
     def calculate_destinations_time_windows(self, instance: ProblemInstance) -> None:

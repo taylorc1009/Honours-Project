@@ -1,60 +1,28 @@
 import copy
 from MMOEASA.constants import MMOEASA_INFINITY
 from MMOEASA.solution import Solution
-from MMOEASA.auxiliaries import insert_unvisited_node, solution_visits_destination, rand
+from MMOEASA.auxiliaries import insert_unvisited_node, rand
 from problemInstance import ProblemInstance
 from destination import Destination
 from typing import List, Tuple
 from vehicle import Vehicle
 
-"""def shift_left(I: Solution, vehicle: int, index: int, displacement: int=1) -> Solution:
-    for i in range(index, len(I.vehicles[vehicle].destinations) - 1):
-        I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i + displacement].node
-    return I
-
-def shift_right(I: Solution, vehicle: int, index: int, displacement: int=1) -> Solution:
-    for i in range(len(I.vehicles[vehicle].destinations) - 1, index, -1):
-        I.vehicles[vehicle].destinations[i].node = I.vehicles[vehicle].destinations[i - displacement].node
-    return I"""
-
-# TODO: this could be heavily improved using the list's ".insert()" method; the MMOEASA in C needs to move elements the same way they're being moved now as C doesn't have append/pop methods
 def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, origin: int, vehicle_2: int, destination: int) -> Tuple[Solution, float, float]:
-    """origin_node = I.vehicles[vehicle_1].destinations[origin].node
-    destination_node = I.vehicles[vehicle_2].destinations[destination].node"""
     origin_node = I.vehicles[vehicle_1].destinations[origin]
-    destination_node = I.vehicles[vehicle_2].destinations[destination]
 
     if vehicle_1 == vehicle_2:
         omd_absolute = abs(origin - destination)
 
         if omd_absolute == 1:
             I.vehicles[vehicle_2].destinations[destination] = origin_node
-            I.vehicles[vehicle_1].destinations[origin] = destination_node
+            I.vehicles[vehicle_1].destinations[origin] = I.vehicles[vehicle_2].destinations[destination]
         elif omd_absolute > 1:
-            """I = shift_right(I, vehicle_2, destination)
-            I.vehicles[vehicle_2].destinations[destination].node = origin_node
-
-            if origin > destination:
-                I = shift_left(I, vehicle_1, origin + 1)
-            elif origin < destination:
-                I = shift_left(I, vehicle_1, origin)
-
-            # during debugging, I noticed that the final node is not being reset to the depot node (as the following, new line does)
-            # the original MMOEASA code doesn't do this either, but I imagine it should?
-            # TODO: this may also belong in the "else" section below? Test this theory when more mutators are added
-            I.vehicles[vehicle_1].destinations[-1].node = instance.nodes[0]"""
             I.vehicles[vehicle_2].destinations.insert(destination, origin_node)
             del I.vehicles[vehicle_1].destinations[origin + 1 if origin > destination else origin]
     else:
         if I.vehicles[vehicle_2].getNumOfCustomersVisited() <= 0:
             I.vehicles[vehicle_2].destinations = [Destination(node=instance.nodes[0]), origin_node, Destination(node=instance.nodes[0])]
-            #I = shift_left(I, vehicle_1, origin)
         else:
-            """I = shift_right(I, vehicle_2, destination)
-            I.vehicles[vehicle_2].destinations[destination].node = origin_node
-            I.vehicles[vehicle_2].destinations.append(Destination(node=instance.nodes[0]))
-            I = shift_left(I, vehicle_1, origin)
-        del I.vehicles[vehicle_1].destinations[-1]"""
             I.vehicles[vehicle_2].destinations.insert(destination, origin_node)
         del I.vehicles[vehicle_1].destinations[origin]
     
@@ -295,18 +263,6 @@ def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> T
             i += 1 # only increment the for loop in this case; if it's incremented in the "else" block then a vehicle will be skipped (because the "else" removes one vehicle from the list)
         else:
             del I_c.vehicles[i]
-            #i -= 1
-
-    """ this block of code, from the original MMOEASA (written in C), appears to be unnecessary here as it's only moving the last vehicle in the list to an earlier point in the list
-    for i in range(len(I_c.vehicles) - 1, -1, -1):
-        if i in routes_to_safeguard:
-            for j, _ in enumerate(I_c.vehicles):
-                if j not in routes_to_safeguard:
-                    I_c.vehicles[j] = I_c.vehicles[i]
-                    routes_to_safeguard.append(j)
-                    del I_c.vehicles[i]
-                    routes_to_safeguard.remove(i)
-                    break"""
     
     random_solution = rand(0, len(P) - 1, exclude_values=[I_c.id])
 
@@ -323,7 +279,6 @@ def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> T
                     unvisited_nodes.remove(d.node.number)
 
     for i in unvisited_nodes:
-        #if not solution_visits_destination(i, instance, I_c): # TODO: this has been optimised by creating a list of visited nodes in the for loop above
         I_c = insert_unvisited_node(I_c, instance, i)
 
     I_c.calculate_nodes_time_windows(instance)
