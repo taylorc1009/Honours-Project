@@ -199,7 +199,11 @@ def Mutation8(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
         destinations = [Destination(node=instance.nodes[0]), *I_m.vehicles[random_vehicle].destinations[origin_position:-1], Destination(node=instance.nodes[0])]
         I_m.vehicles.append(Vehicle(destinations=destinations))
-        del I_m.vehicles[random_vehicle]
+
+        if origin_position == 1:
+            del I_m.vehicles[random_vehicle]
+        else:
+            del I_m.vehicles[random_vehicle].destinations[origin_position:-1]
 
         I_m.calculate_nodes_time_windows(instance)
         I_m.calculate_vehicles_loads(instance)
@@ -219,7 +223,7 @@ def Mutation9(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
         destinations = [Destination(node=instance.nodes[0]), I_m.vehicles[random_vehicle].destinations[origin_position], Destination(node=instance.nodes[0])]
         I_m.vehicles.append(Vehicle(destinations=destinations))
 
-        if not num_customers - 1:
+        if num_customers == 1:
             del I_m.vehicles[random_vehicle]
         else:
             del I_m.vehicles[random_vehicle].destinations[origin_position]
@@ -297,8 +301,8 @@ def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> T
                 for d in I_c.vehicles[-1].getCustomersVisited():
                     unvisited_nodes.remove(d.node.number)
 
-    for i in unvisited_nodes:
-        I_c = insert_unvisited_node(I_c, instance, i)
+    for node_number in unvisited_nodes:
+        I_c = insert_unvisited_node(I_c, instance, node_number)
 
     I_c.calculate_nodes_time_windows(instance)
     I_c.calculate_vehicles_loads(instance)
