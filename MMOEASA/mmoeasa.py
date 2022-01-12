@@ -10,16 +10,16 @@ from typing import List
 from numpy import sqrt, exp
 
 Hypervolume_total_distance: float=0.0
-Hypervolume_distance_unbalance: float=0.0
+Hypervolume_distance_unbalance: float=0.0 # currently, the distance unbalance objective is unused everywhere in the program (it's also commented out in "Solution.py"), but this may change
 Hypervolume_cargo_unbalance: float=0.0
 
 def update_Hypervolumes(potentialHV_TD: float=0.0, potentialHV_DU: float=0.0, potentialHV_CU: float=0.0) -> None:
     global Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance
-    if float(potentialHV_TD) > Hypervolume_total_distance:
+    if (float(potentialHV_TD) >= Hypervolume_total_distance and float(potentialHV_DU) > Hypervolume_distance_unbalance and float(potentialHV_CU) > Hypervolume_cargo_unbalance) or\
+        (float(potentialHV_TD) > Hypervolume_total_distance and float(potentialHV_DU) >= Hypervolume_distance_unbalance and float(potentialHV_CU) > Hypervolume_cargo_unbalance) or\
+        (float(potentialHV_TD) > Hypervolume_total_distance and float(potentialHV_DU) > Hypervolume_distance_unbalance and float(potentialHV_CU) >= Hypervolume_cargo_unbalance):
         Hypervolume_total_distance = float(potentialHV_TD)
-    if float(potentialHV_DU) > Hypervolume_distance_unbalance:
         Hypervolume_distance_unbalance = float(potentialHV_DU)
-    if float(potentialHV_CU) > Hypervolume_cargo_unbalance:
         Hypervolume_cargo_unbalance = float(potentialHV_CU)
 
 def TWIH(instance: ProblemInstance) -> Solution:
