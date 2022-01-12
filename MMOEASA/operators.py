@@ -281,7 +281,7 @@ def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> T
     routes_to_safeguard = list()
     i = 0
     while i < len(I_c.vehicles): # use a while loop here instead of a for loop as a Python for loop iterator cannot be decremented
-        if rand(0, 100) < 50:
+        if rand(1, 100) < 50:
             routes_to_safeguard.append(i)
             i += 1 # only increment the for loop in this case; if it's incremented in the "else" block then a vehicle will be skipped (because the "else" removes one vehicle from the list)
         else:
