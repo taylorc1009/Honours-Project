@@ -159,7 +159,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
     for i in range(p):
         P.insert(i, copy.deepcopy(TWIH_initialiser))
         P[i].id = i
-        P[i].T_default = T_min + float(p - i) * ((T_max - T_min) / float(p)) # TODO: this still doesn't make the temperature of solution "p - 1" equal to T_min; why?
+        P[i].T_default = T_max - float(i) * ((T_max - T_min) / float(p)) # TODO: this still doesn't make the temperature of solution "p - 1" equal to T_min as the loop ends 19 (making it "T_max - 19 * 2.5")
         P[i].T_cooling = Calculate_cooling(i, T_max, T_min, T_stop, p, TC)
     del TWIH_initialiser
         
