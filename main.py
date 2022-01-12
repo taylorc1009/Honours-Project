@@ -1,10 +1,8 @@
 import sys
 import os
-from typing import List
 from problemInstance import ProblemInstance
 from data import openIterationsOfProblemSet
 from MMOEASA.mmoeasa import MMOEASA
-from MMOEASA.solution import Solution
 from MMOEASA.constants import MMOEASA_POPULATION_SIZE
 
 def executeMMOEASA(problemInstance: ProblemInstance) -> None:
@@ -15,32 +13,35 @@ def executeMMOEASA(problemInstance: ProblemInstance) -> None:
 
     #for instance in problemInstances:
     #print(instance.name)
-    # Terminating Condition (TC) is set to 40 iterations
     ND_solutions = MMOEASA(problemInstance, MMOEASA_POPULATION_SIZE, 10, 100000, 25, 25, 100.0, 50.0, 10.0)
     for solution in ND_solutions:
-        print(solution.__str__())
+        print(str(solution))
 
 if __name__ == '__main__':
     if not len(sys.argv) > 1:
         print("If you're unsure how to use the application, type h (help) for information")
-    elif sys.argv[1] in ["help", "h"]: # if the user gave one of these arguments on the command line then a help message is ourputted
-        """ there's multiple types of problems in Solomon's instances, here's what they are:
-        - 25 - 25 customers
-        - 50 - 50 customers
-        - 100 - 100 customers
-
-        - C - clustered customers
-        - R - uniformly distributed customers
-        - RC - a mix of R and C
-
-        - 1 - destinations with narrow time windows
-        - 2 - destinations with wide time windows
-        """
-        
-        print(f"To execute a problem set, please enter a set's details. The details required, and in this order, are:{os.linesep} 1. Amount of customers - can be either '25', '50' or '100'{os.linesep} 2. Type of problem - can be either 'C', 'R', or 'RC'{os.linesep} 3. Problem set - can be either '1' or '2'{os.linesep}An example command is: \"main.py 25 RC 2\"")
+    elif sys.argv[1] in ["--help", "-h"]: # if the user gave one of these arguments on the command line then a help message is ourputted
+        print(f"There's multiple types of problems in Solomon's instances, here's what they are:{os.linesep}{os.linesep}"
+              f"- Number of customers:"
+              f"  - 25 - 25 customers{os.linesep}"
+              f"  - 50 - 50 customers{os.linesep}"
+              f"  - 100 - 100 customers{os.linesep}{os.linesep}"
+              f"- Customers' location:"
+              f"  - C - clustered customers{os.linesep}"
+              f"  - R - uniformly distributed customers{os.linesep}"
+              f"  - RC - a mix of R and C{os.linesep}{os.linesep}"
+              f"- Width of deliveries' time windows:"
+              f"  - 1 - destinations with narrow time windows{os.linesep}"
+              f"  - 2 - destinations with wide time windows{os.linesep}{os.linesep}"
+            f"To execute a problem set, please enter a set's details. The details required, and in this order, are:{os.linesep}"
+              f"  1. Amount of customers - can be either '25', '50' or '100'{os.linesep}"
+              f"  2. Type of problem - can be either 'C', 'R', or 'RC'{os.linesep}"
+              f"  3. Problem set - can be either '1' or '2'{os.linesep}{os.linesep}"
+            f"An example command is: \"main.py 25 RC 2\""
+        )
     else:
         problemInstances = openIterationsOfProblemSet(sys.argv[1])#*sys.argv[1:])
-        
+
         #if len(problemInstances) > 0:
             #print([problemInstance.__str__() for problemInstance in problemInstances])
 
