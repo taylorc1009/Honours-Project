@@ -6,7 +6,7 @@ from MMOEASA.solution import Solution
 from problemInstance import ProblemInstance
 from destination import Destination
 from vehicle import Vehicle
-from typing import List
+from typing import List, Tuple
 from numpy import sqrt, exp
 
 Hypervolume_total_distance: float=0.0
@@ -21,6 +21,7 @@ def update_Hypervolumes(potentialHV_TD: float=0.0, potentialHV_DU: float=0.0, po
         Hypervolume_total_distance = float(potentialHV_TD)
         Hypervolume_distance_unbalance = float(potentialHV_DU)
         Hypervolume_cargo_unbalance = float(potentialHV_CU)
+        print(f"Hypervolumes modified: TD={Hypervolume_total_distance}, DU={Hypervolume_distance_unbalance}, CU={Hypervolume_cargo_unbalance}")
 
 def TWIH(instance: ProblemInstance) -> Solution:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
@@ -121,11 +122,11 @@ def Euclidean_distance_dispersion(x1: float, y1: float, x2: float, y2: float):
 def Child_dominates(Parent: Solution, Child: Solution) -> bool:
     return (Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance) or (Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance)
 
-def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
+def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Tuple[Solution, bool]:  # TODO: change back to " -> Solution" return type once debugging of MO_Metropolis has finished
     if Child_dominates(Parent, Child):
-        return Child
+        return Child, True
     elif T <= 0.00001:
-        return Parent
+        return Parent, False
     else:
         d_df = Euclidean_distance_dispersion(Child.total_distance, Child.cargo_unbalance, Parent.total_distance, Parent.cargo_unbalance)
         random_val = rand(0, INT_MAX - 1) / INT_MAX
@@ -133,55 +134,59 @@ def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
         pt_exp = exp(-1 * d_pt_pt)
 
         if random_val < pt_exp:
-            return Child
+            return Child, not (Child.cargo_unbalance == Parent.cargo_unbalance and Child.total_distance == Parent.total_distance)
         else:
-            return Parent
+            return Parent, False
 
 def is_nondominated(I: Solution, ND: List[Solution]) -> bool:
     if ND:
-        nondominated = ND[-1] # the only non-dominated solution we need to check is the solution at the end of the non-dominated set; the last non-dominated solution will dominate every preceding solution
+        nondominated = ND[-1]  # the only non-dominated solution we need to check is the solution at the end of the non-dominated set; the last non-dominated solution will dominate every preceding solution
         return (I.total_distance < nondominated.total_distance and I.cargo_unbalance <= nondominated.cargo_unbalance) or (I.total_distance <= nondominated.total_distance and I.cargo_unbalance < nondominated.cargo_unbalance)
     else:
         return I.feasible
 
-def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float) -> List[Solution]:
-    P: List[Solution]=list()
-    ND: List[Solution]=list()
+def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float,T_min: float, T_stop: float) -> List[Solution]:
+    P: List[Solution] = list()
+    ND: List[Solution] = list()
     iterations = 0
 
+    num_ND = 0
     # temporary Hypervolume initialization
-    #global Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance
-    #Hypervolume_total_distance = 2378.924 if instance.name == "R101.txt" and not len(instance.nodes) < 100 else 1
-    #Hypervolume_distance_unbalance = 113.491 if instance.name == "R101.txt" and not len(instance.nodes) < 100 else 1
-    #Hypervolume_cargo_unbalance = 171.000 if instance.name == "R101.txt" and not len(instance.nodes) < 100 else 1
+    # global Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance
+    # Hypervolume_total_distance = 2378.924 if instance.name == "R101.txt" and not len(instance.nodes) < 100 else 1
+    # Hypervolume_distance_unbalance = 113.491 if instance.name == "R101.txt" and not len(instance.nodes) < 100 else 1
+    # Hypervolume_cargo_unbalance = 171.000 if instance.name == "R101.txt" and not len(instance.nodes) < 100 else 1
 
     TWIH_initialiser = TWIH(instance)
     for i in range(p):
         P.insert(i, copy.deepcopy(TWIH_initialiser))
         P[i].id = i
-        P[i].T_default = T_max - float(i) * ((T_max - T_min) / float(p)) # TODO: this still doesn't make the temperature of solution "p - 1" equal to T_min as the loop ends 19 (making it "T_max - 19 * 2.5")
+        P[i].T_default = T_max - float(i) * ((T_max - T_min) / float(p))  # TODO: this still doesn't make the temperature of solution "p - 1" equal to T_min as the loop ends 19 (making it "T_max - 19 * 2.5")
         P[i].T_cooling = Calculate_cooling(i, T_max, T_min, T_stop, p, TC)
     del TWIH_initialiser
-        
+
     current_multi_start = 1
     while current_multi_start <= MS and not iterations >= TC:
         for i, _ in enumerate(P):
             P[i].T = P[i].T_default
-        
+
         while P[0].T > T_stop and not iterations >= TC:
             for i, I in enumerate(P):
                 I_c = Crossover(instance, I, P, P_crossover)
                 I_m = I_c
                 for j in range(0, rand(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
                     I_m = Mutation(instance, I_m, P_mutation, rand(1, 100))
-                P[i] = MO_Metropolis(I, I_m, I.T)
-                
-                if is_nondominated(P[i], ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
+                P[i], ND_changed = MO_Metropolis(I, I_m, I.T)
+
+                if is_nondominated(P[i],ND):  # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
                     if len(ND) >= p:
                         ND.pop(0)
                     ND.append(copy.deepcopy(P[i]))
-                    print(f"len(ND)={len(ND)}, iterations={iterations}")
-                
+                    print(f"len(ND)={len(ND)}, iterations={iterations}, ND={i}")
+                    num_ND = i
+                elif ND_changed and num_ND == i:
+                    print(f"ND {num_ND} changed in P")
+
                 P[i].T *= P[i].T_cooling
             iterations += 1
         current_multi_start += 1
