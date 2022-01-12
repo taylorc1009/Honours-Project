@@ -269,10 +269,10 @@ def Mutation10(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, floa
     return I_m, potentialHV_TD, potentialHV_CU
 
 def vehicle_insertion_possible(I_c: Solution, P: List[Solution], random_solution: int, i: int) -> bool:
-    for j in range(1, len(P[random_solution].vehicles[i].destinations) - 1): # start at one and end one before the end of the list to discount depot nodes
+    for j in range(1, P[random_solution].vehicles[i].getNumOfCustomersVisited() + 1):
         for k, _ in enumerate(I_c.vehicles):
             if I_c.vehicles[k].getNumOfCustomersVisited() >= 1:
-                for l in range(1, len(I_c.vehicles[k].destinations) - 1):
+                for l in range(1, I_c.vehicles[k].getNumOfCustomersVisited() + 1):
                     if I_c.vehicles[k].destinations[l].node.number == P[random_solution].vehicles[i].destinations[j].node.number: # make sure "I_c" does not already visit a node from "P[random_solution].vehicles[i]"
                         return False
     return True

@@ -13,10 +13,12 @@ class Vehicle:
         return f"{self.current_capacity}, {[destination.node.number for destination in self.destinations]}"
 
     def getCustomersVisited(self) -> List[Destination]:
-        return list(filter(lambda d: (d.node.number != 0), self.destinations))
+        return self.destinations[1:-1] # to do this, we assume that every depot departure and return is initialised correctly (at index 0 and n - 1) which we can do as any route that isn't in this format is incorrect
+        #return list(filter(lambda d: (d.node.number != 0), self.destinations)) # this is an alternative to hoping that the list of destinations begins and ends at 0
 
     def getNumOfCustomersVisited(self) -> int:
-        return len(list(filter(lambda d: (d.node.number != 0), self.destinations)))
+        return len(self.destinations) - 2 # to do this, we assume that every depot departure and return is initialised correctly (at index 0 and n - 1) which we can do as any route that isn't in this format is incorrect
+        #return len(list(filter(lambda d: (d.node.number != 0), self.destinations))) # this is an alternative to hoping that the list of destinations begins and ends at 0
 
     # TODO: you probably don't need to give these methods the problem instance as each Node object holds the values you're looking for (such as the "ready_time") and they're all in "self.destinations"
     def calculate_destinations_time_windows(self, instance: ProblemInstance) -> None:
