@@ -119,7 +119,7 @@ def Euclidean_distance_dispersion(x1: float, y1: float, x2: float, y2: float):
     return sqrt(((x2 - x1) / 2 * Hypervolume_total_distance) ** 2 + ((y2 - y1) / 2 * Hypervolume_cargo_unbalance) ** 2)
 
 def Child_dominates(Parent: Solution, Child: Solution) -> bool:
-    return True if (Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance) or (Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance) else False
+    return (Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance) or (Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance)
 
 def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Solution:
     if Child_dominates(Parent, Child):
