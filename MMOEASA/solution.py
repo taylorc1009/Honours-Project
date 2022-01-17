@@ -21,7 +21,7 @@ class Solution:
         self.vehicles: List[Vehicle]=vehicles
 
     def __str__(self) -> str:
-        return f"{self.id}, {self.feasible}, {self.T}, {self.T_cooling}, {self.total_distance}, {self.cargo_unbalance}, {[v.__str__() for v in self.vehicles]}"
+        return f"{self.id=}, {self.feasible=}, {self.T_default=}, {self.T=}, {self.T_cooling=}, {self.total_distance=}, {self.cargo_unbalance=}, {len(self.vehicles)=}, {[str(v) for v in self.vehicles]}"
 
     def calculate_nodes_time_windows(self, instance: ProblemInstance) -> None:
         for i, _ in enumerate(self.vehicles):
