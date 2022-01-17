@@ -151,9 +151,9 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
     P: List[Solution] = list()
     ND: List[Solution] = list()
     iterations = 0
+    update_Hypervolumes(*Hypervolumes) # TODO: currently, the only Hypervolume values I have are to the problem instances with 100 customers; if I research them more then I could possibly get the values to 25 and 50
 
     num_ND = 0
-    update_Hypervolumes(*Hypervolumes)
 
     TWIH_initialiser = TWIH(instance)
     for i in range(p):

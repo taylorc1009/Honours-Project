@@ -14,7 +14,7 @@ def executeMMOEASA(problemInstance: ProblemInstance) -> None:
 
     #for instance in problemInstances:
     #print(instance.name)
-    with open("MMOEASA/hypervolumes.json") as json_file:
+    with open(f"MMOEASA/hypervolumes_{len(problemInstance.nodes) - 1}.json") as json_file:
         Hypervolumes = json.load(json_file)
         ND_solutions = MMOEASA(problemInstance, MMOEASA_POPULATION_SIZE, 10, 100000, 25, 25, 100.0, 50.0, 10.0, Hypervolumes[problemInstance.name])
         for solution in ND_solutions:
