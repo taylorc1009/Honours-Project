@@ -112,7 +112,7 @@ def Mutation(instance: ProblemInstance, I: Solution, probability: int) -> Soluti
     update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
     return I_m
 
-def Euclidean_distance_dispersion(x1: float, y1: float, x2: float, y2: float):
+def Euclidean_distance_dispersion(x1: float, y1: float, x2: float, y2: float) -> float:
     global Hypervolume_total_distance, Hypervolume_cargo_unbalance
     return sqrt(((x2 - x1) / 2 * Hypervolume_total_distance) ** 2 + ((y2 - y1) / 2 * Hypervolume_cargo_unbalance) ** 2)
 
