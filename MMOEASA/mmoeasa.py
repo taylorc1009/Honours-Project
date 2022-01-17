@@ -1,4 +1,5 @@
 import copy
+import time
 from MMOEASA.auxiliaries import rand
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from MMOEASA.constants import INT_MAX, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS
@@ -165,6 +166,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
         P[i].T_cooling = Calculate_cooling(i, T_max, T_min, T_stop, p, TC)
     del TWIH_initialiser
 
+    start = time.time()
     current_multi_start = 0
     while current_multi_start < MS and not iterations >= TC:
         for i, _ in enumerate(P):
@@ -185,12 +187,11 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                     print(f"len(ND)={len(ND)}, ND={i}, iterations={iterations}")
                     num_ND = i
                 elif ND_changed and num_ND == i:
-                    print(f"ND solution ({num_ND}) changed in P (iterations={iterations})")
+                    lap = time.time()
+                    print(f"ND solution ({num_ND}) changed in P (iterations={iterations}, time={lap - start}s")
 
                 P[i].T *= P[i].T_cooling
             iterations += 1
-            if not iterations % (TC / 10):
-                print(f"iterations={iterations}")
         current_multi_start += 1
         print("multi-start occurred")
 
