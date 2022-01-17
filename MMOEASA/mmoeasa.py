@@ -184,11 +184,10 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                     if len(ND) >= p:
                         ND.pop(0)
                     ND.append(copy.deepcopy(P[i]))
-                    print(f"{len(ND)=}, ND={i}, {iterations=}")
+                    print(f"{len(ND)=}, ND={i}, {iterations=}, time={time.time() - start}s")
                     num_ND = i
                 elif ND_changed and num_ND == i:
-                    lap = time.time()
-                    print(f"ND solution ({num_ND}) changed in P ({iterations=}, time={lap - start}s)")
+                    print(f"ND solution ({num_ND}) changed in P ({iterations=}, time={time.time() - start}s)")
 
                 P[i].T *= P[i].T_cooling
             iterations += 1

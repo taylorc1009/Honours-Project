@@ -14,9 +14,18 @@ def executeMMOEASA(problemInstance: ProblemInstance) -> None:
 
     #for instance in problemInstances:
     #print(instance.name)
-    with open(f"MMOEASA/hypervolumes_{len(problemInstance.nodes) - 1}.json") as json_file:
+    num_customers = len(problemInstance.nodes) - 1
+    with open(f"MMOEASA/hypervolumes_{num_customers}.json") as json_file:
+        TC = 0 # termination condition = the number of iterations to perform
+        if num_customers == 25:
+            TC = 100000
+        elif num_customers == 50:
+            TC = 50000
+        elif num_customers == 100:
+            TC = 2000
+
         Hypervolumes = json.load(json_file)
-        ND_solutions = MMOEASA(problemInstance, MMOEASA_POPULATION_SIZE, 10, 100000, 25, 25, 100.0, 50.0, 10.0, Hypervolumes[problemInstance.name])
+        ND_solutions = MMOEASA(problemInstance, MMOEASA_POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 10.0, Hypervolumes[problemInstance.name])
         for solution in ND_solutions:
             print(str(solution))
 
