@@ -180,7 +180,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                     I_m = Mutation(instance, I_m, P_mutation, rand(1, 100))
                 P[i], ND_changed = MO_Metropolis(I, I_m, I.T)
 
-                if is_nondominated(P[i],ND):  # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
+                if is_nondominated(P[i],ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
                     if len(ND) >= p:
                         ND.pop(0)
                     ND.append(copy.deepcopy(P[i]))

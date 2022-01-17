@@ -4,7 +4,7 @@ from MMOEASA.solution import Solution
 from MMOEASA.auxiliaries import insert_unvisited_node, rand
 from problemInstance import ProblemInstance
 from destination import Destination
-from typing import List, Tuple
+from typing import List, Tuple, Set
 from vehicle import Vehicle
 
 def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, origin: int, vehicle_2: int, destination: int) -> Tuple[Solution, float, float]:
@@ -47,10 +47,7 @@ def Mutation1(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
 
     I_m, potentialHV_TD, potentialHV_CU = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, destination_position)
 
-    # I don't think this "if" is necessary as the MMOEASA main algorithm performs the metropolis function anyway
-    #if MO_Metropolis(MMOEASA_POPULATION_SIZE, I_m, I, I_m.T):
     return I_m, potentialHV_TD, potentialHV_CU
-    #return I
 
 def Mutation2(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
     potentialHV_TD, potentialHV_CU = 0.0, 0.0
@@ -73,10 +70,7 @@ def Mutation2(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float
     if not best_location == origin_position:
         I_m, _, _ = move_destination(instance, I_m, random_vehicle, origin_position, random_vehicle, best_location)
 
-    # I don't think this "if" is necessary as the MMOEASA main algorithm performs the metropolis function anyway
-    # if MO_Metropolis(MMOEASA_POPULATION_SIZE, I_m, I, I_m.T):
     return I_m, potentialHV_TD, potentialHV_CU
-    # return I
 
 def Mutation3(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, float, float]:
     random_origin_vehicle = get_random_vehicle(I_m)
@@ -268,38 +262,25 @@ def Mutation10(instance: ProblemInstance, I_m: Solution) -> Tuple[Solution, floa
 
     return I_m, potentialHV_TD, potentialHV_CU
 
-def vehicle_insertion_possible(I_c: Solution, P: List[Solution], random_solution: int, i: int) -> bool:
-    for j in range(1, P[random_solution].vehicles[i].getNumOfCustomersVisited() + 1):
-        for k, _ in enumerate(I_c.vehicles):
-            if I_c.vehicles[k].getNumOfCustomersVisited() >= 1:
-                for l in range(1, I_c.vehicles[k].getNumOfCustomersVisited() + 1):
-                    if I_c.vehicles[k].destinations[l].node.number == P[random_solution].vehicles[i].destinations[j].node.number: # make sure "I_c" does not already visit a node from "P[random_solution].vehicles[i]"
-                        return False
-    return True
+def vehicle_insertion_possible(unvisited_nodes: Set[int], new_vehicle: Vehicle) -> Tuple[bool, Set[int]]:
+    nodes_to_insert = set([d.node.number for d in new_vehicle.getCustomersVisited()])
+    return len(unvisited_nodes.difference(nodes_to_insert)) == len(unvisited_nodes) - len(nodes_to_insert), nodes_to_insert
 
 def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> Tuple[Solution, float, float]:
-    routes_to_safeguard = list()
-    i = 0
-    while i < len(I_c.vehicles): # use a while loop here instead of a for loop as a Python for loop iterator cannot be decremented
-        if rand(1, 100) < 50:
-            routes_to_safeguard.append(i)
-            i += 1 # only increment the for loop in this case; if it's incremented in the "else" block then a vehicle will be skipped (because the "else" removes one vehicle from the list)
-        else:
-            del I_c.vehicles[i]
+    I_c.vehicles = [v for v in I_c.vehicles if rand(1, 100) < 50]
     
     random_solution = rand(0, len(P) - 1, exclude_values=[I_c.id])
 
-    unvisited_nodes = list(range(1, len(instance.nodes)))
-    for v in I_c.vehicles: # I tried combining the following for loops into the same line as the ".remove()" using list comprehension, but this meant that it was trying to remove a list from the list "nodes_not_visited" and not each number
-        for d in v.getCustomersVisited():
-            unvisited_nodes.remove(d.node.number)
+    unvisited_nodes = set(range(1, len(instance.nodes))).difference(d.node.number for v in I_c.vehicles for d in v.getCustomersVisited())
 
     for i, _ in enumerate(P[random_solution].vehicles):
         if P[random_solution].vehicles[i].getNumOfCustomersVisited() >= 1:
-            if vehicle_insertion_possible(I_c, P, random_solution, i) and len(I_c.vehicles) < instance.amount_of_vehicles:
+            insertion_possible, new_nodes = vehicle_insertion_possible(unvisited_nodes, P[random_solution].vehicles[i])
+            if insertion_possible and len(I_c.vehicles) < instance.amount_of_vehicles:
                 I_c.vehicles.append(copy.deepcopy(P[random_solution].vehicles[i]))
-                for d in I_c.vehicles[-1].getCustomersVisited():
-                    unvisited_nodes.remove(d.node.number)
+                unvisited_nodes.difference_update(new_nodes)
+                if not unvisited_nodes:
+                    break
 
     for node_number in unvisited_nodes:
         I_c = insert_unvisited_node(I_c, instance, node_number)
@@ -309,6 +290,4 @@ def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> T
     I_c.calculate_length_of_routes(instance)
     potentialHV_TD, potentialHV_CU = I_c.objective_function(instance)
 
-    # I don't think this line is necessary as the MMOEASA main algorithm performs the metropolis function anyway
-    #return I if I_c.total_distance < 0 else MO_Metropolis(I, I_c, I.T)
     return I_c, potentialHV_TD, potentialHV_CU
