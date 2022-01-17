@@ -27,12 +27,13 @@ def TWIH(instance: ProblemInstance) -> Solution:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
 
     solution = Solution(_id=0, vehicles=list())
-    D_i = 1 # list of destinations iterator
+    D_i = 0 # list of destinations iterator
 
     for i in range(0, instance.amount_of_vehicles - 1):
         if D_i >= len(instance.nodes) - 1:
             break
         if sorted_nodes[D_i].number == 0:
+            D_i += 1
             continue
 
         vehicle = Vehicle(i, destinations=list())
