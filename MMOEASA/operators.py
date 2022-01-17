@@ -276,9 +276,11 @@ def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> T
     for i, _ in enumerate(P[random_solution].vehicles):
         if P[random_solution].vehicles[i].getNumOfCustomersVisited() >= 1:
             insertion_possible, new_nodes = vehicle_insertion_possible(unvisited_nodes, P[random_solution].vehicles[i])
+
             if insertion_possible and len(I_c.vehicles) < instance.amount_of_vehicles:
                 I_c.vehicles.append(copy.deepcopy(P[random_solution].vehicles[i]))
                 unvisited_nodes.difference_update(new_nodes)
+
                 if not unvisited_nodes:
                     break
 
