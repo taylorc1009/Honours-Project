@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 from problemInstance import ProblemInstance
 from data import openIterationsOfProblemSet
 from MMOEASA.mmoeasa import MMOEASA
@@ -13,9 +14,11 @@ def executeMMOEASA(problemInstance: ProblemInstance) -> None:
 
     #for instance in problemInstances:
     #print(instance.name)
-    ND_solutions = MMOEASA(problemInstance, MMOEASA_POPULATION_SIZE, 10, 100000, 25, 25, 100.0, 50.0, 10.0)
-    for solution in ND_solutions:
-        print(str(solution))
+    with open("MMOEASA/hypervolumes.json") as json_file:
+        Hypervolumes = json.load(json_file)
+        ND_solutions = MMOEASA(problemInstance, MMOEASA_POPULATION_SIZE, 10, 100000, 25, 25, 100.0, 50.0, 10.0, Hypervolumes[problemInstance.name])
+        for solution in ND_solutions:
+            print(str(solution))
 
 if __name__ == '__main__':
     if not len(sys.argv) > 1:

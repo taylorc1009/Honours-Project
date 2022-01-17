@@ -7,22 +7,27 @@ from MMOEASA.solution import Solution
 from problemInstance import ProblemInstance
 from destination import Destination
 from vehicle import Vehicle
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from numpy import sqrt, exp
 
 Hypervolume_total_distance: float=0.0
 Hypervolume_distance_unbalance: float=0.0 # currently, the distance unbalance objective is unused everywhere in the program (it's also commented out in "Solution.py"), but this may change
 Hypervolume_cargo_unbalance: float=0.0
 
-def update_Hypervolumes(potentialHV_TD: float=0.0, potentialHV_DU: float=0.0, potentialHV_CU: float=0.0) -> None:
+def update_Hypervolumes(HV_TD: float, HV_DU: float, HV_CU: float) -> None:
     global Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance
-    if (float(potentialHV_TD) >= Hypervolume_total_distance and float(potentialHV_DU) > Hypervolume_distance_unbalance and float(potentialHV_CU) > Hypervolume_cargo_unbalance) or\
+    Hypervolume_total_distance = float(HV_TD)
+    Hypervolume_distance_unbalance = float(HV_DU)
+    Hypervolume_cargo_unbalance = float(HV_CU)
+
+    """if (float(potentialHV_TD) >= Hypervolume_total_distance and float(potentialHV_DU) > Hypervolume_distance_unbalance and float(potentialHV_CU) > Hypervolume_cargo_unbalance) or\
         (float(potentialHV_TD) > Hypervolume_total_distance and float(potentialHV_DU) >= Hypervolume_distance_unbalance and float(potentialHV_CU) > Hypervolume_cargo_unbalance) or\
         (float(potentialHV_TD) > Hypervolume_total_distance and float(potentialHV_DU) > Hypervolume_distance_unbalance and float(potentialHV_CU) >= Hypervolume_cargo_unbalance):
         Hypervolume_total_distance = float(potentialHV_TD)
         Hypervolume_distance_unbalance = float(potentialHV_DU)
-        Hypervolume_cargo_unbalance = float(potentialHV_CU)
-        print(f"Hypervolumes modified: TD={Hypervolume_total_distance}, DU={Hypervolume_distance_unbalance}, CU={Hypervolume_cargo_unbalance}")
+        Hypervolume_cargo_unbalance = float(potentialHV_CU)"""
+
+    print(f"Hypervolumes modified: TD={Hypervolume_total_distance}, DU={Hypervolume_distance_unbalance}, CU={Hypervolume_cargo_unbalance}")
 
 def TWIH(instance: ProblemInstance) -> Solution:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
@@ -52,7 +57,7 @@ def TWIH(instance: ProblemInstance) -> Solution:
     solution.calculate_length_of_routes(instance)
     potentialHV_TD, potentialHV_CU = solution.objective_function(instance)
 
-    update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
+    #update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
 
     return solution
 
@@ -81,7 +86,7 @@ def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int,
 
 def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Solution:
     I_c, potentialHV_TD, potentialHV_CU = Crossover1(instance, copy.deepcopy(I), P)
-    update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
+    #update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
     return I_c
 
 def Mutation(instance: ProblemInstance, I: Solution, probability: int) -> Solution:
@@ -109,7 +114,7 @@ def Mutation(instance: ProblemInstance, I: Solution, probability: int) -> Soluti
     elif 91 <= probability <= 100:
         I_m, potentialHV_TD, potentialHV_CU = Mutation10(instance, I_m)
 
-    update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
+    #update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
     return I_m
 
 def Euclidean_distance_dispersion(x1: float, y1: float, x2: float, y2: float) -> float:
@@ -142,17 +147,13 @@ def is_nondominated(I: Solution, ND: List[Solution]) -> bool:
     else:
         return I.feasible
 
-def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float,T_min: float, T_stop: float) -> List[Solution]:
+def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float,T_min: float, T_stop: float, Hypervolumes: Dict[str, float]) -> List[Solution]:
     P: List[Solution] = list()
     ND: List[Solution] = list()
     iterations = 0
 
     num_ND = 0
-    # temporary Hypervolume initialization
-    # global Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance
-    # Hypervolume_total_distance = 2378.924 if instance.name == "R101.txt" and not len(instance.nodes) < 100 else 1
-    # Hypervolume_distance_unbalance = 113.491 if instance.name == "R101.txt" and not len(instance.nodes) < 100 else 1
-    # Hypervolume_cargo_unbalance = 171.000 if instance.name == "R101.txt" and not len(instance.nodes) < 100 else 1
+    update_Hypervolumes(*Hypervolumes)
 
     TWIH_initialiser = TWIH(instance)
     for i in range(p):
