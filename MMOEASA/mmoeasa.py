@@ -34,7 +34,6 @@ def TWIH(instance: ProblemInstance) -> Solution:
             break
         if sorted_nodes[D_i].number == 0:
             D_i += 1
-            continue
 
         vehicle = Vehicle(i, destinations=list())
         vehicle.destinations.append(Destination(node=sorted_nodes[0])) # have the route start at the depot
@@ -166,8 +165,8 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
         P[i].T_cooling = Calculate_cooling(i, T_max, T_min, T_stop, p, TC)
     del TWIH_initialiser
 
-    current_multi_start = 1
-    while current_multi_start <= MS and not iterations >= TC:
+    current_multi_start = 0
+    while current_multi_start < MS and not iterations >= TC:
         for i, _ in enumerate(P):
             P[i].T = P[i].T_default
 
@@ -183,12 +182,18 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                     if len(ND) >= p:
                         ND.pop(0)
                     ND.append(copy.deepcopy(P[i]))
-                    print(f"len(ND)={len(ND)}, iterations={iterations}, ND={i}")
+                    print(f"len(ND)={len(ND)}, ND={i}, iterations={iterations}")
                     num_ND = i
                 elif ND_changed and num_ND == i:
-                    print(f"ND {num_ND} changed in P")
+                    print(f"ND solution ({num_ND}) changed in P (iterations={iterations})")
 
                 P[i].T *= P[i].T_cooling
             iterations += 1
+            if not iterations % (TC / 10):
+                print(f"iterations={iterations}")
         current_multi_start += 1
+        print("multi-start occurred")
+
+    global Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance
+    print(f"Final Hypervolumes: TD={Hypervolume_total_distance}, DU={Hypervolume_distance_unbalance}, CU={Hypervolume_cargo_unbalance}")
     return ND
