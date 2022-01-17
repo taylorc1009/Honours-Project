@@ -184,14 +184,18 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                     if len(ND) >= p:
                         ND.pop(0)
                     ND.append(copy.deepcopy(P[i]))
-                    print(f"len(ND)={len(ND)}, ND={i}, iterations={iterations}")
+                    print(f"{len(ND)=}, ND={i}, {iterations=}")
                     num_ND = i
                 elif ND_changed and num_ND == i:
                     lap = time.time()
-                    print(f"ND solution ({num_ND}) changed in P (iterations={iterations}, time={lap - start}s)")
+                    print(f"ND solution ({num_ND}) changed in P ({iterations=}, time={lap - start}s)")
 
                 P[i].T *= P[i].T_cooling
             iterations += 1
+            if not iterations % (TC / 10):
+                lap = time.time()
+                print(f"{iterations=}, time={lap - start}s")
+
         current_multi_start += 1
         print("multi-start occurred")
 
