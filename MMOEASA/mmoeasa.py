@@ -79,42 +79,38 @@ def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int,
     
     return T_cooling
 
-def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_crossover: int) -> Solution:
-    if rand(1, 100) <= P_crossover:
-        I_c, potentialHV_TD, potentialHV_CU = Crossover1(instance, copy.deepcopy(I), P)
-        update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
-        return I_c
-    return I
+def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Solution:
+    I_c, potentialHV_TD, potentialHV_CU = Crossover1(instance, copy.deepcopy(I), P)
+    update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
+    return I_c
 
-def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, probability: int) -> Solution:
-    if rand(1, 100) <= P_mutation:
-        I_m = copy.deepcopy(I)
-        potentialHV_TD, potentialHV_CU = 0.0, 0.0
+def Mutation(instance: ProblemInstance, I: Solution, probability: int) -> Solution:
+    I_m = copy.deepcopy(I)
+    potentialHV_TD, potentialHV_CU = 0.0, 0.0
 
-        if 1 <= probability <= 10:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation1(instance, I_m)
-        elif 11 <= probability <= 20:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation2(instance, I_m)
-        elif 21 <= probability <= 30:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation3(instance, I_m)
-        elif 31 <= probability <= 40:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation4(instance, I_m)
-        elif 41 <= probability <= 50:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation5(instance, I_m)
-        elif 51 <= probability <= 60:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation6(instance, I_m)
-        elif 61 <= probability <= 70:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation7(instance, I_m)
-        elif 71 <= probability <= 80:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation8(instance, I_m)
-        elif 81 <= probability <= 90:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation9(instance, I_m)
-        elif 91 <= probability <= 100:
-            I_m, potentialHV_TD, potentialHV_CU = Mutation10(instance, I_m)
-        
-        update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
-        return I_m
-    return I
+    if 1 <= probability <= 10:
+        I_m, potentialHV_TD, potentialHV_CU = Mutation1(instance, I_m)
+    elif 11 <= probability <= 20:
+        I_m, potentialHV_TD, potentialHV_CU = Mutation2(instance, I_m)
+    elif 21 <= probability <= 30:
+        I_m, potentialHV_TD, potentialHV_CU = Mutation3(instance, I_m)
+    elif 31 <= probability <= 40:
+        I_m, potentialHV_TD, potentialHV_CU = Mutation4(instance, I_m)
+    elif 41 <= probability <= 50:
+        I_m, potentialHV_TD, potentialHV_CU = Mutation5(instance, I_m)
+    elif 51 <= probability <= 60:
+        I_m, potentialHV_TD, potentialHV_CU = Mutation6(instance, I_m)
+    elif 61 <= probability <= 70:
+        I_m, potentialHV_TD, potentialHV_CU = Mutation7(instance, I_m)
+    elif 71 <= probability <= 80:
+        I_m, potentialHV_TD, potentialHV_CU = Mutation8(instance, I_m)
+    elif 81 <= probability <= 90:
+        I_m, potentialHV_TD, potentialHV_CU = Mutation9(instance, I_m)
+    elif 91 <= probability <= 100:
+        I_m, potentialHV_TD, potentialHV_CU = Mutation10(instance, I_m)
+
+    update_Hypervolumes(potentialHV_TD=potentialHV_TD, potentialHV_CU=potentialHV_CU)
+    return I_m
 
 def Euclidean_distance_dispersion(x1: float, y1: float, x2: float, y2: float):
     global Hypervolume_total_distance, Hypervolume_cargo_unbalance
@@ -174,10 +170,13 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
 
         while P[0].T > T_stop and not iterations >= TC:
             for i, I in enumerate(P):
-                I_c = Crossover(instance, I, P, P_crossover)
+                I_c = I
+                if rand(1, 100) <= P_crossover:
+                    I_c = Crossover(instance, I, P)
                 I_m = I_c
                 for j in range(0, rand(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
-                    I_m = Mutation(instance, I_m, P_mutation, rand(1, 100))
+                    if rand(1, 100) <= P_mutation:
+                        I_m = Mutation(instance, I_m, rand(1, 100))
                 P[i], ND_changed = MO_Metropolis(I, I_m, I.T)
 
                 if is_nondominated(P[i],ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
