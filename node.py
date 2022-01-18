@@ -1,3 +1,5 @@
+from typing import Dict
+
 class Node:
     def __init__(self, number: int, x: int, y: int, demand: int, ready_time: int, due_date: int, service_duration: int) -> None:
         self.number: int=int(number)
@@ -15,3 +17,6 @@ class Node:
     
     def __str__(self) -> str:
         return f"{self.number}, {self.x}, {self.y}, {self.demand}, {self.ready_time}, {self.due_date}, {self.service_duration}"
+
+    def __deepcopy__(self, memodict: Dict=None):
+        return Node(number=self.number, x=self.x, y=self.y, demand=self.demand, ready_time=self.ready_time, due_date=self.due_date, service_duration=self.service_duration)

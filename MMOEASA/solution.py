@@ -1,7 +1,6 @@
+import copy
 from typing import List, Tuple, Dict
 from MMOEASA.constants import MMOEASA_INFINITY
-from destination import Destination
-from node import Node
 from vehicle import Vehicle
 from problemInstance import ProblemInstance
 
@@ -78,39 +77,7 @@ class Solution:
         return 0.0, 0.0 # ... and if the solution isn't feasible, then return zero values so that the previously recorded Hypervolumes aren't changed
 
     def __deepcopy__(self, memodict: Dict=None):
-        """ this does not work due to the following error: "RecursionError: maximum recursion depth exceeded while calling a Python object"
-        obj_copy=copy.deepcopy(self)
-        obj_copy.vehicles = copy.deepcopy(self.vehicles)
-        for i, _ in enumerate(self.vehicles):
-            obj_copy.vehicles[i].destinations = copy.deepcopy(self.vehicles[i].destinations)
-            for j, _ in enumerate(self.vehicles[i].destinations):
-                obj_copy.vehicles[i].destinations[j].node = copy.deepcopy(self.vehicles[i].destinations[j].node)"""
-
-        obj_copy = Solution(
-            _id=self.id,
-            vehicles=[
-                Vehicle(
-                    current_capacity=v.current_capacity,
-                    route_distance=v.route_distance,
-                    destinations=[
-                        Destination(
-                            node=Node(
-                                number=d.node.number,
-                                x=d.node.x,
-                                y=d.node.y,
-                                demand=d.node.demand,
-                                ready_time=d.node.ready_time,
-                                due_date=d.node.due_date,
-                                service_duration=d.node.service_duration
-                            ),
-                            arrival_time=d.arrival_time,
-                            departure_time=d.departure_time,
-                            wait_time=d.wait_time
-                        ) for d in v.destinations
-                    ]
-                ) for v in self.vehicles
-            ]
-        )
+        obj_copy = Solution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles])
         obj_copy.feasible = self.feasible
         obj_copy.T_default = self.T_default
         obj_copy.T = self.T
@@ -119,3 +86,11 @@ class Solution:
         obj_copy.cargo_unbalance = self.cargo_unbalance
 
         return obj_copy
+
+        """ this does not work due to the following error: "RecursionError: maximum recursion depth exceeded while calling a Python object"
+                obj_copy=copy.deepcopy(self)
+                obj_copy.vehicles = copy.deepcopy(self.vehicles)
+                for i, _ in enumerate(self.vehicles):
+                    obj_copy.vehicles[i].destinations = copy.deepcopy(self.vehicles[i].destinations)
+                    for j, _ in enumerate(self.vehicles[i].destinations):
+                        obj_copy.vehicles[i].destinations[j].node = copy.deepcopy(self.vehicles[i].destinations[j].node)"""

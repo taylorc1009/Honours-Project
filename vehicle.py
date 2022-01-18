@@ -1,3 +1,5 @@
+import copy
+
 from destination import Destination
 from typing import List, Dict
 from node import Node
@@ -49,25 +51,4 @@ class Vehicle:
         self.route_distance = temporary_distance
 
     def __deepcopy__(self, memodict: Dict=None):
-        obj_copy = Vehicle(
-            current_capacity=self.current_capacity,
-            route_distance=self.route_distance,
-            destinations=[
-                Destination(
-                    node=Node(
-                        number=d.node.number,
-                        x=d.node.x,
-                        y=d.node.y,
-                        demand=d.node.demand,
-                        ready_time=d.node.ready_time,
-                        due_date=d.node.due_date,
-                        service_duration=d.node.service_duration
-                    ),
-                    arrival_time = d.arrival_time,
-                    departure_time = d.departure_time,
-                    wait_time = d.wait_time
-                ) for d in self.destinations
-            ]
-        )
-
-        return obj_copy
+        return Vehicle(current_capacity=self.current_capacity, route_distance=self.route_distance, destinations=[copy.deepcopy(d) for d in self.destinations])
