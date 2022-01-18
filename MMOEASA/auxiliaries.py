@@ -41,17 +41,11 @@ def insert_unvisited_node(I: Solution, instance: ProblemInstance, node: int) -> 
             I.vehicles[vehicle] = vehicle_backup
             vehicle += 1
 
-    # TODO: this "if-else" is not in the original MMOEASA source code; why?
-    #   it's purpose is to create a new vehicle for the unvisited node when it could not be added to any existing vehicles' routes
-    #   UPDATE: MMOEASA does do this, but inside the while loop above; it has an array of size N (N being amount of vehicles in the
-    #   problem instance, unused vehicles being 0) and if all currently active vehicles cannot accomodate the new destination, it
-    #   moves to one of the inactive vehicles and checks that (which is kind of redundant as an unused vehicle wouldn't need to be
-    #   checked to see if the new destination would make a route too long)
     if not inserted: # in this case, the unvisited node doesn't fit into any of the existing routes, so it needs a new vehicle
         destinations = [Destination(node=instance.nodes[0]), Destination(node=instance.nodes[node]), Destination(node=instance.nodes[0])]
         I.vehicles.append(Vehicle(current_capacity=instance.nodes[node].demand, destinations=destinations))
 
-        # these may not be necessary as the operator that invokes this "insert_unvisited_node()" function will likely perform these invocations on the entire solution
+        # these seem unnecessary as the crossover operator invokes all of these methods once it's finished inserting all of the unvisited nodes, but they're needed so that an other invocation of "insert_unvisited_nodes()" will have the correct time windows when determining where to insert an unvisited node
         I.vehicles[vehicle].calculate_destinations_time_windows(instance)
         I.vehicles[vehicle].calculate_vehicle_load(instance)
         I.vehicles[vehicle].calculate_length_of_route(instance)
