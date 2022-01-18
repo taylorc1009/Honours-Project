@@ -271,7 +271,7 @@ def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> T
     
     random_solution = rand(0, len(P) - 1, exclude_values=[I_c.id])
 
-    unvisited_nodes = set(range(1, len(instance.nodes))).difference(d.node.number for v in I_c.vehicles for d in v.getCustomersVisited())
+    unvisited_nodes = set(range(1, len(instance.nodes))).difference([d.node.number for v in I_c.vehicles for d in v.getCustomersVisited()])
 
     for i, _ in enumerate(P[random_solution].vehicles):
         if P[random_solution].vehicles[i].getNumOfCustomersVisited() >= 1:
