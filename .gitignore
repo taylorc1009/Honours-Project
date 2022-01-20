@@ -190,3 +190,6 @@ dkms.conf
 
 # PyCharm files
 /.idea
+
+# CSV output for external validation
+solution.csv
