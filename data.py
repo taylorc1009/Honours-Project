@@ -1,8 +1,8 @@
 import re
-import sys
+from pathlib import Path
 from node import Node
 from problemInstance import ProblemInstance
-from typing import List
+from MMOEASA.solution import Solution
 
 def loadInstance(filename) -> ProblemInstance:
     try:
@@ -52,3 +52,15 @@ def openIterationsOfProblemSet(filename) -> ProblemInstance:#amountOfCustomers, 
         #break
 
     #return problemInstances
+
+def write_solution_for_validation(solution: Solution) -> None:
+    relative_path = str(Path(__file__).parent.resolve()) + "\\MMOEASA\\validator\\solution.csv"
+
+    with open(relative_path, "w+") as csv:
+        csv.write(f"{solution.total_distance},{solution.distance_unbalance},{solution.cargo_unbalance},{len(solution.vehicles)}\n")
+        for vehicle in solution.vehicles:
+            csv.write(f"{vehicle.current_capacity},{vehicle.route_distance},{len(vehicle.destinations)}\n")
+            for destination in vehicle.destinations:
+                csv.write(f"{destination.arrival_time},{destination.departure_time},{destination.wait_time}\n")
+                node = destination.node
+                csv.write(f"{node.number},{node.x},{node.y},{node.demand},{node.ready_time},{node.due_date},{node.service_duration}\n")

@@ -9,6 +9,7 @@ from destination import Destination
 from vehicle import Vehicle
 from typing import List, Tuple, Dict
 from numpy import sqrt, exp
+from data import write_solution_for_validation
 
 Hypervolume_total_distance: float=0.0
 Hypervolume_distance_unbalance: float=0.0 # currently, the distance unbalance objective is unused everywhere in the program (it's also commented out in "Solution.py"), but this may change
@@ -186,6 +187,10 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                     ND.append(copy.deepcopy(P[i]))
                     print(f"{len(ND)=}, ND={i}, {iterations=}, time={round(time.time() - start, 1)}s")
                     num_ND = i
+
+                    should_write = False
+                    if should_write: # use the debugger to edit the value in "should_write" if you'd like a solution to be written to a CSV
+                        write_solution_for_validation(P[i])
                 elif ND_changed and num_ND == i:
                     print(f"ND solution ({num_ND}) changed in P ({iterations=}, time={round(time.time() - start, 1)}s)")
 

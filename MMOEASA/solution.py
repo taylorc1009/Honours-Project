@@ -12,7 +12,7 @@ class Solution:
     T_cooling: float=0.0
 
     total_distance: float=0.0
-    #distance_unbalance: float=None
+    distance_unbalance: float=0.0
     cargo_unbalance: float=0.0
 
     def __init__(self, _id: int=None, vehicles: List[Vehicle]=None) -> None:
@@ -83,6 +83,7 @@ class Solution:
         obj_copy.T = self.T
         obj_copy.T_cooling = self.T_cooling
         obj_copy.total_distance = self.total_distance
+        #obj_copy.distance_unbalance = self.distance_unbalance
         obj_copy.cargo_unbalance = self.cargo_unbalance
 
         return obj_copy
