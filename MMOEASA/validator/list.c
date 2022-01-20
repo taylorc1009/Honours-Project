@@ -1,7 +1,7 @@
 #include "list.h"
 
 struct List* var_init(init_args args) {
-    int size_out = args.size? args.size : 1;
+    int size_out = args.size? args.size : 0;
     return create_list_base(size_out);
 }
 
@@ -25,8 +25,12 @@ struct List* create_list_base(const int size) {
     return list;
 }
 
-void append(struct List* restrict self, void* restrict value) {    
-    self->end = self->end->next = (struct ListNode*)malloc(sizeof(struct ListNode));
+void append(struct List* restrict self, void* restrict value) {
+    if (self->size > 0)
+        self->end = self->end->next = (struct ListNode*)malloc(sizeof(struct ListNode));
+    else
+        self->end = self->root = (struct ListNode*)malloc(sizeof(struct ListNode));
+    
     self->end->value = value;
 
     self->size++;
@@ -44,7 +48,7 @@ void clear(struct List* restrict self) {
     self->size = 0;
 }
 
-void* at(struct List* restrict self, const int index) {
+struct ListNode* at(struct List* restrict self, const int index) {
     if (!(0 <= index < self->size))
         return NULL;
     
@@ -53,5 +57,5 @@ void* at(struct List* restrict self, const int index) {
     for (int i = 0; i <= index; i++)
         node = node->next;
     
-    return node->value;
+    return node;
 }

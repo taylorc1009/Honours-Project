@@ -1,6 +1,5 @@
 #include <stdlib.h>
-
-typedef enum { false, true } bool;
+#include "types.h"
 
 struct ListNode {
     void* value;
@@ -13,7 +12,7 @@ struct List {
     struct ListNode* end;
     void (*append)(struct List* restrict, void* restrict);
     void (*clear)(struct List* restrict);
-    void* (*at)(struct List* restrict, const int);
+    struct ListNode* (*at)(struct List* restrict, const int);
 };
 
 typedef struct {
@@ -22,7 +21,7 @@ typedef struct {
 
 void append(struct List* restrict self, void* restrict value);
 void clear(struct List* restrict self);
-void* at(struct List* restrict self, const int index);
+struct ListNode* at(struct List* restrict self, const int index);
 struct List* create_list_base(const int size);
 struct List* var_init(init_args args);
 
