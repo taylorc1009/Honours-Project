@@ -1,6 +1,6 @@
-#include "list.h"
-
 #define INFINITY 7654321
+
+typedef enum { false, true } bool;
 
 struct Node {
     int number;
@@ -29,5 +29,6 @@ struct Solution {
     float total_distance;
     float distance_unbalance;
     float cargo_unbalance;
+    bool feasible;
     struct List* vehicles;
 };

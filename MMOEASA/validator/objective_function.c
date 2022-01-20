@@ -1,24 +1,37 @@
-#include <stdio.h>
-#include "types.h"
+#include <string.h>
+#include "data.h"
+
+void free_Solution(struct Solution* solution) {
+    for (int v = 0; v < solution->vehicles->size; v++) {
+        struct Vehicle* vehicle = (struct Vehicle*)solution->vehicles->at(solution->vehicles, v)->value;
+        for (int d = 0; d < vehicle->destinations->size; d++) {
+            struct Destination* destination = (struct Destination*)vehicle->destinations->at(vehicle->destinations, d)->value;
+
+            free(destination->node);
+            free(destination);
+        }
+        free(vehicle);
+    }
+    free(solution);
+}
 
 void objective_function(struct Solution* restrict I, const int amount_of_vehicles, const int capacity_of_vehicles)
 {
-    bool feasible = true;
     float minimum_distance, maximum_distance, minimum_cargo, maximum_cargo;
     I->total_distance = 0;
     int v = 0;
-
+    
     do
     {
-        struct Vehicle* vehicle = (struct Vehicle*)I->vehicles->at(I->vehicles, v);
+        struct Vehicle* vehicle = (struct Vehicle*)I->vehicles->at(I->vehicles, v)->value;
         I->total_distance += vehicle->route_distance;
 
         for (int d = 1; d <= vehicle->destinations->size; d++)   
         {
-            struct Destination* destination = (struct Destination*)vehicle->destinations->at(vehicle->destinations, d);
+            struct Destination* destination = (struct Destination*)vehicle->destinations->at(vehicle->destinations, d)->value;
             if (destination->arrival_time > destination->node->due_date || vehicle->current_capacity > capacity_of_vehicles)
             {
-                feasible = false;
+                I->feasible = false;
                 I->total_distance = INFINITY;
                 I->distance_unbalance = INFINITY;
                 I->cargo_unbalance = INFINITY;
@@ -27,9 +40,9 @@ void objective_function(struct Solution* restrict I, const int amount_of_vehicle
         }
 
         v++;
-    } while(v < amount_of_vehicles && feasible);
+    } while(v < amount_of_vehicles && I->feasible);
 
-    if (feasible)
+    if (I->feasible)
     {
         minimum_distance = INFINITY;
         maximum_distance = 0;
@@ -38,7 +51,7 @@ void objective_function(struct Solution* restrict I, const int amount_of_vehicle
 
         for (v = 0; v < amount_of_vehicles; v++)
         {
-            struct Vehicle* vehicle = (struct Vehicle*)I->vehicles->at(I->vehicles, v);
+            struct Vehicle* vehicle = (struct Vehicle*)I->vehicles->at(I->vehicles, v)->value;
             if (vehicle->destinations->size >= 1)
             {
                 if(vehicle->route_distance < minimum_distance)
@@ -58,21 +71,25 @@ void objective_function(struct Solution* restrict I, const int amount_of_vehicle
 }
 
 int main(int argc, char** argv) {
-    if (argc < 2)
-        return 0;
-    
-    FILE* file;
-
-    if (file = fopen(argv[1], "rb")) {
-        fseek(file, 0, SEEK_END);
-        long len = (long)ftell(file);
-        if (len > 0) {
-            rewind(file);
-
+    if (3 <= argc <= 4) {
+        char* filename = NULL;
+        int offset = 0;
+        if (argc > 3) {
+            filename = argv[1]; // "read_csv" can accept a null filename as it will default to "solution.csv" if this is so
+            offset = 1;
         }
-        else
-            fclose(file);
+        
+        struct Solution* solution = read_csv(.file=filename);
+
+        if (solution) {
+            objective_function(solution, strtol(argv[1 + offset], (char**)NULL, 10), strtol(argv[2 + offset], (char**)NULL, 10));
+    
+            printf("feasable: %s\nobjectives:\n - total distance = %f\n - distance unbalance = %f\n - cargo unbalance = %f", solution->feasible ? "true" : "false", solution->total_distance, solution->distance_unbalance, solution->cargo_unbalance);
+            free_Solution(solution);
+        }
     }
+    else
+        printf("(!) incorrect amount of arguments found: %d\nusage: objective_function [filename] (number of vehicles) (capacity of vehicles)", argc);
     
     return 0;
 }
