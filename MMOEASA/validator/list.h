@@ -10,6 +10,7 @@ struct ListNode {
 struct List {
     int size;
     struct ListNode* root;
+    struct ListNode* end;
     void (*append)(struct List* restrict, void* restrict);
     void (*clear)(struct List* restrict);
     void* (*at)(struct List* restrict, const int);
