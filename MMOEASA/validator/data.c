@@ -91,7 +91,7 @@ struct Solution* read_csv_base(char* restrict filename) {
                     read_float(file, &destination->departure_time);
                     read_float(file, &destination->wait_time);
 
-                    struct Node* node = (struct Node*)malloc(sizeof(struct Node));
+                    struct Node* node = destination->node = (struct Node*)malloc(sizeof(struct Node));
 
                     //printf("l=%d\n", line);
                     //line++;
