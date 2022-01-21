@@ -12,7 +12,9 @@ struct List {
     struct ListNode* end;
     void (*append)(struct List* restrict, void* restrict);
     void (*clear)(struct List* restrict);
-    struct ListNode* (*at)(struct List* restrict, const int);
+    struct ListNode* (*get) (struct List* restrict, const int);
+    void* (*at)(struct List* restrict, const int);
+    void (*set)(struct List* restrict, const int, void** restrict);
 };
 
 typedef struct {
@@ -21,7 +23,9 @@ typedef struct {
 
 void append(struct List* restrict self, void* restrict value);
 void clear(struct List* restrict self);
-struct ListNode* at(struct List* restrict self, const int index);
+struct ListNode* get(struct List* restrict self, const int index);
+void* at(struct List* restrict self, const int index);
+void set(struct List* restrict self, const int index, void** restrict value);
 struct List* create_list_base(const int size);
 struct List* var_init(init_args args);
 

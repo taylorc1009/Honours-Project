@@ -9,7 +9,9 @@ struct List* create_list_base(const int size) {
     struct List* list = (struct List*)malloc(sizeof(struct List));
     list->append = append;
     list->clear = clear;
+    list->get = get;
     list->at = at;
+    list->set = set;
 
     if (size >= 1) {
         struct ListNode* node = list->root = (struct ListNode*)malloc(sizeof(struct ListNode));
@@ -48,14 +50,25 @@ void clear(struct List* restrict self) {
     self->size = 0;
 }
 
-struct ListNode* at(struct List* restrict self, const int index) {
+struct ListNode* get(struct List* restrict self, const int index) {
     if (!(0 <= index < self->size))
         return NULL;
-    
+
     struct ListNode* node = self->root;
 
-    for (int i = 0; i <= index; i++)
+    for (int i = 1; i <= index; i++)
         node = node->next;
-    
+
     return node;
+}
+
+void* at(struct List* restrict self, const int index) {
+    struct ListNode* node = self->get(self, index);
+    return node ? node->value : NULL;
+}
+
+void set(struct List* restrict self, const int index, void** restrict value) {
+    struct ListNode* node = self->get(self, index);
+    if (node)
+        node->value = *value;
 }

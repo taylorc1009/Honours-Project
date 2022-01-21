@@ -3,15 +3,17 @@
 
 void free_Solution(struct Solution* solution) {
     for (int v = 0; v < solution->vehicles->size; v++) {
-        struct Vehicle* vehicle = (struct Vehicle*)solution->vehicles->at(solution->vehicles, v)->value;
+        struct Vehicle* vehicle = (struct Vehicle*)solution->vehicles->at(solution->vehicles, v);
         for (int d = 0; d < vehicle->destinations->size; d++) {
-            struct Destination* destination = (struct Destination*)vehicle->destinations->at(vehicle->destinations, d)->value;
+            struct Destination* destination = (struct Destination*)vehicle->destinations->at(vehicle->destinations, d);
 
             free(destination->node);
             free(destination);
         }
+        vehicle->destinations->clear(vehicle->destinations);
         free(vehicle);
     }
+    solution->vehicles->clear(solution->vehicles);
     free(solution);
 }
 
@@ -20,17 +22,15 @@ void objective_function(struct Solution* restrict I, const int amount_of_vehicle
     float minimum_distance, maximum_distance, minimum_cargo, maximum_cargo;
     I->total_distance = 0;
     int v = 0;
-    
-    do
-    {
-        struct Vehicle* vehicle = (struct Vehicle*)I->vehicles->at(I->vehicles, v)->value;
-        I->total_distance += vehicle->route_distance;
 
-        for (int d = 1; d <= vehicle->destinations->size; d++)   
-        {
-            struct Destination* destination = (struct Destination*)vehicle->destinations->at(vehicle->destinations, d)->value;
-            if (destination->arrival_time > destination->node->due_date || vehicle->current_capacity > capacity_of_vehicles)
-            {
+    do {
+        struct Vehicle* vehicle = (struct Vehicle*)I->vehicles->at(I->vehicles, v);
+        I->total_distance += vehicle->route_distance;
+        printf("hi %f, %f\n", vehicle->current_capacity, vehicle->route_distance);
+        for (int d = 1; d <= vehicle->destinations->size; d++) {
+            printf("hi %d\n", vehicle->destinations->size);
+            struct Destination* destination = (struct Destination*)vehicle->destinations->at(vehicle->destinations, d);
+            if (destination->arrival_time > destination->node->due_date || vehicle->current_capacity > capacity_of_vehicles) {
                 I->feasible = false;
                 I->total_distance = INFINITY;
                 I->distance_unbalance = INFINITY;
@@ -51,7 +51,7 @@ void objective_function(struct Solution* restrict I, const int amount_of_vehicle
 
         for (v = 0; v < amount_of_vehicles; v++)
         {
-            struct Vehicle* vehicle = (struct Vehicle*)I->vehicles->at(I->vehicles, v)->value;
+            struct Vehicle* vehicle = (struct Vehicle*)I->vehicles->at(I->vehicles, v);
             if (vehicle->destinations->size >= 1)
             {
                 if(vehicle->route_distance < minimum_distance)
