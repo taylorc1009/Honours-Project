@@ -18,6 +18,7 @@ struct List* create_list_base(const int size) {
 
         for(int i = 1; i < size; i++)
             node = node->next = (struct ListNode*)malloc(sizeof(struct ListNode));
+        node->next = NULL;
         
         list->end = node;
     }
@@ -34,6 +35,7 @@ void append(struct List* restrict self, void* restrict value) {
         self->end = self->root = (struct ListNode*)malloc(sizeof(struct ListNode));
     
     self->end->value = value;
+    self->end->next = NULL;
 
     self->size++;
 }
