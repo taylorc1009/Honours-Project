@@ -26,9 +26,7 @@ void objective_function(struct Solution* restrict I, const int amount_of_vehicle
     do {
         struct Vehicle* vehicle = (struct Vehicle*)I->vehicles->at(I->vehicles, v);
         I->total_distance += vehicle->route_distance;
-        printf("hi %f, %f\n", vehicle->current_capacity, vehicle->route_distance);
         for (int d = 1; d < vehicle->destinations->size - 1; d++) {
-            printf("hi %d\n", vehicle->destinations->size);
             struct Destination* destination = (struct Destination*)vehicle->destinations->at(vehicle->destinations, d);
             if (destination->arrival_time > destination->node->due_date || vehicle->current_capacity > capacity_of_vehicles) {
                 I->feasible = false;
@@ -40,20 +38,17 @@ void objective_function(struct Solution* restrict I, const int amount_of_vehicle
         }
 
         v++;
-    } while(v < amount_of_vehicles && I->feasible);
+    } while(v < I->vehicles->size && I->feasible);
 
-    if (I->feasible)
-    {
+    if (I->feasible) {
         minimum_distance = INFINITY;
         maximum_distance = 0;
         minimum_cargo = INFINITY;
         maximum_cargo = 0;
 
-        for (v = 0; v < amount_of_vehicles; v++)
-        {
+        for (v = 0; v < I->vehicles->size; v++) {
             struct Vehicle* vehicle = (struct Vehicle*)I->vehicles->at(I->vehicles, v);
-            if (vehicle->destinations->size >= 1)
-            {
+            if (vehicle->destinations->size >= 1) {
                 if(vehicle->route_distance < minimum_distance)
                     minimum_distance = vehicle->route_distance;
                 if(vehicle->route_distance > maximum_distance)
