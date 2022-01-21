@@ -27,7 +27,7 @@ void objective_function(struct Solution* restrict I, const int amount_of_vehicle
         struct Vehicle* vehicle = (struct Vehicle*)I->vehicles->at(I->vehicles, v);
         I->total_distance += vehicle->route_distance;
         printf("hi %f, %f\n", vehicle->current_capacity, vehicle->route_distance);
-        for (int d = 1; d <= vehicle->destinations->size; d++) {
+        for (int d = 1; d < vehicle->destinations->size - 1; d++) {
             printf("hi %d\n", vehicle->destinations->size);
             struct Destination* destination = (struct Destination*)vehicle->destinations->at(vehicle->destinations, d);
             if (destination->arrival_time > destination->node->due_date || vehicle->current_capacity > capacity_of_vehicles) {
