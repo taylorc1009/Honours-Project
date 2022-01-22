@@ -17,10 +17,11 @@ void free_Solution(struct Solution* solution) {
     free(solution);
 }
 
-void objective_function(struct Solution* restrict I, const int amount_of_vehicles, const int capacity_of_vehicles)
+void objective_function(struct Solution* restrict I)
 {
     float minimum_distance, maximum_distance, minimum_cargo, maximum_cargo;
     I->total_distance = 0;
+    I->feasible = true;
     int v = 0;
 
     do {
@@ -28,7 +29,7 @@ void objective_function(struct Solution* restrict I, const int amount_of_vehicle
         I->total_distance += vehicle->route_distance;
         for (int d = 1; d < vehicle->destinations->size - 1; d++) {
             struct Destination* destination = (struct Destination*)vehicle->destinations->at(vehicle->destinations, d);
-            if (destination->arrival_time > destination->node->due_date || vehicle->current_capacity > capacity_of_vehicles) {
+            if (destination->arrival_time > destination->node->due_date || vehicle->current_capacity > I->vehicle_max_capacity) {
                 I->feasible = false;
                 I->total_distance = INFINITY;
                 I->distance_unbalance = INFINITY;
@@ -66,25 +67,17 @@ void objective_function(struct Solution* restrict I, const int amount_of_vehicle
 }
 
 int main(int argc, char** argv) {
-    if (3 <= argc <= 4) {
-        char* filename = NULL;
-        int offset = 0;
-        if (argc > 3) {
-            filename = argv[1]; // "read_csv" can accept a null filename as it will default to "solution.csv" if this is so
-            offset = 1;
-        }
-        
-        struct Solution* solution = read_csv(.file=filename);
+    char* filename = argc > 1 ? argv[1] : NULL; // "read_csv" can accept a null filename as it will default to "solution.csv" if this is so
+    struct Solution* solution = read_csv(.file=filename);
 
-        if (solution) {
-            objective_function(solution, strtol(argv[1 + offset], (char**)NULL, 10), strtol(argv[2 + offset], (char**)NULL, 10));
-    
-            printf("feasable: %s\nobjectives:\n - total distance = %f\n - distance unbalance = %f\n - cargo unbalance = %f", solution->feasible ? "true" : "false", solution->total_distance, solution->distance_unbalance, solution->cargo_unbalance);
-            free_Solution(solution);
-        }
+    if (solution) {
+        objective_function(solution);
+
+        printf("feasible: %s\nobjectives:\n - total distance = %f\n - distance unbalance = %f\n - cargo unbalance = %f", solution->feasible ? "true" : "false", solution->total_distance, solution->distance_unbalance, solution->cargo_unbalance);
+        free_Solution(solution);
     }
-    else
-        printf("(!) incorrect amount of arguments found: %d\nusage: objective_function [filename] (number of vehicles) (capacity of vehicles)", argc);
+    //else
+        //printf("(!) incorrect amount of arguments found: %d\nusage: objective_function [filename] (number of vehicles) (capacity of vehicles)", argc);
     
     return 0;
 }

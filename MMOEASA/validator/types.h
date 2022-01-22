@@ -30,5 +30,6 @@ struct Solution {
     float distance_unbalance;
     float cargo_unbalance;
     bool feasible;
+    int vehicle_max_capacity;
     struct List* vehicles;
 };

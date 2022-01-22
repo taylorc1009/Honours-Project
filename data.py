@@ -53,10 +53,11 @@ def openIterationsOfProblemSet(filename) -> ProblemInstance:#amountOfCustomers, 
 
     #return problemInstances
 
-def write_solution_for_validation(solution: Solution) -> None:
+def write_solution_for_validation(solution: Solution, max_capacity: int) -> None:
     relative_path = str(Path(__file__).parent.resolve()) + "\\MMOEASA\\validator\\solution.csv"
 
     with open(relative_path, "w+") as csv:
+        csv.write(f"{max_capacity}\n")
         csv.write(f"{solution.total_distance},{solution.distance_unbalance},{solution.cargo_unbalance},{len(solution.vehicles)}\n")
         for vehicle in solution.vehicles:
             csv.write(f"{vehicle.current_capacity},{vehicle.route_distance},{len(vehicle.destinations)}\n")

@@ -60,6 +60,7 @@ struct Solution* read_csv_base(char* restrict filename) {
             //printf("l=%d\n", line);
             //line++;
 
+            read_int(file, &solution->vehicle_max_capacity);
             read_float(file, &solution->total_distance);
             read_float(file, &solution->distance_unbalance);
             read_float(file, &solution->cargo_unbalance);
