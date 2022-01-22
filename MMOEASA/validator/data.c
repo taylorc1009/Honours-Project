@@ -33,21 +33,18 @@ char* read_num(FILE* file) {
 void inline read_int(FILE* restrict file, int* restrict var) {
     char* str = read_num(file);
     *var = strtol(str, NULL, 10);
-    //printf("i %d\n", *var);
     free(str);
 }
 
 void inline read_float(FILE* restrict file, float* restrict var) {
     char* str = read_num(file);
     *var = strtof(str, NULL);
-    //printf("f %f\n", *var);
     free(str);
 }
 
 struct Solution* read_csv_base(char* restrict filename) {
     FILE* file;
     struct Solution* solution = NULL;
-    //int line = 1;
 
     if (file = fopen(filename, "rb")) {
         fseek(file, 0, SEEK_END);
@@ -56,9 +53,6 @@ struct Solution* read_csv_base(char* restrict filename) {
             rewind(file);
 
             solution = (struct Solution*)malloc(sizeof(struct Solution));
-
-            //printf("l=%d\n", line);
-            //line++;
 
             read_int(file, &solution->vehicle_max_capacity);
             read_float(file, &solution->total_distance);
@@ -72,9 +66,6 @@ struct Solution* read_csv_base(char* restrict filename) {
             for (int v = 0; v < num_vehicles; v++) {
                 struct Vehicle* vehicle = (struct Vehicle*)malloc(sizeof(struct Vehicle));
 
-                //printf("l=%d\n", line);
-                //line++;
-
                 read_float(file, &vehicle->current_capacity);
                 read_float(file, &vehicle->route_distance);
 
@@ -85,17 +76,11 @@ struct Solution* read_csv_base(char* restrict filename) {
                 for (int d = 0; d < num_destinations; d++) {
                     struct Destination* destination = (struct Destination*)malloc(sizeof(struct Destination));
 
-                    //printf("l=%d\n", line);
-                    //line++;
-
                     read_float(file, &destination->arrival_time);
                     read_float(file, &destination->departure_time);
                     read_float(file, &destination->wait_time);
 
                     struct Node* node = destination->node = (struct Node*)malloc(sizeof(struct Node));
-
-                    //printf("l=%d\n", line);
-                    //line++;
 
                     read_int(file, &node->number);
                     read_int(file, &node->x);
