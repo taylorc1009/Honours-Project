@@ -5,19 +5,16 @@ from vehicle import Vehicle
 from problemInstance import ProblemInstance
 
 class Solution:
-    feasible: bool=True
-
-    T_default: float=0.0
-    T: float=0.0
-    T_cooling: float=0.0
-
-    total_distance: float=0.0
-    distance_unbalance: float=0.0
-    cargo_unbalance: float=0.0
-
-    def __init__(self, _id: int=None, vehicles: List[Vehicle]=None) -> None:
+    def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, T_default: float=0.0, T: float=0.0, T_cooling: float=0.0, total_distance: float=0.0, distance_unbalance: float=0.0, cargo_unbalance: float=0.0) -> None:
         self.id: int=int(_id)
         self.vehicles: List[Vehicle]=vehicles
+        self.feasible: bool=feasible
+        self.T_default: float=float(T_default)
+        self.T: float=float(T)
+        self.T_cooling: float=float(T_cooling)
+        self.total_distance: float=float(total_distance)
+        self.distance_unbalance: float=float(distance_unbalance)
+        self.cargo_unbalance: float=float(cargo_unbalance)
 
     def __str__(self) -> str:
         return f"{self.id=}, {self.feasible=}, {self.T_default=}, {self.T=}, {self.T_cooling=}, {self.total_distance=}, {self.cargo_unbalance=}, {len(self.vehicles)=}, {[str(v) for v in self.vehicles]}"
@@ -77,21 +74,4 @@ class Solution:
         return 0.0, 0.0 # ... and if the solution isn't feasible, then return zero values so that the previously recorded Hypervolumes aren't changed
 
     def __deepcopy__(self, memodict: Dict=None):
-        obj_copy = Solution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles])
-        obj_copy.feasible = self.feasible
-        obj_copy.T_default = self.T_default
-        obj_copy.T = self.T
-        obj_copy.T_cooling = self.T_cooling
-        obj_copy.total_distance = self.total_distance
-        #obj_copy.distance_unbalance = self.distance_unbalance
-        obj_copy.cargo_unbalance = self.cargo_unbalance
-
-        return obj_copy
-
-        """ this does not work due to the following error: "RecursionError: maximum recursion depth exceeded while calling a Python object"
-                obj_copy=copy.deepcopy(self)
-                obj_copy.vehicles = copy.deepcopy(self.vehicles)
-                for i, _ in enumerate(self.vehicles):
-                    obj_copy.vehicles[i].destinations = copy.deepcopy(self.vehicles[i].destinations)
-                    for j, _ in enumerate(self.vehicles[i].destinations):
-                        obj_copy.vehicles[i].destinations[j].node = copy.deepcopy(self.vehicles[i].destinations[j].node)"""
+        return Solution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, T_default=self.T_default, T=self.T, T_cooling=self.T_cooling, total_distance=self.total_distance, distance_unbalance=self.distance_unbalance, cargo_unbalance=self.cargo_unbalance)
