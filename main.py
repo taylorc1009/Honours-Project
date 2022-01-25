@@ -25,7 +25,7 @@ def executeMMOEASA(problemInstance: ProblemInstance) -> None:
             TC = 2000
 
         Hypervolumes = json.load(json_file)
-        ND_solutions = MMOEASA(problemInstance, MMOEASA_POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 10.0, Hypervolumes[problemInstance.name])
+        ND_solutions = MMOEASA(problemInstance, MMOEASA_POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0, Hypervolumes[problemInstance.name])
         for solution in ND_solutions:
             print("\n", str(solution))
 

@@ -148,7 +148,7 @@ def is_nondominated(I: Solution, ND: List[Solution]) -> bool:
     else:
         return I.feasible
 
-def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float,T_min: float, T_stop: float, Hypervolumes: Dict[str, float]) -> List[Solution]:
+def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float, Hypervolumes: Dict[str, float]) -> List[Solution]:
     P: List[Solution] = list()
     ND: List[Solution] = list()
     iterations = 0
@@ -197,7 +197,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 P[i].T *= P[i].T_cooling
             iterations += 1
             if not iterations % (TC / 10):
-                print(f"{iterations=}, time={round(time.time() - start, 1)}s")
+                print(f"{iterations=}, {P[0].T=}, time={round(time.time() - start, 1)}s")
 
         current_multi_start += 1
         print("multi-start occurred")
