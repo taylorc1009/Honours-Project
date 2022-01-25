@@ -32,7 +32,7 @@ def executeMMOEASA(problemInstance: ProblemInstance) -> None:
 if __name__ == '__main__':
     if not len(sys.argv) > 1:
         print("If you're unsure how to use the application, type h (help) for information")
-    elif sys.argv[1] in ["--help", "-h"]: # if the user gave one of these arguments on the command line then a help message is ourputted
+    elif sys.argv[1] in {"--help", "-h"}: # if the user gave one of these arguments on the command line then a help message is ourputted
         print(f"There's multiple types of problems in Solomon's instances, here's what they are:{os.linesep}{os.linesep}"
               f"- Number of customers:"
               f"  - 25 - 25 customers{os.linesep}"
