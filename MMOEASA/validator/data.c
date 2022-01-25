@@ -55,6 +55,7 @@ struct Solution* read_csv_base(char* restrict filename) {
             solution = (struct Solution*)malloc(sizeof(struct Solution));
 
             read_int(file, &solution->vehicle_max_capacity);
+            read_int(file, (int*)&solution->feasible);
             read_float(file, &solution->total_distance);
             read_float(file, &solution->distance_unbalance);
             read_float(file, &solution->cargo_unbalance);

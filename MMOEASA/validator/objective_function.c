@@ -66,14 +66,21 @@ void objective_function(struct Solution* restrict I)
     }
 }
 
+void output_objectives(const char* restrict formula_origin, struct Solution* restrict solution) {
+    printf("%s's objective functions:\n - feasible: %s\n - objectives:\n    - total distance = %f\n    - distance_unbalance = %f\n    - cargo_unbalance = %f\n", formula_origin, solution->feasible ? "true" : "false", solution->total_distance, solution->distance_unbalance, solution->cargo_unbalance);
+}
+
 int main(int argc, char** argv) {
     char* filename = argc > 1 ? argv[1] : NULL; // "read_csv" can accept a null filename as it will default to "solution.csv" if this is so
     struct Solution* solution = read_csv(.file=filename);
 
     if (solution) {
+        output_objectives("Python script", solution);
+        printf("\n");
+        
         objective_function(solution);
 
-        printf("feasible: %s\nobjectives:\n - total distance = %f\n - distance unbalance = %f\n - cargo unbalance = %f", solution->feasible ? "true" : "false", solution->total_distance, solution->distance_unbalance, solution->cargo_unbalance);
+        output_objectives("Original MMOEASA code", solution);
         free_Solution(solution);
     }
     else

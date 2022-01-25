@@ -58,7 +58,7 @@ def write_solution_for_validation(solution: Solution, max_capacity: int) -> None
 
     with open(relative_path, "w+") as csv:
         csv.write(f"{max_capacity}\n")
-        csv.write(f"{solution.total_distance},{solution.distance_unbalance},{solution.cargo_unbalance},{len(solution.vehicles)}\n")
+        csv.write(f"{1 if solution.feasible else 0},{solution.total_distance},{solution.distance_unbalance},{solution.cargo_unbalance},{len(solution.vehicles)}\n")
         for vehicle in solution.vehicles:
             csv.write(f"{vehicle.current_capacity},{vehicle.route_distance},{len(vehicle.destinations)}\n")
             for destination in vehicle.destinations:
