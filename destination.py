@@ -10,7 +10,7 @@ class Destination():
         self.wait_time: float=wait_time
     
     def __str__(self) -> str:
-        return f"{self.arrival_time}, {self.departure_time}, {self.wait_time}, {self.node.__str__()}"
+        return f"Destination(arrival_time={self.arrival_time}, departure_time={self.departure_time}, wait_time={self.wait_time}, {str(self.node)})"
 
     def __deepcopy__(self, memodict: Dict=None):
         return Destination(node=copy.deepcopy(self.node), arrival_time=self.arrival_time, departure_time=self.departure_time, wait_time=self.wait_time)

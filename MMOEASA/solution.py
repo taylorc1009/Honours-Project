@@ -17,7 +17,7 @@ class Solution:
         self.cargo_unbalance: float=float(cargo_unbalance)
 
     def __str__(self) -> str:
-        return f"{self.id=}, {self.feasible=}, {self.T_default=}, {self.T=}, {self.T_cooling=}, {self.total_distance=}, {self.cargo_unbalance=}, {len(self.vehicles)=}, {[str(v) for v in self.vehicles]}"
+        return f"id={self.id}, feasible={self.feasible}, T_default={self.T_default}, T={self.T}, T_cooling={self.T_cooling}, total_distance={self.total_distance}, distance_unbalance={self.distance_unbalance}, cargo_unbalance={self.cargo_unbalance}, {len(self.vehicles)=}, {[(i, str(v)) for i, v in enumerate(self.vehicles)]}"
 
     def calculate_nodes_time_windows(self, instance: ProblemInstance) -> None:
         for i, _ in enumerate(self.vehicles):

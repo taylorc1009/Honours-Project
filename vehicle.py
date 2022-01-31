@@ -12,7 +12,7 @@ class Vehicle:
         self.route_distance: float=float(route_distance)
 
     def __str__(self) -> str:
-        return f"{self.current_capacity=}, {self.route_distance=}, {len(self.destinations)=}, {[destination.node.number for destination in self.destinations]}"
+        return f"Vehicle(current_capacity={self.current_capacity}, route_distance={self.route_distance}, {len(self.destinations)=}, {[(i, str(d)) for i, d in enumerate(self.destinations)]})"
 
     def getCustomersVisited(self) -> List[Destination]:
         return self.destinations[1:-1] # to do this, we assume that every depot departure and return is initialised correctly (at index 0 and n - 1) which we can do as any route that isn't in this format is incorrect
