@@ -31,7 +31,7 @@ class Solution:
         for i, _ in enumerate(self.vehicles):
             self.vehicles[i].calculate_length_of_route(instance)
 
-    def objective_function(self, instance: ProblemInstance) -> Tuple[float, float]:
+    def objective_function(self, instance: ProblemInstance) -> None:
         vehicle = 0
         self.total_distance = 0.0
         self.feasible = True # set the solution as feasible temporarily
@@ -44,34 +44,29 @@ class Solution:
                 if self.vehicles[vehicle].destinations[i].arrival_time > instance.nodes[node_number].due_date or self.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
                     self.feasible = False
                     self.total_distance = MMOEASA_INFINITY
-                    #self.distance_unbalance = MMOEASA_INFINITY
+                    self.distance_unbalance = MMOEASA_INFINITY
                     self.cargo_unbalance = MMOEASA_INFINITY
                     break
             vehicle += 1
         
         if self.feasible:
-            #minimum_distance = MMOEASA_INFINITY
-            #maximum_distance = 0
+            minimum_distance = MMOEASA_INFINITY
+            maximum_distance = 0
             minimum_cargo = MMOEASA_INFINITY
             maximum_cargo = 0
 
             for i, _ in enumerate(self.vehicles):
-                """if self.vehicle[i].route_distance < minimum_distance: # these cannot be converted to "if ... elif" because we may miss, for example, our "maximum_distance" as on the first iteration it will also be less than "MMOEASA_INFINITY" ("minimum_distance")
-                    minimum_distance = self.vehicle[i].route_distance
-                if self.vehicle[i].route_distance > maximum_distance:
-                    maximum_distance = self.vehicle[i].route_distance"""
+                # these cannot be converted to "if ... elif" because we may miss, for example, our "maximum_distance" as on the first iteration it will also be less than "MMOEASA_INFINITY" ("minimum_distance")
+                if self.vehicles[i].route_distance < minimum_distance:
+                    minimum_distance = self.vehicles[i].route_distance
+                if self.vehicles[i].route_distance > maximum_distance:
+                    maximum_distance = self.vehicles[i].route_distance
                 if self.vehicles[i].current_capacity < minimum_cargo:
                     minimum_cargo = self.vehicles[i].current_capacity
                 if self.vehicles[i].current_capacity > maximum_cargo:
                     maximum_cargo = self.vehicles[i].current_capacity
-            #self.distance_unbalance = maximum_distance - minimum_distance
+            self.distance_unbalance = maximum_distance - minimum_distance
             self.cargo_unbalance = maximum_cargo - minimum_cargo
-
-            # these values are potentially the next Hypervolumes;
-            # if they're greater than any previously recorded total distances and unbalances in the vehicles' cargo, then they will be set as the new Hypervolumes by the function "update_Hypervolumes" in "mmoeasa.py"
-            # but if, and only if, the solution is feasible...
-            return self.total_distance, self.cargo_unbalance
-        return 0.0, 0.0 # ... and if the solution isn't feasible, then return zero values so that the previously recorded Hypervolumes aren't changed
 
     def __deepcopy__(self, memodict: Dict=None):
         return Solution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, T_default=self.T_default, T=self.T, T_cooling=self.T_cooling, total_distance=self.total_distance, distance_unbalance=self.distance_unbalance, cargo_unbalance=self.cargo_unbalance)
