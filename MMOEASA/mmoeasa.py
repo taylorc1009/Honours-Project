@@ -54,7 +54,7 @@ def TWIH(instance: ProblemInstance) -> Solution:
     return solution
 
 def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int, TC: int) -> float:
-    jump_temperatures = (T_max - T_min)/(float(p) - 1.0) if p > 1 else 0.0
+    jump_temperatures = (T_max - T_min) / float(p - 1) if p > 1 else 0.0
     T_2 = T_max - float(i) * jump_temperatures
     error = float(INT_MAX)
     maxError = 0.005 * float(TC)
