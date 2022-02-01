@@ -166,7 +166,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
         while P[0].T > T_stop and not iterations >= TC:
             for i, I in enumerate(P):
                 I_c, pending_copy = Crossover(instance, I, P, P_crossover)
-                for j in range(0, rand(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
+                for _ in range(0, rand(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
                     I_c, pending_copy = Mutation(instance, I_c, P_mutation, pending_copy)
                 P[i], parent_changed = MO_Metropolis(I, I_c, I.T)
 
