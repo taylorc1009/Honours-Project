@@ -3,7 +3,8 @@ import os
 import json
 from problemInstance import ProblemInstance
 from data import openIterationsOfProblemSet
-from MMOEASA.mmoeasa import MMOEASA
+from MMOEASA.mmoeasa import MMOEASA, TWIH_ref_point
+from MMOEASA.evaluation import calculate_median_Hypervolumes
 from MMOEASA.constants import MMOEASA_POPULATION_SIZE
 
 def executeMMOEASA(problemInstance: ProblemInstance) -> None:
@@ -25,9 +26,10 @@ def executeMMOEASA(problemInstance: ProblemInstance) -> None:
             TC = 2000
 
         Hypervolumes = json.load(json_file)
-        ND_solutions = MMOEASA(problemInstance, MMOEASA_POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0, Hypervolumes[problemInstance.name]) # TODO: T_stop of 10.0 gives better results; why?
+        ND_solutions = MMOEASA(problemInstance, MMOEASA_POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0, Hypervolumes[problemInstance.name]) # TODO: try changing the numerical parameters to command line arguments and experiment with them
         for solution in ND_solutions:
             print("\n", str(solution))
+        print(calculate_median_Hypervolumes(ND_solutions, TWIH_ref_point(problemInstance)))
 
 if __name__ == '__main__':
     if not len(sys.argv) > 1:

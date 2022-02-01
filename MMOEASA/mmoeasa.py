@@ -1,8 +1,11 @@
 import copy
 import time
+
+import numpy
+
 from MMOEASA.auxiliaries import rand
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
-from MMOEASA.constants import INT_MAX, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS
+from MMOEASA.constants import INT_MAX, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS, MMOEASA_INFINITY
 from MMOEASA.solution import Solution
 from problemInstance import ProblemInstance
 from destination import Destination
@@ -46,12 +49,37 @@ def TWIH(instance: ProblemInstance) -> Solution:
         vehicle.destinations.append(Destination(node=sorted_nodes[0])) # have the route end at the depot
         solution.vehicles.append(vehicle)
 
+    return solution
+
+def TWIH_initialiser(instance: ProblemInstance) -> Solution:
+    solution = TWIH(instance)
+
     solution.calculate_nodes_time_windows(instance)
     solution.calculate_vehicles_loads(instance)
     solution.calculate_length_of_routes(instance)
     solution.objective_function(instance)
 
     return solution
+
+def TWIH_ref_point(instance: ProblemInstance) -> Tuple[float, float, float]:
+    solution = TWIH(instance)
+    minimum_distance, maximum_distance, minimum_cargo, maximum_cargo = MMOEASA_INFINITY, 0, MMOEASA_INFINITY, 0
+
+    solution.total_distance = sum([vehicle.route_distance for vehicle in solution.vehicles])
+
+    for vehicle in solution.vehicles:
+        if vehicle.route_distance < minimum_distance:
+            minimum_distance = vehicle.route_distance
+        if vehicle.route_distance > maximum_distance:
+            maximum_distance = vehicle.route_distance
+        if vehicle.current_capacity < minimum_cargo:
+            minimum_cargo = vehicle.current_capacity
+        if vehicle.current_capacity > maximum_cargo:
+            maximum_cargo = vehicle.current_capacity
+    solution.distance_unbalance = maximum_distance - minimum_distance
+    solution.cargo_unbalance = maximum_cargo - minimum_cargo
+
+    return solution.total_distance * 2, solution.distance_unbalance * 2, solution.cargo_unbalance * 2
 
 def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int, TC: int) -> float:
     jump_temperatures = (T_max - T_min) / float(p - 1) if p > 1 else 0.0
@@ -149,13 +177,13 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
 
     prev_ND_id = 0
 
-    TWIH_initialiser = TWIH(instance)
+    TWIH_solution = TWIH_initialiser(instance)
     for i in range(p):
-        P.insert(i, copy.deepcopy(TWIH_initialiser))
+        P.insert(i, copy.deepcopy(TWIH_solution))
         P[i].id = i
         P[i].T_default = T_max - float(i) * ((T_max - T_min) / float(p - 1))
         P[i].T_cooling = Calculate_cooling(i, T_max, T_min, T_stop, p, TC)
-    del TWIH_initialiser
+    del TWIH_solution
 
     start = time.time()
     current_multi_start = 0
