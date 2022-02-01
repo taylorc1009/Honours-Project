@@ -2,7 +2,6 @@ import copy
 
 from destination import Destination
 from typing import List, Dict
-from node import Node
 from problemInstance import ProblemInstance
 
 class Vehicle:

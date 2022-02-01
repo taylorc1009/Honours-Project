@@ -38,12 +38,12 @@ def TWIH(instance: ProblemInstance) -> Solution:
         if sorted_nodes[D_i].number == 0:
             D_i += 1
 
-        vehicle = Vehicle(i, destinations=list())
+        vehicle = Vehicle(destinations=list())
         vehicle.destinations.append(Destination(node=sorted_nodes[0])) # have the route start at the depot
 
         while D_i < len(instance.nodes) and vehicle.current_capacity + sorted_nodes[D_i].demand < instance.capacity_of_vehicles:
             vehicle.destinations.append(Destination(node=sorted_nodes[D_i]))
-            vehicle.current_capacity += sorted_nodes[D_i].demand
+            vehicle.current_capacity += float(sorted_nodes[D_i].demand)
             D_i += 1
         
         vehicle.destinations.append(Destination(node=sorted_nodes[0])) # have the route end at the depot
@@ -64,6 +64,8 @@ def TWIH_initialiser(instance: ProblemInstance) -> Solution:
 def TWIH_ref_point(instance: ProblemInstance) -> Tuple[float, float, float]:
     solution = TWIH(instance)
     minimum_distance, maximum_distance, minimum_cargo, maximum_cargo = MMOEASA_INFINITY, 0, MMOEASA_INFINITY, 0
+
+    solution.calculate_length_of_routes(instance)
 
     solution.total_distance = sum([vehicle.route_distance for vehicle in solution.vehicles])
 
