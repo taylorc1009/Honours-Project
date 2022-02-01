@@ -15,7 +15,7 @@ def executeMMOEASA(problemInstance: ProblemInstance) -> None:
     #for instance in problemInstances:
     #print(instance.name)
     num_customers = len(problemInstance.nodes) - 1
-    with open(f"MMOEASA/hypervolumes_{num_customers}.json") as json_file:
+    with open(f"solomon_{num_customers}/hypervolumes.json") as json_file:
         TC = 0 # termination condition = the number of iterations to perform
         if num_customers == 25:
             TC = 100000
