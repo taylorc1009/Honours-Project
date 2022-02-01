@@ -9,4 +9,4 @@ def calculate_median_Hypervolumes(ND_solutions: List[Solution], TWIH_Hypervolume
         area += (prev_TD - ND.total_distance) * (ref_CU - ND.cargo_unbalance)
         prev_TD, prev_DU, prev_CU = ND.total_distance, ND.distance_unbalance, ND.cargo_unbalance
 
-    return area / (ref_TD * ref_CU)
+    return area / (ref_TD * ref_CU) # TODO: this is currently giving a "float division by zero" exception; why?

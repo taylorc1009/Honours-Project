@@ -39,9 +39,9 @@ class Solution:
         while vehicle < len(self.vehicles) and self.feasible:
             self.total_distance += self.vehicles[vehicle].route_distance
 
-            for i in range(1, len(self.vehicles[vehicle].destinations) - 1):
-                node_number = self.vehicles[vehicle].destinations[i].node.number
-                if self.vehicles[vehicle].destinations[i].arrival_time > instance.nodes[node_number].due_date or self.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
+            for destination in self.vehicles[vehicle].getCustomersVisited():
+                node_number = destination.node.number
+                if destination.arrival_time > instance.nodes[node_number].due_date or self.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
                     self.feasible = False
                     self.total_distance = MMOEASA_INFINITY
                     self.distance_unbalance = MMOEASA_INFINITY
@@ -55,16 +55,16 @@ class Solution:
             minimum_cargo = MMOEASA_INFINITY
             maximum_cargo = 0
 
-            for i, _ in enumerate(self.vehicles):
+            for vehicle in self.vehicles:
                 # these cannot be converted to "if ... elif" because we may miss, for example, our "maximum_distance" as on the first iteration it will also be less than "MMOEASA_INFINITY" ("minimum_distance")
-                if self.vehicles[i].route_distance < minimum_distance:
-                    minimum_distance = self.vehicles[i].route_distance
-                if self.vehicles[i].route_distance > maximum_distance:
-                    maximum_distance = self.vehicles[i].route_distance
-                if self.vehicles[i].current_capacity < minimum_cargo:
-                    minimum_cargo = self.vehicles[i].current_capacity
-                if self.vehicles[i].current_capacity > maximum_cargo:
-                    maximum_cargo = self.vehicles[i].current_capacity
+                if vehicle.route_distance < minimum_distance:
+                    minimum_distance = vehicle.route_distance
+                if vehicle.route_distance > maximum_distance:
+                    maximum_distance = vehicle.route_distance
+                if vehicle.current_capacity < minimum_cargo:
+                    minimum_cargo = vehicle.current_capacity
+                if vehicle.current_capacity > maximum_cargo:
+                    maximum_cargo = vehicle.current_capacity
             self.distance_unbalance = maximum_distance - minimum_distance
             self.cargo_unbalance = maximum_cargo - minimum_cargo
 
