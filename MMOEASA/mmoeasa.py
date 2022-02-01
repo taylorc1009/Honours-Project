@@ -61,7 +61,7 @@ def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int,
     T_cooling = 0.995
     auxiliary_iterations = 0.0
 
-    while abs(error) > maxError and not auxiliary_iterations > TC: # the original MMOEASA "Calculate_cooling" doesn't have the second condition, but mines (without it) gets an infinite loop (use the "print"s below to see)
+    while abs(error) > maxError and not auxiliary_iterations > TC: # TODO: the original MMOEASA "Calculate_cooling" doesn't have the second condition, but mine (without it) gets an infinite loop (use the "print"s below to see)
         #print(abs(error), maxError, T_cooling, auxiliary_iterations)
         T_1 = T_2
         auxiliary_iterations = 0.0
@@ -76,35 +76,39 @@ def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int,
     
     return T_cooling
 
-def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution]) -> Solution:
-    I_c = Crossover1(instance, copy.deepcopy(I), P)
-    return I_c
+def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_crossover: int) -> Tuple[Solution, bool]:
+    if rand(1, 100) <= P_crossover:
+        I_c = Crossover1(instance, copy.deepcopy(I), P)
+        return I_c, False
+    return I, True
 
-def Mutation(instance: ProblemInstance, I: Solution, probability: int) -> Solution:
-    I_m = copy.deepcopy(I)
+def Mutation(instance: ProblemInstance, I: Solution, probability: int, P_mutation: int, pending_copy: bool) -> Tuple[Solution, bool]:
+    if rand(1, 100) <= P_mutation:
+        I_c = copy.deepcopy(I) if pending_copy else I
+    
+        if 1 <= probability <= 10:
+            I_c = Mutation1(instance, I_c)
+        elif 11 <= probability <= 20:
+            I_c = Mutation2(instance, I_c)
+        elif 21 <= probability <= 30:
+            I_c = Mutation3(instance, I_c)
+        elif 31 <= probability <= 40:
+            I_c = Mutation4(instance, I_c)
+        elif 41 <= probability <= 50:
+            I_c = Mutation5(instance, I_c)
+        elif 51 <= probability <= 60:
+            I_c = Mutation6(instance, I_c)
+        elif 61 <= probability <= 70:
+            I_c = Mutation7(instance, I_c)
+        elif 71 <= probability <= 80:
+            I_c = Mutation8(instance, I_c)
+        elif 81 <= probability <= 90:
+            I_c = Mutation9(instance, I_c)
+        elif 91 <= probability <= 100:
+            I_c = Mutation10(instance, I_c)
 
-    if 1 <= probability <= 10:
-        I_m = Mutation1(instance, I_m)
-    elif 11 <= probability <= 20:
-        I_m = Mutation2(instance, I_m)
-    elif 21 <= probability <= 30:
-        I_m = Mutation3(instance, I_m)
-    elif 31 <= probability <= 40:
-        I_m = Mutation4(instance, I_m)
-    elif 41 <= probability <= 50:
-        I_m = Mutation5(instance, I_m)
-    elif 51 <= probability <= 60:
-        I_m = Mutation6(instance, I_m)
-    elif 61 <= probability <= 70:
-        I_m = Mutation7(instance, I_m)
-    elif 71 <= probability <= 80:
-        I_m = Mutation8(instance, I_m)
-    elif 81 <= probability <= 90:
-        I_m = Mutation9(instance, I_m)
-    elif 91 <= probability <= 100:
-        I_m= Mutation10(instance, I_m)
-
-    return I_m
+        return I_c, False
+    return I, pending_copy
 
 def Euclidean_distance_dispersion(x1: float, y1: float, x2: float, y2: float) -> float:
     global Hypervolume_total_distance, Hypervolume_cargo_unbalance
@@ -131,7 +135,7 @@ def MO_Metropolis(Parent: Solution, Child: Solution, T: float) -> Tuple[Solution
 
 def is_nondominated(I: Solution, ND: List[Solution]) -> bool:
     if ND:
-        nondominated = ND[-1]  # the only non-dominated solution we need to check is the solution at the end of the non-dominated set; the last non-dominated solution will dominate every preceding solution
+        nondominated = ND[-1] # the only non-dominated solution we need to check is the solution at the end of the non-dominated set; the last non-dominated solution will dominate every preceding solution
         return (I.total_distance < nondominated.total_distance and I.cargo_unbalance <= nondominated.cargo_unbalance) or (I.total_distance <= nondominated.total_distance and I.cargo_unbalance < nondominated.cargo_unbalance)
     else:
         return I.feasible
@@ -160,14 +164,10 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
 
         while P[0].T > T_stop and not iterations >= TC:
             for i, I in enumerate(P):
-                I_c = I
-                if rand(1, 100) <= P_crossover:
-                    I_c = Crossover(instance, I, P)
-                I_m = I_c
+                I_c, pending_copy = Crossover(instance, I, P, P_crossover)
                 for j in range(0, rand(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
-                    if rand(1, 100) <= P_mutation:
-                        I_m = Mutation(instance, I_m, rand(1, 100))
-                P[i], ND_changed = MO_Metropolis(I, I_m, I.T)
+                    I_c, pending_copy = Mutation(instance, I_c, rand(1, 100), P_mutation, pending_copy)
+                P[i], ND_changed = MO_Metropolis(I, I_c, I.T)
 
                 if is_nondominated(P[i], ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
                     if len(ND) >= p:
