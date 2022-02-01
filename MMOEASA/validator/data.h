@@ -6,6 +6,8 @@ typedef struct {
 } io_args;
 
 bool inline is_num_end(const int c);
+char* read_num(FILE* restrict file);
+void inline read_int(FILE* restrict file, int* restrict var);
 void inline read_float(FILE* restrict file, float* restrict var);
 struct Solution* read_csv_base(char* restrict filename);
 struct Solution* var_io(io_args in);

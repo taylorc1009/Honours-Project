@@ -9,7 +9,7 @@ bool inline is_num_end(const int c) {
     return c == ',' || c == '\n' || c == EOF;
 }
 
-char* read_num(FILE* file) {
+char* read_num(FILE* restrict file) {
     size_t size = 10;
     char* str = (char*)malloc(sizeof(char) * size);
     int c, len = 0;

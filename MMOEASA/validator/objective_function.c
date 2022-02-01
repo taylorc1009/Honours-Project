@@ -67,7 +67,7 @@ void objective_function(struct Solution* restrict I)
 }
 
 void output_objectives(const char* restrict formula_origin, struct Solution* restrict solution) {
-    printf("%s's objective functions:\n - feasible: %s\n - objectives:\n    - total distance = %f\n    - distance_unbalance = %f\n    - cargo_unbalance = %f\n", formula_origin, solution->feasible ? "true" : "false", solution->total_distance, solution->distance_unbalance, solution->cargo_unbalance);
+    printf("%s's objective function:\n - feasible: %s\n - objectives:\n    - total distance = %f\n    - distance_unbalance = %f\n    - cargo_unbalance = %f\n", formula_origin, solution->feasible ? "true" : "false", solution->total_distance, solution->distance_unbalance, solution->cargo_unbalance);
 }
 
 int main(int argc, char** argv) {
