@@ -7,12 +7,12 @@ from MMOEASA.solution import Solution
 from problemInstance import ProblemInstance
 from destination import Destination
 from vehicle import Vehicle
-from typing import List, Tuple, Dict
+from typing import List, Tuple
 from numpy import sqrt, exp
 from data import write_solution_for_validation
 
 Hypervolume_total_distance: float=0.0
-Hypervolume_distance_unbalance: float=0.0 # currently, the distance unbalance objective is unused everywhere in the program (it's also commented out in "Solution.py"), but this may change
+Hypervolume_distance_unbalance: float=0.0 # currently, the distance unbalance objective is unused in the objective function, but this may change
 Hypervolume_cargo_unbalance: float=0.0
 
 def update_Hypervolumes(HV_TD: float, HV_DU: float, HV_CU: float) -> None:
@@ -145,9 +145,9 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
     P: List[Solution] = list()
     ND: List[Solution] = list()
     iterations = 0
-    update_Hypervolumes(*Hypervolumes) # TODO: currently, the only Hypervolume values I have are to the problem instances with 100 customers; if I research them more then I could possibly get the values to 25 and 50
+    update_Hypervolumes(*Hypervolumes)
 
-    num_ND = 0
+    prev_ND_id = 0
 
     TWIH_initialiser = TWIH(instance)
     for i in range(p):
@@ -168,20 +168,20 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 I_c, pending_copy = Crossover(instance, I, P, P_crossover)
                 for j in range(0, rand(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
                     I_c, pending_copy = Mutation(instance, I_c, P_mutation, pending_copy)
-                P[i], ND_changed = MO_Metropolis(I, I_c, I.T)
+                P[i], parent_changed = MO_Metropolis(I, I_c, I.T)
 
                 if is_nondominated(P[i], ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
                     if len(ND) >= p:
                         ND.pop(0)
                     ND.append(copy.deepcopy(P[i]))
                     print(f"{len(ND)=}, ND={i}, {iterations=}, time={round(time.time() - start, 1)}s")
-                    num_ND = i
+                    prev_ND_id = i
 
                     should_write = False
                     if should_write: # use the debugger to edit the value in "should_write" if you'd like a solution to be written to a CSV
                         write_solution_for_validation(P[i], instance.capacity_of_vehicles)
-                elif ND_changed and num_ND == i:
-                    print(f"ND solution ({num_ND}) changed in P ({iterations=}, time={round(time.time() - start, 1)}s)")
+                elif parent_changed and i == prev_ND_id:
+                    print(f"ND solution ({prev_ND_id}) changed in P ({iterations=}, time={round(time.time() - start, 1)}s)")
 
                 P[i].T *= P[i].T_cooling
             iterations += 1
@@ -189,5 +189,6 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 print(f"{iterations=}, {P[0].T=}, time={round(time.time() - start, 1)}s")
 
         current_multi_start += 1
-        print("multi-start occurred")
+        if iterations < TC:
+            print("multi-start occurred")
     return ND
