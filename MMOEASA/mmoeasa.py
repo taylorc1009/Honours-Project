@@ -82,10 +82,11 @@ def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_cross
         return I_c, False
     return I, True
 
-def Mutation(instance: ProblemInstance, I: Solution, probability: int, P_mutation: int, pending_copy: bool) -> Tuple[Solution, bool]:
+def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, pending_copy: bool) -> Tuple[Solution, bool]:
     if rand(1, 100) <= P_mutation:
         I_c = copy.deepcopy(I) if pending_copy else I
-    
+        probability = rand(1, 100)
+
         if 1 <= probability <= 10:
             I_c = Mutation1(instance, I_c)
         elif 11 <= probability <= 20:
@@ -166,7 +167,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
             for i, I in enumerate(P):
                 I_c, pending_copy = Crossover(instance, I, P, P_crossover)
                 for j in range(0, rand(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
-                    I_c, pending_copy = Mutation(instance, I_c, rand(1, 100), P_mutation, pending_copy)
+                    I_c, pending_copy = Mutation(instance, I_c, P_mutation, pending_copy)
                 P[i], ND_changed = MO_Metropolis(I, I_c, I.T)
 
                 if is_nondominated(P[i], ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
