@@ -11,7 +11,7 @@ def executeMMOEASA(problemInstance: ProblemInstance) -> None:
     #for i, _ in enumerate(problemInstances):
         #print(problemInstances[i].name, len(problemInstances[i].MMOEASA_distances))
     #problemInstances[i].calculateDistances()
-    problemInstance.calculateDistances()
+    problemInstance.calculate_distances()
 
     #for instance in problemInstances:
     #print(instance.name)

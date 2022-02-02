@@ -13,7 +13,7 @@ class ProblemInstance:
     def __str__(self) -> str:
         return f"{self.name}, {self.amount_of_vehicles}, {self.capacity_of_vehicles}, {[(key, value.__str__()) for key, value in self.nodes.items()]}"
     
-    def calculateDistances(self) -> None:
+    def calculate_distances(self) -> None:
         self.MMOEASA_distances: List[List[float]]=[[-1.0 for _, _ in enumerate(self.nodes)] for _, _ in enumerate(self.nodes)]
 
         for i, _ in enumerate(self.nodes):

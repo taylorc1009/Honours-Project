@@ -32,13 +32,13 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
 
 def get_random_vehicle(I: Solution, exclude_values: List[int]=None, vehicles_required: int=1) -> int:
     random_vehicle = rand(0, len(I.vehicles) - 1, exclude_values=exclude_values)
-    while I.vehicles[random_vehicle].getNumOfCustomersVisited() < vehicles_required:
+    while I.vehicles[random_vehicle].get_num_of_customers_visited() < vehicles_required:
         random_vehicle = rand(0, len(I.vehicles) - 1, exclude_values=exclude_values)
     return random_vehicle
 
 def Mutation1(instance: ProblemInstance, I_c: Solution) -> Solution:
     random_vehicle = get_random_vehicle(I_c, vehicles_required=2)
-    num_customers = I_c.vehicles[random_vehicle].getNumOfCustomersVisited()
+    num_customers = I_c.vehicles[random_vehicle].get_num_of_customers_visited()
     origin_position = rand(1, num_customers)
     destination_position = rand(1, num_customers, exclude_values=[origin_position])
 
@@ -48,7 +48,7 @@ def Mutation1(instance: ProblemInstance, I_c: Solution) -> Solution:
 
 def Mutation2(instance: ProblemInstance, I_c: Solution) -> Solution:
     random_vehicle = get_random_vehicle(I_c, vehicles_required=2)
-    num_customers = I_c.vehicles[random_vehicle].getNumOfCustomersVisited()
+    num_customers = I_c.vehicles[random_vehicle].get_num_of_customers_visited()
     origin_position = rand(1, num_customers)
 
     best_location, fitness_of_best_location = origin_position, MMOEASA_INFINITY
@@ -68,26 +68,26 @@ def Mutation2(instance: ProblemInstance, I_c: Solution) -> Solution:
 
 def Mutation3(instance: ProblemInstance, I_c: Solution) -> Solution:
     random_origin_vehicle = get_random_vehicle(I_c)
-    origin_position = rand(1, I_c.vehicles[random_origin_vehicle].getNumOfCustomersVisited())
+    origin_position = rand(1, I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited())
 
     random_destination_vehicle = get_random_vehicle(I_c, exclude_values=[random_origin_vehicle])
-    destination_position = rand(1, I_c.vehicles[random_destination_vehicle].getNumOfCustomersVisited())
+    destination_position = rand(1, I_c.vehicles[random_destination_vehicle].get_num_of_customers_visited())
 
     I_c = move_destination(instance, I_c, random_origin_vehicle, origin_position, random_destination_vehicle, destination_position)
 
-    if not I_c.vehicles[random_origin_vehicle].getNumOfCustomersVisited():
+    if not I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited():
         del I_c.vehicles[random_origin_vehicle]
 
     return I_c
 
 def Mutation4(instance: ProblemInstance, I_c: Solution) -> Solution:
     random_origin_vehicle = get_random_vehicle(I_c)
-    origin_position = rand(1, I_c.vehicles[random_origin_vehicle].getNumOfCustomersVisited())
+    origin_position = rand(1, I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited())
 
     random_destination_vehicle = get_random_vehicle(I_c, exclude_values=[random_origin_vehicle])
 
     best_location, fitness_of_best_location = -1, MMOEASA_INFINITY
-    for i in range(1, I_c.vehicles[random_destination_vehicle].getNumOfCustomersVisited() + 1):
+    for i in range(1, I_c.vehicles[random_destination_vehicle].get_num_of_customers_visited() + 1):
         I_c = move_destination(instance, I_c, random_origin_vehicle, origin_position, random_destination_vehicle, i)
 
         if 0 <= I_c.total_distance < fitness_of_best_location:
@@ -97,17 +97,17 @@ def Mutation4(instance: ProblemInstance, I_c: Solution) -> Solution:
 
     if best_location >= 0:
         I_c = move_destination(instance, I_c, random_origin_vehicle, origin_position, random_destination_vehicle, best_location)
-        if not I_c.vehicles[random_origin_vehicle].getNumOfCustomersVisited():
+        if not I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited():
             del I_c.vehicles[random_origin_vehicle]
 
     return I_c
 
 def Mutation5(instance: ProblemInstance, I_c: Solution) -> Solution:
     random_origin_vehicle = get_random_vehicle(I_c)
-    origin_position = rand(1, I_c.vehicles[random_origin_vehicle].getNumOfCustomersVisited())
+    origin_position = rand(1, I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited())
 
     random_destination_vehicle = get_random_vehicle(I_c, exclude_values=[random_origin_vehicle])
-    destination_position = rand(1, I_c.vehicles[random_destination_vehicle].getNumOfCustomersVisited())
+    destination_position = rand(1, I_c.vehicles[random_destination_vehicle].get_num_of_customers_visited())
 
     I_c = move_destination(instance, I_c, random_origin_vehicle, origin_position, random_destination_vehicle, destination_position)
     I_c = move_destination(instance, I_c, random_destination_vehicle, destination_position + 1, random_origin_vehicle, origin_position)
@@ -116,12 +116,12 @@ def Mutation5(instance: ProblemInstance, I_c: Solution) -> Solution:
 
 def Mutation6(instance: ProblemInstance, I_c: Solution) -> Solution:
     random_origin_vehicle = get_random_vehicle(I_c)
-    origin_position = rand(1, I_c.vehicles[random_origin_vehicle].getNumOfCustomersVisited())
+    origin_position = rand(1, I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited())
 
     best_vehicle, best_location, fitness_of_best_location = -1, -1, MMOEASA_INFINITY
     for destination_vehicle in range(0, len(I_c.vehicles)):
         if not random_origin_vehicle == destination_vehicle:
-            num_customers = I_c.vehicles[destination_vehicle].getNumOfCustomersVisited()
+            num_customers = I_c.vehicles[destination_vehicle].get_num_of_customers_visited()
 
             if num_customers > 0:
                 for i in range(1, num_customers + 1):
@@ -135,19 +135,19 @@ def Mutation6(instance: ProblemInstance, I_c: Solution) -> Solution:
 
     if best_location >= 0:
         I_c = move_destination(instance, I_c, random_origin_vehicle, origin_position, best_vehicle, best_location)
-        if not I_c.vehicles[random_origin_vehicle].getNumOfCustomersVisited():
+        if not I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited():
             del I_c.vehicles[random_origin_vehicle]
 
     return I_c
 
 def Mutation7(instance: ProblemInstance, I_c: Solution) -> Solution:
     random_origin_vehicle = get_random_vehicle(I_c)
-    origin_position = rand(1, I_c.vehicles[random_origin_vehicle].getNumOfCustomersVisited())
+    origin_position = rand(1, I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited())
 
     best_vehicle, best_location, smallest_time_window_difference = -1, -1, MMOEASA_INFINITY
     for destination_vehicle in range(0, len(I_c.vehicles)):
         if not random_origin_vehicle == destination_vehicle:
-            num_customers = I_c.vehicles[destination_vehicle].getNumOfCustomersVisited()
+            num_customers = I_c.vehicles[destination_vehicle].get_num_of_customers_visited()
 
             if num_customers > 0:
                 for i in range(1, num_customers + 2): # TODO: MMOEASA does +2 to include the depot-return node in this mutation; is this correct and does it work?
@@ -162,7 +162,7 @@ def Mutation7(instance: ProblemInstance, I_c: Solution) -> Solution:
 
     if best_location >= 0:
         I_c = move_destination(instance, I_c, random_origin_vehicle, origin_position, best_vehicle, best_location)
-        if not I_c.vehicles[random_origin_vehicle].getNumOfCustomersVisited():
+        if not I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited():
             del I_c.vehicles[random_origin_vehicle]
 
     return I_c
@@ -170,7 +170,7 @@ def Mutation7(instance: ProblemInstance, I_c: Solution) -> Solution:
 def Mutation8(instance: ProblemInstance, I_c: Solution) -> Solution:
     if len(I_c.vehicles) < instance.amount_of_vehicles:
         random_vehicle = get_random_vehicle(I_c, vehicles_required=2)
-        origin_position = rand(1, I_c.vehicles[random_vehicle].getNumOfCustomersVisited())
+        origin_position = rand(1, I_c.vehicles[random_vehicle].get_num_of_customers_visited())
 
         destinations = [Destination(node=instance.nodes[0]), *I_c.vehicles[random_vehicle].destinations[origin_position:-1], Destination(node=instance.nodes[0])]
         I_c.vehicles.append(Vehicle(destinations=destinations))
@@ -190,7 +190,7 @@ def Mutation8(instance: ProblemInstance, I_c: Solution) -> Solution:
 def Mutation9(instance: ProblemInstance, I_c: Solution) -> Solution:
     if len(I_c.vehicles) < instance.amount_of_vehicles:
         random_vehicle = get_random_vehicle(I_c, vehicles_required=2)
-        num_customers = I_c.vehicles[random_vehicle].getNumOfCustomersVisited()
+        num_customers = I_c.vehicles[random_vehicle].get_num_of_customers_visited()
         origin_position = rand(1, num_customers)
 
         destinations = [Destination(node=instance.nodes[0]), I_c.vehicles[random_vehicle].destinations[origin_position], Destination(node=instance.nodes[0])]
@@ -212,13 +212,13 @@ def Mutation10(instance: ProblemInstance, I_c: Solution) -> Solution:
     random_origin_vehicle = get_random_vehicle(I_c)
 
     infeasible_node_reallocations = 0
-    for _ in range(1, I_c.vehicles[random_origin_vehicle].getNumOfCustomersVisited() + 1):
+    for _ in range(1, I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited() + 1):
         origin_position = 1 + infeasible_node_reallocations
         node_reallocated = False
         destination_vehicle = 0
 
         while destination_vehicle < len(I_c.vehicles) and not node_reallocated:
-            num_customers_destination = I_c.vehicles[destination_vehicle].getNumOfCustomersVisited()
+            num_customers_destination = I_c.vehicles[destination_vehicle].get_num_of_customers_visited()
 
             if not random_origin_vehicle == destination_vehicle and num_customers_destination >= 1:
                 for destination_position in range(1, num_customers_destination + 1):
@@ -239,7 +239,7 @@ def Mutation10(instance: ProblemInstance, I_c: Solution) -> Solution:
     return I_c
 
 def vehicle_insertion_possible(unvisited_nodes: Set[int], new_vehicle: Vehicle) -> Tuple[bool, Set[int]]:
-    nodes_to_insert = set([d.node.number for d in new_vehicle.getCustomersVisited()])
+    nodes_to_insert = set([d.node.number for d in new_vehicle.get_customers_visited()])
     return len(unvisited_nodes.difference(nodes_to_insert)) == len(unvisited_nodes) - len(nodes_to_insert), nodes_to_insert
 
 def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> Solution:
@@ -247,10 +247,10 @@ def Crossover1(instance: ProblemInstance, I_c: Solution, P: List[Solution]) -> S
     
     random_solution = rand(0, len(P) - 1, exclude_values=[I_c.id])
 
-    unvisited_nodes = set(range(1, len(instance.nodes))).difference([d.node.number for v in I_c.vehicles for d in v.getCustomersVisited()])
+    unvisited_nodes = set(range(1, len(instance.nodes))).difference([d.node.number for v in I_c.vehicles for d in v.get_customers_visited()])
 
     for i, _ in enumerate(P[random_solution].vehicles):
-        if P[random_solution].vehicles[i].getNumOfCustomersVisited() >= 1:
+        if P[random_solution].vehicles[i].get_num_of_customers_visited() >= 1:
             insertion_possible, new_nodes = vehicle_insertion_possible(unvisited_nodes, P[random_solution].vehicles[i])
 
             if insertion_possible and len(I_c.vehicles) < instance.amount_of_vehicles:

@@ -20,7 +20,7 @@ def insert_unvisited_node(I: Solution, instance: ProblemInstance, node: int) -> 
     vehicle = 0
 
     while vehicle < len(I.vehicles) and not inserted:
-        customers_on_route = I.vehicles[vehicle].getNumOfCustomersVisited()
+        customers_on_route = I.vehicles[vehicle].get_num_of_customers_visited()
         final_customer = I.vehicles[vehicle].destinations[customers_on_route].node.number
         vehicle_backup = copy.deepcopy(I.vehicles[vehicle])
 
@@ -58,7 +58,7 @@ def reinitialize_return_to_depot(vehicle: Vehicle, instance: ProblemInstance) ->
     if not vehicle.destinations[-1].node.number == 0:
         vehicle.destinations.append(Destination(node=instance.nodes[0]))
 
-    customers_on_route = vehicle.getNumOfCustomersVisited()
+    customers_on_route = vehicle.get_num_of_customers_visited()
     final_customer = vehicle.destinations[customers_on_route].node.number
 
     vehicle.destinations[customers_on_route + 1].arrival_time = vehicle.destinations[customers_on_route + 1].departure_time + instance.MMOEASA_distances[final_customer][0]

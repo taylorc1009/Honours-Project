@@ -1,8 +1,5 @@
 import copy
 import time
-
-import numpy
-
 from MMOEASA.auxiliaries import rand
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from MMOEASA.constants import INT_MAX, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS, MMOEASA_INFINITY
