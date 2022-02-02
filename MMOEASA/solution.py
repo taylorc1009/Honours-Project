@@ -1,5 +1,5 @@
 import copy
-from typing import List, Tuple, Dict
+from typing import List, Dict
 from MMOEASA.constants import MMOEASA_INFINITY
 from vehicle import Vehicle
 from problemInstance import ProblemInstance
