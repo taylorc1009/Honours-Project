@@ -18,4 +18,4 @@ class ProblemInstance:
 
         for i, _ in enumerate(self.nodes):
             for j, _ in enumerate(self.nodes):
-                self.MMOEASA_distances[i][j] = self.nodes[i].getDistance(self.nodes[j].x, self.nodes[j].y) if not i == j else -1.0
+                self.MMOEASA_distances[i][j] = self.nodes[i].get_distance(self.nodes[j].x, self.nodes[j].y) if not i == j else -1.0
