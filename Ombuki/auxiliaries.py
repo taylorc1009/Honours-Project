@@ -1,5 +1,5 @@
 from numpy import random
-from constants import INT_MAX
+from Ombuki.constants import INT_MAX
 from typing import Set
 
 def rand(start: int, end: int, exclude_values: Set[int]=None) -> int:
