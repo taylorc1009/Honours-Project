@@ -6,6 +6,7 @@ from data import openIterationsOfProblemSet
 from MMOEASA.mmoeasa import MMOEASA, TWIH_ref_point
 from MMOEASA.evaluation import calculate_median_Hypervolumes
 from MMOEASA.constants import MMOEASA_POPULATION_SIZE
+from Ombuki.ombuki import Ombuki
 
 def executeMMOEASA(problemInstance: ProblemInstance) -> None:
     #for i, _ in enumerate(problemInstances):
@@ -31,9 +32,14 @@ def executeMMOEASA(problemInstance: ProblemInstance) -> None:
             print("\n", str(solution))
         print(calculate_median_Hypervolumes(ND_solutions, TWIH_ref_point(problemInstance))) # TODO: currently, the TWIH usually has a cargo unbalance of 20 and the ND_solutions usually have as low as 90; therefore, TWIH_ref_point's Hypervolume may need to be multiplied by a higher value
 
+def executeOmbuki(problemInstance: ProblemInstance) -> None:
+    ND_solutions = Ombuki(problemInstance, 300, 350, 0.8, 0.1)
+    for solution in ND_solutions:
+        print("\n", str(solution))
+
 if __name__ == '__main__':
-    if not len(sys.argv) > 1:
-        print("If you're unsure how to use the application, type h (help) for information")
+    if not 1 < len(sys.argv) < 4:
+        print("If you're unsure how to use the application, give the argument -h (--help) for information")
     elif sys.argv[1] in {"--help", "-h"}: # if the user gave one of these arguments on the command line then a help message is ourputted
         print(f"There's multiple types of problems in Solomon's instances, here's what they are:{os.linesep}{os.linesep}"
               f"- Number of customers:"
@@ -47,16 +53,22 @@ if __name__ == '__main__':
               f"- Width of deliveries' time windows:"
               f"  - 1 - destinations with narrow time windows{os.linesep}"
               f"  - 2 - destinations with wide time windows{os.linesep}{os.linesep}"
-            f"To execute a problem set, please enter a set's details. The details required, and in this order, are:{os.linesep}"
+              f"To execute a problem set, please enter a set's details. The details required, and in this order, are:{os.linesep}"
               f"  1. Amount of customers - can be either '25', '50' or '100'{os.linesep}"
               f"  2. Type of problem - can be either 'C', 'R', or 'RC'{os.linesep}"
               f"  3. Problem set - can be either '1' or '2'{os.linesep}{os.linesep}"
-            f"An example command is: \"main.py 25 RC 2\""
+              f"An example command is: \"main.py 25 RC 2\""
         )
-    else:
-        problemInstances = openIterationsOfProblemSet(sys.argv[1])#*sys.argv[1:])
+    elif len(sys.argv) == 3:
+        problemInstances = openIterationsOfProblemSet(sys.argv[2])#*sys.argv[1:])
 
         #if len(problemInstances) > 0:
             #print([problemInstance.__str__() for problemInstance in problemInstances])
 
-        executeMMOEASA(problemInstances)
+        if sys.argv[1].upper() == "MMOEASA":
+            executeMMOEASA(problemInstances)
+        elif sys.argv[1].upper() == "OMBUKI":
+            executeOmbuki(problemInstances)
+        else:
+            exc = ValueError(f"Algorithm \"{sys.argv[1]}\" was not recognised")
+            raise exc
