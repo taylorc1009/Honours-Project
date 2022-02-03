@@ -1,4 +1,5 @@
 from typing import Dict, Union
+from math import sqrt
 
 class Node:
     def __init__(self, number: int, x: int, y: int, demand: int, ready_time: int, due_date: int, service_duration: int) -> None:
@@ -11,12 +12,12 @@ class Node:
         self.service_duration: int=int(service_duration)
 
     def get_distance(self, *args: Union["Node", int]) -> float:
-        import math
-        if len(args) > 1:
-            xPow, yPow = (args[0] - self.x) ** 2, (args[1] - self.y) ** 2
-        else:
+        xPow, yPow = None, None
+        if len(args) == 1 and type(args[0]) == "Node":
             xPow, yPow = (args[0].x - self.x) ** 2, (args[0].y - self.y) ** 2
-        return math.sqrt(xPow + yPow)
+        elif len(args) == 2 and type(args[0]) is int and type(args[1]) is int:
+            xPow, yPow = (args[0] - self.x) ** 2, (args[1] - self.y) ** 2
+        return sqrt(xPow + yPow)
     
     def __str__(self) -> str:
         return f"Node(number={self.number}, x={self.x}, y={self.y}, demand={self.demand}, ready_time={self.ready_time}, due_date={self.due_date}, service_duration={self.service_duration})"
