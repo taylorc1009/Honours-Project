@@ -13,7 +13,7 @@ class Node:
 
     def get_distance(self, *args: Union["Node", int]) -> float:
         xPow, yPow = None, None
-        if len(args) == 1 and type(args[0]) == "Node":
+        if len(args) == 1 and type(args[0]) is type(self):
             xPow, yPow = (args[0].x - self.x) ** 2, (args[0].y - self.y) ** 2
         elif len(args) == 2 and type(args[0]) is int and type(args[1]) is int:
             xPow, yPow = (args[0] - self.x) ** 2, (args[1] - self.y) ** 2
