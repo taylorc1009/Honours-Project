@@ -4,7 +4,7 @@ from node import Node
 from problemInstance import ProblemInstance
 from MMOEASA.solution import Solution
 
-def loadInstance(filename) -> ProblemInstance:
+def open_problem_instance(filename) -> ProblemInstance:
     try:
         with open(filename, 'r') as file:
             problemInstance = None
@@ -22,36 +22,9 @@ def loadInstance(filename) -> ProblemInstance:
                             problemInstance.nodes[int(node.number)] = node
 
         return problemInstance
-    except FileNotFoundError as e:
-        raise FileNotFoundError(f"Couldn't open file \"{filename}\"\nCause: {e}")
-
-def openIterationsOfProblemSet(filename) -> ProblemInstance:#amountOfCustomers, typeOfProblem, problemSet) -> List[ProblemInstance]:
-    #problemInstances = []
-    #partialPath = f"solomon_{amountOfCustomers}/{typeOfProblem.upper()}{problemSet}"
-
-    # is this neater than the for loop below? 
-    # the for loop allows for a more helpful error as it shows which specific directory the file couldn't be found in and the file name it was searching for
-    #i = 1
-    #path = f"{partialPath}{1:02}.txt"
-    #while(os.path.isfile(path)):
-        #problemInstances.append(loadInstance(path))
-
-        #i += 1
-        #path = f"{partialPath}{i:02}.txt"
-
-    #if i == 1:
-    #    print(f"Couldn't open file set \"solomon_{amountOfCustomers}/{typeOfProblem}{problemSet}xx.txt\"\n")
-    
-    #for i in range(1, sys.maxsize): # "sys.maxsize" is almost the same as "INT_MAX"; it's a dummy value that will never be reached
-    try:
-        return loadInstance(filename)#f"{partialPath}{i:02}.txt")
-        #problemInstances.append(loadInstance(f"{partialPath}{i:02}.txt"))
-    except FileNotFoundError as e: # if the file is not found, then we've either iterated over every file in the problem set or the problem set details entered are incorrect
-        #if i == 1: # if the problem set's details are incorrect then "i" will still be 1, so, if it is, output an error message
-        print(e)
-        #break
-
-    #return problemInstances
+    except BaseException as e:
+        exc = BaseException(f"Couldn't open file \"{filename}\"\nCause: {e}")
+        raise exc from None
 
 def write_solution_for_validation(solution: Solution, max_capacity: int) -> None:
     relative_path = str(Path(__file__).parent.resolve()) + "\\MMOEASA\\validator\\solution.csv"
