@@ -53,11 +53,14 @@ class Vehicle:
         return Vehicle(current_capacity=self.current_capacity, route_distance=self.route_distance, destinations=[copy.deepcopy(d) for d in self.destinations])
 
     @classmethod
-    def create_route(cls, instance: ProblemInstance, node: Union[Node, List[Node]]=None) -> "Vehicle":
+    def create_route(cls, instance: ProblemInstance, node: Union[Node, List[Node], List[Destination]]=None) -> "Vehicle":
         if node:
             if isinstance(node, list):
-                destinations = [Destination(node=n) for n in node]
-                return cls(destinations=[Destination(node=instance.nodes[0]), *destinations, Destination(instance.nodes[0])])
+                if isinstance(node[0], Node):
+                    destinations = [Destination(node=n) for n in node]
+                    return cls(destinations=[Destination(node=instance.nodes[0]), *destinations, Destination(instance.nodes[0])])
+                elif isinstance(node[0], Destination):
+                    return cls(destinations=[Destination(node=instance.nodes[0]), *node, Destination(node=instance.nodes[0])])
             elif isinstance(node, Node):
                 return cls(destinations=[Destination(node=instance.nodes[0]), Destination(node=node), Destination(instance.nodes[0])])
         else:
