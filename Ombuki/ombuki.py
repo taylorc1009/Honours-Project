@@ -63,13 +63,14 @@ def generate_greedy_solution(instance: ProblemInstance) -> Solution:
 
 def transform_to_feasible_network_phase_one(instance: ProblemInstance, solution: Solution) -> Solution:
     feasible_solution = Solution(_id=solution.id, vehicles=[Vehicle(destinations=[Destination(node=instance.nodes[0]), Destination(node=solution.vehicles[0].destinations[1].node), Destination(instance.nodes[0])])])
+
     feasible_solution.vehicles[0].destinations[1].arrival_time = feasible_solution.vehicles[0].destinations[1].node.get_distance(feasible_solution.vehicles[0].destinations[0].node)
     if feasible_solution.vehicles[0].destinations[1].arrival_time < feasible_solution.vehicles[0].destinations[1].node.ready_time:
         feasible_solution.vehicles[0].destinations[1].wait_time = feasible_solution.vehicles[0].destinations[1].node.ready_time
         feasible_solution.vehicles[0].destinations[1].arrival_time = feasible_solution.vehicles[0].destinations[1].node.ready_time
     feasible_solution.vehicles[0].destinations[1].departure_time = feasible_solution.vehicles[0].destinations[1].arrival_time + feasible_solution.vehicles[0].destinations[1].node.service_duration
-    f_vehicle = 0
 
+    f_vehicle = 0
     for vehicle in solution.vehicles:
         for destination in vehicle.get_customers_visited()[1 if vehicle is solution.vehicles[0] else 0:]:
             inserted = False
