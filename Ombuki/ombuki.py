@@ -1,3 +1,4 @@
+import copy
 import random
 from typing import List
 from problemInstance import ProblemInstance
@@ -60,7 +61,38 @@ def generate_greedy_solution(instance: ProblemInstance) -> Solution:
 
     return solution
 
-def Ombuki(instance: ProblemInstance, population_size: int, span: int, crossover: float, mutation: float) -> List[Solution]:
+def transform_to_feasible_network(instance: ProblemInstance, solution: Solution) -> Solution:
+    feasible_solution = Solution(vehicles=[Vehicle(destinations=[solution.vehicles[0].destinations[0]])])
+    f_vehicle = 0
+
+    # TODO: currently, this will crash because the routes are not initialised with the depot node
+    for vehicle in solution.vehicles:
+        for destination in vehicle.destinations[1 if vehicle is solution.vehicles[0] else 0:]:
+            inserted = False
+
+            while not inserted:
+                if feasible_solution.vehicles[f_vehicle].current_capacity + destination.node.demand < instance.capacity_of_vehicles and feasible_solution.vehicles[f_vehicle].destinations[-1].arrival_time < destination.node.due_date:
+                    feasible_solution.vehicles[f_vehicle].destinations.append(copy.deepcopy(destination))
+                    inserted = True
+                elif f_vehicle == instance.amount_of_vehicles - 1:
+                    f_vehicle = 0
+                else:
+                    if len(feasible_solution.vehicles) < instance.amount_of_vehicles:
+                        feasible_solution.vehicles.append(Vehicle(destinations=[copy.deepcopy(destination)]))
+                        inserted = True
+                    f_vehicle += 1
+
+            feasible_solution.vehicles[f_vehicle].destinations[-1].arrival_time = feasible_solution.vehicles[f_vehicle].destinations[-2].departure_time + feasible_solution.vehicles[f_vehicle].destinations[-2].node.get_distance(feasible_solution.vehicles[f_vehicle].destinations[-2].node)
+            if feasible_solution.vehicles[f_vehicle].destinations[-1].arrival_time < feasible_solution.vehicles[f_vehicle].destinations[-1].node.ready_time:
+                feasible_solution.vehicles[f_vehicle].destinations[-1].wait_time = feasible_solution.vehicles[f_vehicle].destinations[-1].node.ready_time - feasible_solution.vehicles[f_vehicle].destinations[-1].arrival_time
+                feasible_solution.vehicles[f_vehicle].destinations[-1].arrival_time = feasible_solution.vehicles[f_vehicle].destinations[-1].node.ready_time
+            else:
+                feasible_solution.vehicles[f_vehicle].destinations[-1].wait_time = 0.0
+            feasible_solution.vehicles[f_vehicle].destinations[-1].departure_time = feasible_solution.vehicles[f_vehicle].destinations[-1].arrival_time + instance.nodes[destination.node.number].service_duration
+
+    return feasible_solution
+
+def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: float, mutation: float) -> List[Solution]:
     P: List[Solution] = list()
     ND: List[Solution] = list()
 
@@ -73,5 +105,8 @@ def Ombuki(instance: ProblemInstance, population_size: int, span: int, crossover
         random_solution = generate_random_solution(instance)
         random_solution.id = i
         P.insert(i, random_solution)
+
+    for i in arange(0, generation_span):
+        solution = transform_to_feasible_network(instance, P[i % population_size])
 
     return ND
