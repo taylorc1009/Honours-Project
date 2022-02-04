@@ -56,8 +56,9 @@ class Vehicle:
     def create(cls, instance: ProblemInstance, node: Union[Node, List[Node]]=None):
         if node:
             if isinstance(node, list):
-                return cls(destinations=[Destination(node=instance.nodes[0]), *node, Destination(instance.nodes[0])])
+                destinations = [Destination(node=n) for n in node]
+                return cls(destinations=[Destination(node=instance.nodes[0]), *destinations, Destination(instance.nodes[0])])
             elif isinstance(node, Node):
-                return cls(destinations=[Destination(node=instance.nodes[0]), node, Destination(instance.nodes[0])])
+                return cls(destinations=[Destination(node=instance.nodes[0]), Destination(node=node), Destination(instance.nodes[0])])
         else:
             return cls(destinations=[Destination(node=instance.nodes[0]), Destination(instance.nodes[0])])
