@@ -42,8 +42,9 @@ def insert_unvisited_node(I: Solution, instance: ProblemInstance, node: int) -> 
             vehicle += 1
 
     if not inserted: # in this case, the unvisited node doesn't fit into any of the existing routes, so it needs a new vehicle
-        destinations = [Destination(node=instance.nodes[0]), Destination(node=instance.nodes[node]), Destination(node=instance.nodes[0])]
-        I.vehicles.append(Vehicle(current_capacity=instance.nodes[node].demand, destinations=destinations))
+        new_vehicle = Vehicle.create_route(instance, node=instance.nodes[node])
+        new_vehicle.current_capacity = instance.nodes[node].demand
+        I.vehicles.append(new_vehicle)
 
         # these seem unnecessary as the crossover operator invokes all of these methods once it's finished inserting all of the unvisited nodes, but they're needed so that an other invocation of "insert_unvisited_nodes()" will have the correct time windows when determining where to insert an unvisited node
         I.vehicles[vehicle].calculate_destinations_time_windows(instance)

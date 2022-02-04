@@ -3,7 +3,6 @@ from MMOEASA.constants import MMOEASA_INFINITY
 from MMOEASA.solution import Solution
 from MMOEASA.auxiliaries import insert_unvisited_node, rand
 from problemInstance import ProblemInstance
-from destination import Destination
 from typing import List, Tuple, Set
 from vehicle import Vehicle
 
@@ -22,7 +21,7 @@ def move_destination(instance: ProblemInstance, I: Solution, vehicle_1: int, ori
     else:
         I.vehicles[vehicle_2].destinations.insert(destination, origin_node)
         del I.vehicles[vehicle_1].destinations[origin]
-    
+
     I.calculate_nodes_time_windows(instance)
     I.calculate_vehicles_loads(instance)
     I.calculate_length_of_routes(instance)
@@ -172,8 +171,7 @@ def Mutation8(instance: ProblemInstance, I_c: Solution) -> Solution:
         random_vehicle = get_random_vehicle(I_c, vehicles_required=2)
         origin_position = rand(1, I_c.vehicles[random_vehicle].get_num_of_customers_visited())
 
-        destinations = [Destination(node=instance.nodes[0]), *I_c.vehicles[random_vehicle].destinations[origin_position:-1], Destination(node=instance.nodes[0])]
-        I_c.vehicles.append(Vehicle(destinations=destinations))
+        I_c.vehicles.append(Vehicle.create_route(instance, I_c.vehicles[random_vehicle].destinations[origin_position:-1]))
 
         if origin_position == 1:
             del I_c.vehicles[random_vehicle]
@@ -193,8 +191,7 @@ def Mutation9(instance: ProblemInstance, I_c: Solution) -> Solution:
         num_customers = I_c.vehicles[random_vehicle].get_num_of_customers_visited()
         origin_position = rand(1, num_customers)
 
-        destinations = [Destination(node=instance.nodes[0]), I_c.vehicles[random_vehicle].destinations[origin_position], Destination(node=instance.nodes[0])]
-        I_c.vehicles.append(Vehicle(destinations=destinations))
+        I_c.vehicles.append(Vehicle.create_route(instance, I_c.vehicles[random_vehicle].destinations[origin_position].node))
 
         if num_customers == 1:
             del I_c.vehicles[random_vehicle]
