@@ -1,12 +1,12 @@
 import copy
-
 from destination import Destination
-from typing import List, Dict
+from typing import List, Dict, Union
 from problemInstance import ProblemInstance
+from node import Node
 
 class Vehicle:
     def __init__(self, current_capacity: int=0, destinations: List[Destination]=None, route_distance: float=0.0) -> None:
-        self.current_capacity: int=current_capacity
+        self.current_capacity: int=int(current_capacity)
         self.destinations: List[Destination]=destinations
         self.route_distance: float=float(route_distance)
 
@@ -33,14 +33,14 @@ class Vehicle:
             else:
                 self.destinations[i].wait_time = 0.0
             self.destinations[i].departure_time = self.destinations[i].arrival_time + instance.nodes[current_node].service_duration
-    
+
     def calculate_vehicle_load(self, instance: ProblemInstance):
         temporary_capacity = 0.0
         for i in range(1, len(self.destinations) - 1):
             node_number = self.destinations[i].node.number
             temporary_capacity += instance.nodes[node_number].demand
         self.current_capacity = temporary_capacity
-            
+
     def calculate_length_of_route(self, instance: ProblemInstance):
         temporary_distance = 0.0
         for i in range(1, len(self.destinations)):
@@ -51,3 +51,8 @@ class Vehicle:
 
     def __deepcopy__(self, memodict: Dict=None):
         return Vehicle(current_capacity=self.current_capacity, route_distance=self.route_distance, destinations=[copy.deepcopy(d) for d in self.destinations])
+
+    @classmethod
+    def create(cls, instance: ProblemInstance, node: Union[Node, List[Node]]=None):
+        destinations = [Destination(node=node) for node in node] if isinstance(node, list) else [Destination(node=node)]
+        return cls(destinations=[instance.nodes[0], *destinations, instance.nodes[0]])
