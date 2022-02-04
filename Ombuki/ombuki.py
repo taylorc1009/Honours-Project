@@ -22,7 +22,7 @@ def generate_random_solution(instance: ProblemInstance) -> Solution:
                 solution.vehicles[vehicle].current_capacity += instance.nodes[i].demand
                 inserted = True
             elif len(infeasible_vehicles) == len(solution.vehicles):
-                solution.vehicles.append(Vehicle.create(instance, node=instance.nodes[i]))
+                solution.vehicles.append(Vehicle.create_route(instance, node=instance.nodes[i]))
                 solution.vehicles[-1].current_capacity = instance.nodes[i].demand
                 inserted = True
             else:
@@ -31,7 +31,7 @@ def generate_random_solution(instance: ProblemInstance) -> Solution:
     return solution
 
 def generate_greedy_solution(instance: ProblemInstance) -> Solution:
-    solution = Solution(_id=0, vehicles=[Vehicle.create(instance)])
+    solution = Solution(_id=0, vehicles=[Vehicle.create_route(instance)])
     unvisited_nodes = list(arange(1, len(instance.nodes)))
     vehicle = 0
 
@@ -56,13 +56,13 @@ def generate_greedy_solution(instance: ProblemInstance) -> Solution:
             else:
                 if closest_node:
                     vehicle += 1
-                    solution.vehicles.append(Vehicle.create(instance))
+                    solution.vehicles.append(Vehicle.create_route(instance))
                 break
 
     return solution
 
 def transform_to_feasible_network_phase_one(instance: ProblemInstance, solution: Solution) -> Solution:
-    feasible_solution = Solution(_id=solution.id, vehicles=[Vehicle.create(instance, solution.vehicles[0].destinations[1].node)])
+    feasible_solution = Solution(_id=solution.id, vehicles=[Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)])
 
     feasible_solution.vehicles[0].destinations[1].arrival_time = feasible_solution.vehicles[0].destinations[1].node.get_distance(feasible_solution.vehicles[0].destinations[0].node)
     if feasible_solution.vehicles[0].destinations[1].arrival_time < feasible_solution.vehicles[0].destinations[1].node.ready_time:
@@ -83,7 +83,7 @@ def transform_to_feasible_network_phase_one(instance: ProblemInstance, solution:
                     f_vehicle = 0
                 else:
                     if len(feasible_solution.vehicles) < instance.amount_of_vehicles:
-                        feasible_solution.vehicles.append(Vehicle.create(instance, destination.node))
+                        feasible_solution.vehicles.append(Vehicle.create_route(instance, destination.node))
                         inserted = True
                     f_vehicle += 1
 
