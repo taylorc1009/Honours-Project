@@ -6,7 +6,7 @@ from Ombuki.solution import Solution
 from vehicle import Vehicle
 from destination import Destination
 from Ombuki.auxiliaries import rand
-from numpy import arange, round
+from numpy import arange, round, random
 from Ombuki.constants import INT_MAX, TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY, GREEDY_PERCENT
 
 
@@ -37,8 +37,9 @@ def generate_greedy_solution(instance: ProblemInstance) -> Solution:
     vehicle = 0
 
     while unvisited_nodes:
-        node = instance.nodes[random.sample(unvisited_nodes, 1)[0]]
+        node = instance.nodes[random.choice(unvisited_nodes)]
         solution.vehicles[vehicle].destinations.insert(len(solution.vehicles[vehicle].destinations) - 1, Destination(node=node))
+        solution.vehicles[vehicle].current_capacity = node.demand
         unvisited_nodes.remove(node.number)
 
         while not solution.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
@@ -49,15 +50,16 @@ def generate_greedy_solution(instance: ProblemInstance) -> Solution:
                 if distance < distance_of_closest:
                     closest_node = u_node
                     distance_of_closest = distance
-            if closest_node and not solution.vehicles[vehicle].current_capacity + instance.nodes[closest_node].demand > instance.capacity_of_vehicles:
-                solution.vehicles[vehicle].destinations.insert(len(solution.vehicles[vehicle].destinations) - 1, Destination(node=instance.nodes[closest_node]))
-                solution.vehicles[vehicle].current_capacity += instance.nodes[closest_node].demand
-                node = solution.vehicles[vehicle].destinations[-2].node
-                unvisited_nodes.remove(closest_node)
-            else:
-                if closest_node:
-                    vehicle += 1
+            if closest_node:
+                if not solution.vehicles[vehicle].current_capacity + instance.nodes[closest_node].demand > instance.capacity_of_vehicles:
+                    solution.vehicles[vehicle].destinations.insert(len(solution.vehicles[vehicle].destinations) - 1, Destination(node=instance.nodes[closest_node]))
+                    solution.vehicles[vehicle].current_capacity += instance.nodes[closest_node].demand
+                    node = solution.vehicles[vehicle].destinations[-2].node
+                    unvisited_nodes.remove(closest_node)
+                else:
                     solution.vehicles.append(Vehicle.create_route(instance))
+                    vehicle += 1
+            else:
                 break
 
     return solution
