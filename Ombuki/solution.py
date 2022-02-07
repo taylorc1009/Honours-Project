@@ -5,11 +5,12 @@ from vehicle import Vehicle
 from problemInstance import ProblemInstance
 
 class Solution:
-    def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, total_distance: float=0.0, rank: int=INT_MAX) -> None:
+    def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, total_distance: float=0.0, num_vehicles: int=0, rank: int=INT_MAX) -> None:
         self.id: int=int(_id)
         self.vehicles: List[Vehicle]=vehicles
         self.feasible: bool=feasible
         self.total_distance: float=float(total_distance)
+        self.num_vehicles: int=int(len(vehicles) if vehicles else num_vehicles) # the reason this objective is a variable instead of just using "len(vehicles)" is because if the solution is invalid, it needs to be set to a very high number
         self.rank: int=int(rank)
 
     def __str__(self) -> str:
@@ -30,6 +31,7 @@ class Solution:
     def objective_function(self, instance: ProblemInstance):
         vehicle = 0
         self.total_distance = 0.0
+        self.num_vehicles = len(self.vehicles)
         self.feasible = True  # set the solution as feasible temporarily
 
         while vehicle < len(self.vehicles) and self.feasible:
@@ -40,6 +42,7 @@ class Solution:
                 if destination.arrival_time > instance.nodes[node_number].due_date or self.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
                     self.feasible = False
                     self.total_distance = INT_MAX
+                    self.num_vehicles = INT_MAX
                     break
             vehicle += 1
 
