@@ -61,7 +61,10 @@ def generate_greedy_solution(instance: ProblemInstance) -> Solution:
 
     return solution
 
-def transform_to_feasible_network_phase_one(instance: ProblemInstance, solution: Solution) -> Solution:
+def is_nondominated(old_solution: Solution, new_solution: Solution) -> bool:
+    return (new_solution.total_distance < old_solution.total_distance and len(new_solution.vehicles) <= len(old_solution.vehicles)) or (new_solution.total_distance <= old_solution.total_distance and len(new_solution.vehicles) < len(old_solution.vehicles))
+
+def transform_to_feasible_network(instance: ProblemInstance, solution: Solution) -> Solution:
     feasible_solution = Solution(_id=solution.id, vehicles=[Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)])
 
     feasible_solution.vehicles[0].destinations[1].arrival_time = feasible_solution.vehicles[0].destinations[1].node.get_distance(feasible_solution.vehicles[0].destinations[0].node)
@@ -97,24 +100,36 @@ def transform_to_feasible_network_phase_one(instance: ProblemInstance, solution:
 
     return feasible_solution
 
-def transform_to_feasible_network_phase_two(instance: ProblemInstance, solution: Solution) -> Solution:
-    pass
+def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -> Solution:
+    f_solution = copy.deepcopy(solution)
+
+    for i in arange(0, len(f_solution.vehicles)):
+        f_solution.vehicles[i + 1 if i < len(f_solution.vehicles) - 1 else 0].destinations.insert(1, f_solution.vehicles[i].destinations[-2])
+        del f_solution.vehicles[i].destinations[-2] # can't delete an empty route here as each iteration of the loop only moves one destination to the next route; it never leaves one route empty
+
+    return f_solution
+
+def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
+    feasible_solution = transform_to_feasible_network(instance, solution)
+    feasible_solution = relocate_final_destinations(instance, feasible_solution)
+
+    return feasible_solution if is_nondominated(solution, feasible_solution) else solution
 
 def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: float, mutation: float) -> List[Solution]:
-    P: List[Solution] = list()
-    ND: List[Solution] = list()
+    population: List[Solution] = list()
+    #pareto_optimal: List[Solution] = list()
 
     num_greedy_solutions = round(float(population_size * 0.1))
     for i in arange(0, num_greedy_solutions).astype(int):
         greedy_solution = generate_greedy_solution(instance)
         greedy_solution.id = i
-        P.insert(i, greedy_solution)
+        population.insert(i, greedy_solution)
     for i in arange(num_greedy_solutions, population_size).astype(int):
         random_solution = generate_random_solution(instance)
         random_solution.id = i
-        P.insert(i, random_solution)
+        population.insert(i, random_solution)
 
     for i in arange(0, generation_span):
-        solution = transform_to_feasible_network_phase_one(instance, P[i % population_size])
+        solution = routing_scheme(instance, population[i % population_size])
 
-    return ND
+    return population
