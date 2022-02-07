@@ -13,7 +13,7 @@ from Ombuki.constants import INT_MAX, TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY, G
 def generate_random_solution(instance: ProblemInstance) -> Solution:
     solution = Solution(_id=0, vehicles=list())
 
-    for i in arange(1, len(instance.nodes)):
+    for i in range(1, len(instance.nodes)):
         infeasible_vehicles = set()
         inserted = False
         while not inserted:
@@ -129,7 +129,7 @@ def transform_to_feasible_network(instance: ProblemInstance, solution: Solution)
 def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -> Tuple[Solution, bool]:
     f_solution = copy.deepcopy(solution)
 
-    for i in arange(0, len(f_solution.vehicles)):
+    for i in range(0, len(f_solution.vehicles)):
         f_solution.vehicles[i + 1 if i < len(f_solution.vehicles) - 1 else 0].destinations.insert(1, f_solution.vehicles[i].destinations[-2])
         del f_solution.vehicles[i].destinations[-2] # can't delete an empty route here as each iteration of the loop only moves one destination to the next route; it never leaves one route empty
 
@@ -183,8 +183,8 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
     population: List[Solution] = list()
     #pareto_optimal: List[Solution] = list()
 
-    num_greedy_solutions = round(float(population_size * GREEDY_PERCENT))
-    for i in arange(0, num_greedy_solutions).astype(int):
+    num_greedy_solutions = int(round(float(population_size * GREEDY_PERCENT)))
+    for i in range(0, num_greedy_solutions):
         greedy_solution = generate_greedy_solution(instance)
         greedy_solution.id = i
         greedy_solution.calculate_vehicles_loads(instance)
@@ -192,7 +192,7 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         greedy_solution.calculate_nodes_time_windows(instance)
         greedy_solution.objective_function(instance)
         population.insert(i, greedy_solution)
-    for i in arange(num_greedy_solutions, population_size).astype(int):
+    for i in range(num_greedy_solutions, population_size):
         random_solution = generate_random_solution(instance)
         random_solution.id = i
         random_solution.calculate_vehicles_loads(instance)
@@ -202,9 +202,9 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         population.insert(i, random_solution)
     pareto_rank(population)
 
-    for _ in arange(0, generation_span):
+    for _ in range(0, generation_span):
         winning_parent = selection_tournament(population)
-        for i in arange(0, population_size):
+        for i in range(0, population_size):
             population[i] = routing_scheme(instance, population[i])
             pareto_rank(population)
             population[i], pending_copy = crossover_probability(instance, population[i], crossover)
