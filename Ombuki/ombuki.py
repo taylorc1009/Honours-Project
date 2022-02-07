@@ -64,6 +64,25 @@ def generate_greedy_solution(instance: ProblemInstance) -> Solution:
 def is_nondominated(old_solution: Solution, new_solution: Solution) -> bool:
     return (new_solution.total_distance < old_solution.total_distance and len(new_solution.vehicles) <= len(old_solution.vehicles)) or (new_solution.total_distance <= old_solution.total_distance and len(new_solution.vehicles) < len(old_solution.vehicles))
 
+def pareto_rank(population: List[Solution], ) -> None:
+    curr_rank = 1
+    N = len(population)
+    m = N
+    unranked_solutions = set(arange(0, N))
+
+    while N > 0:
+        best_solution = None
+        for i in unranked_solutions:
+            if best_solution:
+                if is_nondominated(population[i], best_solution):
+                    population[i].rank = curr_rank
+            else:
+                best_solution = population[i]
+        for i in arange(0, m):
+            if is_nondominated(population[i], best_solution):
+                population[i].rank = curr_rank
+                unranked_solutions.remove(population[i].id)
+
 def transform_to_feasible_network(instance: ProblemInstance, solution: Solution) -> Solution:
     feasible_solution = Solution(_id=solution.id, vehicles=[Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)])
 
