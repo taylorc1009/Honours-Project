@@ -159,11 +159,11 @@ def selection_tournament(population: List[Solution]) -> int:
     if rand(1, 100) < TOURNAMENT_PROBABILITY:
         best_solution = population[tournament_set[0].id]
         for solution in tournament_set:
-            if is_nondominated(best_solution, population[solution]):
-                best_solution = population[solution]
+            if is_nondominated(best_solution, population[solution.id]):
+                best_solution = population[solution.id]
         return best_solution.id
     else:
-        return population[tournament_set[rand(0, TOURNAMENT_SIZE - 1)]].id
+        return tournament_set[rand(0, TOURNAMENT_SIZE - 1)].id
 
 def crossover_probability(instance: ProblemInstance, solution: Solution, probability: int) -> Tuple[Solution, bool]:
     if rand(1, 100) < probability:
