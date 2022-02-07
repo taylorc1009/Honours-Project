@@ -7,7 +7,8 @@ from vehicle import Vehicle
 from destination import Destination
 from Ombuki.auxiliaries import rand
 from numpy import arange, round
-from Ombuki.constants import INT_MAX, TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY
+from Ombuki.constants import INT_MAX, TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY, GREEDY_PERCENT
+
 
 def generate_random_solution(instance: ProblemInstance) -> Solution:
     solution = Solution(_id=0, vehicles=list())
@@ -182,7 +183,7 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
     population: List[Solution] = list()
     #pareto_optimal: List[Solution] = list()
 
-    num_greedy_solutions = round(float(population_size * 0.1))
+    num_greedy_solutions = round(float(population_size * GREEDY_PERCENT))
     for i in arange(0, num_greedy_solutions).astype(int):
         greedy_solution = generate_greedy_solution(instance)
         greedy_solution.id = i
