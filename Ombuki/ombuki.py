@@ -7,7 +7,7 @@ from vehicle import Vehicle
 from destination import Destination
 from Ombuki.auxiliaries import rand
 from numpy import arange, round
-from Ombuki.constants import INT_MAX
+from Ombuki.constants import INT_MAX, TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY
 
 def generate_random_solution(instance: ProblemInstance) -> Solution:
     solution = Solution(_id=0, vehicles=list())
@@ -150,6 +150,20 @@ def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
 
     return feasible_solution
 
+def selection_tournament(population: List[Solution]) -> int:
+    tournament_set = list()
+    for _ in arange(0, TOURNAMENT_SIZE):
+        tournament_set.append(rand(0, len(population) - 1, exclude_values=set(tournament_set)))
+
+    if rand(1, 100) < TOURNAMENT_PROBABILITY:
+        best_solution = population[tournament_set[0]]
+        for solution in tournament_set:
+            if is_nondominated(best_solution, population[solution]):
+                best_solution = population[solution]
+        return best_solution.id
+    else:
+        return population[tournament_set[rand(0, TOURNAMENT_SIZE - 1)]].id
+
 def crossover_probability(instance: ProblemInstance, solution: Solution, probability: int) -> Tuple[Solution, bool]:
     if rand(1, 100) < probability:
         solution_copy = copy.deepcopy(solution)
@@ -179,6 +193,7 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         population.insert(i, random_solution)
 
     for _ in arange(0, generation_span):
+        winning_parent = selection_tournament(population)
         for i in arange(0, population_size):
             population[i] = routing_scheme(instance, population[i])
             pareto_rank(population)
