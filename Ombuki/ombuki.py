@@ -135,7 +135,7 @@ def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -
     f_solution.calculate_nodes_time_windows(instance)
     f_solution.objective_function(instance)
 
-    return f_solution, True if f_solution.feasible and is_nondominated(solution, f_solution) else solution, False
+    return (f_solution, True) if f_solution.feasible and is_nondominated(solution, f_solution) else (solution, False)
 
 def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
     feasible_solution = transform_to_feasible_network(instance, solution)
@@ -181,7 +181,7 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         for i in arange(0, population_size):
             population[i] = routing_scheme(instance, population[i])
             pareto_rank(population)
-
-
+            population[i], pending_copy = crossover_probability(instance, population[i], crossover)
+            population[i] = mutation_probability(instance, population[i], mutation, pending_copy)
 
     return population
