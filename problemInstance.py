@@ -16,10 +16,10 @@ class ProblemInstance:
     
     def calculate_distances(self) -> None:
         n = len(self.nodes)
-        self.distances: List[float]=[-1.0 for _ in arange(0, n ** 2)]
+        self.distances: List[float]=[-1.0 for _ in range(0, n ** 2)]
 
-        for i in arange(0, n):
-            for j in arange(0, n):
+        for i in range(0, n):
+            for j in range(0, n):
                 if not i == j:
                     self.distances[n * i + j] = self.nodes[i].get_distance(self.nodes[j].x, self.nodes[j].y)
 
