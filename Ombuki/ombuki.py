@@ -1,6 +1,6 @@
 import copy
 import random
-from typing import List
+from typing import List, Tuple
 from problemInstance import ProblemInstance
 from Ombuki.solution import Solution
 from vehicle import Vehicle
@@ -123,7 +123,7 @@ def transform_to_feasible_network(instance: ProblemInstance, solution: Solution)
 
     return feasible_solution
 
-def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -> Solution:
+def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -> Tuple[Solution, bool]:
     f_solution = copy.deepcopy(solution)
 
     for i in arange(0, len(f_solution.vehicles)):
@@ -135,11 +135,17 @@ def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -
     f_solution.calculate_nodes_time_windows(instance)
     f_solution.objective_function(instance)
 
-    return f_solution if f_solution.feasible and is_nondominated(solution, f_solution) else solution
+    return f_solution, true if f_solution.feasible and is_nondominated(solution, f_solution) else solution, false
 
 def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
     feasible_solution = transform_to_feasible_network(instance, solution)
-    feasible_solution = relocate_final_destinations(instance, feasible_solution)
+    feasible_solution, relocated = relocate_final_destinations(instance, feasible_solution)
+
+    if not relocated:
+        solution.calculate_vehicles_loads(instance)
+        solution.calculate_length_of_routes(instance)
+        solution.calculate_nodes_time_windows(instance)
+        solution.objective_function(instance)
 
     return feasible_solution
 
