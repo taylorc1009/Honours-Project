@@ -149,7 +149,21 @@ def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
 
     return feasible_solution
 
-def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: float, mutation: float) -> List[Solution]:
+def crossover_probability(instance: ProblemInstance, solution: Solution, probability: int) -> Tuple[Solution, bool]:
+    if rand(1, 100) < probability:
+        solution_copy = copy.deepcopy(solution)
+
+        return solution_copy, False
+    return solution, True
+
+def mutation_probability(instance: ProblemInstance, solution: Solution, probability: int, pending_copy: bool) -> Solution:
+    if rand(1, 100) < probability:
+        solution_copy = copy.deepcopy(solution) if pending_copy else solution
+
+        return solution_copy
+    return solution
+
+def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: int, mutation: int) -> List[Solution]:
     population: List[Solution] = list()
     #pareto_optimal: List[Solution] = list()
 
@@ -167,5 +181,7 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         for i in arange(0, population_size):
             population[i] = routing_scheme(instance, population[i])
             pareto_rank(population)
+
+
 
     return population

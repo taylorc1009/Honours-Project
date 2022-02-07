@@ -28,7 +28,7 @@ def execute_MMOEASA(problemInstance: ProblemInstance) -> None:
         print(calculate_median_Hypervolumes(ND_solutions, TWIH_ref_point(problemInstance))) # TODO: currently, the TWIH usually has a cargo unbalance of 20 and the ND_solutions usually have as low as 90; therefore, TWIH_ref_point's Hypervolume may need to be multiplied by a higher value
 
 def execute_Ombuki(problemInstance: ProblemInstance) -> None:
-    ND_solutions = Ombuki(problemInstance, 300, 350, 0.8, 0.1)
+    ND_solutions = Ombuki(problemInstance, 300, 350, 80, 10)
     for solution in ND_solutions:
         print("\n", str(solution))
 
