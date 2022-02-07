@@ -9,8 +9,6 @@ from MMOEASA.constants import MMOEASA_POPULATION_SIZE
 from Ombuki.ombuki import Ombuki
 
 def execute_MMOEASA(problemInstance: ProblemInstance) -> None:
-    problemInstance.calculate_distances()
-
     num_customers = len(problemInstance.nodes) - 1
     with open(f"solomon_{num_customers}/hypervolumes.json") as json_file:
         TC = 0 # termination condition = the number of iterations to perform
@@ -58,6 +56,8 @@ if __name__ == '__main__':
         )
     elif len(sys.argv) == 3:
         problemInstance = open_problem_instance(sys.argv[2])
+
+        problemInstance.calculate_distances()
 
         if sys.argv[1].upper() == "MMOEASA":
             execute_MMOEASA(problemInstance)

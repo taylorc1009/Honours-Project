@@ -26,7 +26,7 @@ class Vehicle:
         for i in range(1, len(self.destinations)):
             previous_node = self.destinations[i - 1].node.number
             current_node = self.destinations[i].node.number
-            self.destinations[i].arrival_time = self.destinations[i - 1].departure_time + instance.get_distance(current_node, previous_node)
+            self.destinations[i].arrival_time = self.destinations[i - 1].departure_time + instance.get_distance(previous_node, current_node)
             if self.destinations[i].arrival_time < instance.nodes[current_node].ready_time: # if the vehicle arrives before "ready_time" then it will have to wait for that moment before serving the node
                 self.destinations[i].wait_time = instance.nodes[current_node].ready_time - self.destinations[i].arrival_time
                 self.destinations[i].arrival_time = instance.nodes[current_node].ready_time
@@ -46,7 +46,7 @@ class Vehicle:
         for i in range(1, len(self.destinations)):
             previous_node = self.destinations[i - 1].node.number
             current_node = self.destinations[i].node.number
-            temporary_distance += instance.get_distance(current_node, previous_node)
+            temporary_distance += instance.get_distance(previous_node, current_node)
         self.route_distance = temporary_distance
 
     def __deepcopy__(self, memodict: Dict=None):

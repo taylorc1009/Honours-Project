@@ -45,7 +45,7 @@ def generate_greedy_solution(instance: ProblemInstance) -> Solution:
             closest_node = None
             distance_of_closest = float(INT_MAX)
             for u_node in unvisited_nodes:
-                distance = node.get_distance(instance.nodes[u_node])
+                distance = instance.get_distance(node.number, u_node)
                 if distance < distance_of_closest:
                     closest_node = u_node
                     distance_of_closest = distance
@@ -93,7 +93,7 @@ def pareto_rank(population: List[Solution]) -> None:
 def transform_to_feasible_network(instance: ProblemInstance, solution: Solution) -> Solution:
     feasible_solution = Solution(_id=solution.id, vehicles=[Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)])
 
-    feasible_solution.vehicles[0].destinations[1].arrival_time = feasible_solution.vehicles[0].destinations[1].node.get_distance(feasible_solution.vehicles[0].destinations[0].node)
+    feasible_solution.vehicles[0].destinations[1].arrival_time = instance.get_distance(0, feasible_solution.vehicles[0].destinations[1].node.number)
     if feasible_solution.vehicles[0].destinations[1].arrival_time < feasible_solution.vehicles[0].destinations[1].node.ready_time:
         feasible_solution.vehicles[0].destinations[1].wait_time = feasible_solution.vehicles[0].destinations[1].node.ready_time
         feasible_solution.vehicles[0].destinations[1].arrival_time = feasible_solution.vehicles[0].destinations[1].node.ready_time
@@ -105,7 +105,7 @@ def transform_to_feasible_network(instance: ProblemInstance, solution: Solution)
             inserted = False
 
             while not inserted:
-                if feasible_solution.vehicles[f_vehicle].current_capacity + destination.node.demand <= instance.capacity_of_vehicles and feasible_solution.vehicles[f_vehicle].destinations[-2].departure_time + feasible_solution.vehicles[f_vehicle].destinations[-2].node.get_distance(destination.node) <= destination.node.due_date:
+                if feasible_solution.vehicles[f_vehicle].current_capacity + destination.node.demand <= instance.capacity_of_vehicles and feasible_solution.vehicles[f_vehicle].destinations[-2].departure_time + instance.get_distance(feasible_solution.vehicles[f_vehicle].destinations[-2].node.number, destination.node.number) <= destination.node.due_date:
                     feasible_solution.vehicles[f_vehicle].destinations.insert(len(feasible_solution.vehicles[f_vehicle].destinations) - 1, copy.deepcopy(destination))
                     inserted = True
                 elif f_vehicle == instance.amount_of_vehicles - 1:
@@ -116,7 +116,7 @@ def transform_to_feasible_network(instance: ProblemInstance, solution: Solution)
                         inserted = True
                     f_vehicle += 1
 
-            feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time = feasible_solution.vehicles[f_vehicle].destinations[-3].departure_time + feasible_solution.vehicles[f_vehicle].destinations[-3].node.get_distance(feasible_solution.vehicles[f_vehicle].destinations[-2].node)
+            feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time = feasible_solution.vehicles[f_vehicle].destinations[-3].departure_time + instance.get_distance(feasible_solution.vehicles[f_vehicle].destinations[-3].node.number, feasible_solution.vehicles[f_vehicle].destinations[-2].node.number)
             if feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time < feasible_solution.vehicles[f_vehicle].destinations[-2].node.ready_time:
                 feasible_solution.vehicles[f_vehicle].destinations[-2].wait_time = feasible_solution.vehicles[f_vehicle].destinations[-2].node.ready_time - feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time
                 feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time = feasible_solution.vehicles[f_vehicle].destinations[-2].node.ready_time

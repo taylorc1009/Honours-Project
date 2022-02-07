@@ -23,5 +23,5 @@ class ProblemInstance:
                 if not i == j:
                     self.distances[n * i + j] = self.nodes[i].get_distance(self.nodes[j].x, self.nodes[j].y)
 
-    def get_distance(self, x: int, y: int):
-        return self.distances[len(self.nodes) * y + x]
+    def get_distance(self, from_node: int, to_node: int):
+        return self.distances[len(self.nodes) * from_node + to_node]

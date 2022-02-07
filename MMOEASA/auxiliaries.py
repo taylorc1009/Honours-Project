@@ -27,12 +27,12 @@ def insert_unvisited_node(I: Solution, instance: ProblemInstance, node: int) -> 
         I.vehicles[vehicle].destinations[customers_on_route + 1].node = instance.nodes[node]
         I.vehicles[vehicle].current_capacity += instance.nodes[node].demand
 
-        I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time = I.vehicles[vehicle].destinations[customers_on_route].departure_time + instance.get_distance(node, final_customer)
+        I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time = I.vehicles[vehicle].destinations[customers_on_route].departure_time + instance.get_distance(final_customer, node)
         I.vehicles[vehicle].destinations[customers_on_route + 1].wait_time = 0.0
         if I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time < instance.nodes[node].ready_time:
             I.vehicles[vehicle].destinations[customers_on_route + 1].wait_time = instance.nodes[node].ready_time - I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time
             I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time = instance.nodes[node].ready_time
-        
+
         if I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time <= instance.nodes[node].due_date:
             I.vehicles[vehicle].destinations[customers_on_route + 1].departure_time = instance.nodes[node].service_duration + I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time
             I.calculate_length_of_routes(instance)
@@ -62,8 +62,8 @@ def reinitialize_return_to_depot(vehicle: Vehicle, instance: ProblemInstance) ->
     customers_on_route = vehicle.get_num_of_customers_visited()
     final_customer = vehicle.destinations[customers_on_route].node.number
 
-    vehicle.destinations[customers_on_route + 1].arrival_time = vehicle.destinations[customers_on_route + 1].departure_time + instance.get_distance(0, final_customer)
-    vehicle.destinations[customers_on_route + 1].departure_time = vehicle.destinations[customers_on_route + 1].departure_time + instance.get_distance(0, final_customer)
+    vehicle.destinations[customers_on_route + 1].arrival_time = vehicle.destinations[customers_on_route + 1].departure_time + instance.get_distance(final_customer, 0)
+    vehicle.destinations[customers_on_route + 1].departure_time = vehicle.destinations[customers_on_route + 1].departure_time + instance.get_distance(final_customer, 0)
     vehicle.destinations[customers_on_route + 1].wait_time = 0.0
     
     return vehicle
