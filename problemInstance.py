@@ -1,8 +1,9 @@
 from typing import Dict, List
 from node import Node
+from numpy import arange
 
 class ProblemInstance:
-    MMOEASA_distances: List[List[float]]=None
+    distances: List[float]=None
 
     def __init__(self, name: str, amount_of_vehicles: int, capacity_of_vehicles: int, nodes: Dict[int, Node]=None) -> None:
         self.name: str=name
@@ -11,11 +12,16 @@ class ProblemInstance:
         self.nodes: Dict[int, Node]=nodes
 
     def __str__(self) -> str:
-        return f"{self.name}, {self.amount_of_vehicles}, {self.capacity_of_vehicles}, {[(key, value.__str__()) for key, value in self.nodes.items()]}"
+        return f"{self.name}, {self.amount_of_vehicles}, {self.capacity_of_vehicles}, {[(key, str(value)) for key, value in self.nodes.items()]}"
     
     def calculate_distances(self) -> None:
-        self.MMOEASA_distances: List[List[float]]=[[-1.0 for _, _ in enumerate(self.nodes)] for _, _ in enumerate(self.nodes)]
+        n = len(self.nodes)
+        self.distances: List[float]=[-1.0 for _ in arange(0, n ** 2)]
 
-        for i, _ in enumerate(self.nodes):
-            for j, _ in enumerate(self.nodes):
-                self.MMOEASA_distances[i][j] = self.nodes[i].get_distance(self.nodes[j].x, self.nodes[j].y) if not i == j else -1.0
+        for i in arange(0, n):
+            for j in arange(0, n):
+                if not i == j:
+                    self.distances[n * i + j] = self.nodes[i].get_distance(self.nodes[j].x, self.nodes[j].y)
+
+    def get_distance(self, x: int, y: int):
+        return self.distances[len(self.nodes) * y + x]
