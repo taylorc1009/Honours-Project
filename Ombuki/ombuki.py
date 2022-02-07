@@ -67,26 +67,27 @@ def is_nondominated(old_solution: Solution, new_solution: Solution) -> bool:
 
 def pareto_rank(population: List[Solution]) -> None:
     curr_rank = 1
-    N = len(population)
-    unranked_solutions = set(arange(0, N))
+    unranked_solutions = list(arange(0, len(population)))
 
-    while N > 0:
-        m = N
+    while unranked_solutions:
         best_solution = None
 
         for i in unranked_solutions:
             if best_solution:
-                if is_nondominated(population[i], best_solution):
-                    population[i].rank = curr_rank
-                else:
+                if is_nondominated(best_solution, population[i]):
                     best_solution = population[i]
+                    population[i].rank = curr_rank
+                    for j in [j for j, solution in enumerate(population) if solution.rank == curr_rank]:
+                        population[j].rank = INT_MAX
+                elif not is_nondominated(population[i], best_solution):
+                    population[i].rank = curr_rank
             else:
                 best_solution = population[i]
+                population[i].rank = curr_rank
 
-        for i in arange(0, m):
+        for i in unranked_solutions:
             if population[i].rank == curr_rank:
                 unranked_solutions.remove(population[i].id)
-                N -= 1
         curr_rank += 1
 
 def transform_to_feasible_network(instance: ProblemInstance, solution: Solution) -> Solution:
@@ -152,12 +153,11 @@ def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
     return feasible_solution
 
 def selection_tournament(population: List[Solution]) -> int:
-    tournament_set = list()
-    for _ in arange(0, TOURNAMENT_SIZE):
-        tournament_set.append(rand(0, len(population) - 1, exclude_values=set(tournament_set)))
+    rank_one_solutions = list(filter(lambda s: s.rank == 1, population))
+    tournament_set = random.sample(rank_one_solutions, TOURNAMENT_SIZE)
 
     if rand(1, 100) < TOURNAMENT_PROBABILITY:
-        best_solution = population[tournament_set[0]]
+        best_solution = population[tournament_set[0].id]
         for solution in tournament_set:
             if is_nondominated(best_solution, population[solution]):
                 best_solution = population[solution]
@@ -192,6 +192,7 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         random_solution = generate_random_solution(instance)
         random_solution.id = i
         population.insert(i, random_solution)
+    pareto_rank(population)
 
     for _ in arange(0, generation_span):
         winning_parent = selection_tournament(population)
