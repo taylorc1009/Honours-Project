@@ -126,13 +126,18 @@ def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -
         f_solution.vehicles[i + 1 if i < len(f_solution.vehicles) - 1 else 0].destinations.insert(1, f_solution.vehicles[i].destinations[-2])
         del f_solution.vehicles[i].destinations[-2] # can't delete an empty route here as each iteration of the loop only moves one destination to the next route; it never leaves one route empty
 
-    return f_solution
+    f_solution.calculate_vehicles_loads(instance)
+    f_solution.calculate_length_of_routes(instance)
+    f_solution.calculate_nodes_time_windows(instance)
+    f_solution.objective_function(instance)
+
+    return f_solution if f_solution.feasible and is_nondominated(solution, f_solution) else solution
 
 def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
     feasible_solution = transform_to_feasible_network(instance, solution)
     feasible_solution = relocate_final_destinations(instance, feasible_solution)
 
-    return feasible_solution if is_nondominated(solution, feasible_solution) else solution
+    return feasible_solution
 
 def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: float, mutation: float) -> List[Solution]:
     population: List[Solution] = list()
@@ -148,7 +153,9 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         random_solution.id = i
         population.insert(i, random_solution)
 
-    for i in arange(0, generation_span):
-        solution = routing_scheme(instance, population[i % population_size])
+    for _ in arange(0, generation_span):
+        for i in arange(0, population_size):
+            population[i] = routing_scheme(instance, population[i])
+            pareto_rank(population)
 
     return population
