@@ -77,6 +77,8 @@ def pareto_rank(population: List[Solution], ) -> None:
             if best_solution:
                 if is_nondominated(population[i], best_solution):
                     population[i].rank = curr_rank
+                else:
+                    best_solution = population[i]
             else:
                 best_solution = population[i]
 
