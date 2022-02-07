@@ -48,7 +48,7 @@ class Solution:
                     self.cargo_unbalance = MMOEASA_INFINITY
                     break
             vehicle += 1
-        
+
         if self.feasible:
             minimum_distance = MMOEASA_INFINITY
             maximum_distance = 0
