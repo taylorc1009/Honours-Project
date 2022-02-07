@@ -94,11 +94,11 @@ def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int,
         while T_1 > T_stop:
             T_1 *= T_cooling
             auxiliary_iterations += 1.0
-        
+
         #print(TC, auxiliary_iterations)
         error = float(TC) - auxiliary_iterations
         T_cooling = T_cooling + (0.05 / float(TC)) if error > 0.0 else T_cooling - (0.05 / float(TC))
-    
+
     return T_cooling
 
 def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_crossover: int) -> Tuple[Solution, bool]:
