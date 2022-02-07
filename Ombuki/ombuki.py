@@ -187,10 +187,18 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
     for i in arange(0, num_greedy_solutions).astype(int):
         greedy_solution = generate_greedy_solution(instance)
         greedy_solution.id = i
+        greedy_solution.calculate_vehicles_loads(instance)
+        greedy_solution.calculate_length_of_routes(instance)
+        greedy_solution.calculate_nodes_time_windows(instance)
+        greedy_solution.objective_function(instance)
         population.insert(i, greedy_solution)
     for i in arange(num_greedy_solutions, population_size).astype(int):
         random_solution = generate_random_solution(instance)
         random_solution.id = i
+        random_solution.calculate_vehicles_loads(instance)
+        random_solution.calculate_length_of_routes(instance)
+        random_solution.calculate_nodes_time_windows(instance)
+        random_solution.objective_function(instance)
         population.insert(i, random_solution)
     pareto_rank(population)
 
