@@ -50,16 +50,15 @@ def generate_greedy_solution(instance: ProblemInstance) -> Solution:
                 if distance < distance_of_closest:
                     closest_node = u_node
                     distance_of_closest = distance
-            if closest_node:
-                if not solution.vehicles[vehicle].current_capacity + instance.nodes[closest_node].demand > instance.capacity_of_vehicles:
-                    solution.vehicles[vehicle].destinations.insert(len(solution.vehicles[vehicle].destinations) - 1, Destination(node=instance.nodes[closest_node]))
-                    solution.vehicles[vehicle].current_capacity += instance.nodes[closest_node].demand
-                    node = solution.vehicles[vehicle].destinations[-2].node
-                    unvisited_nodes.remove(closest_node)
-                else:
+            if closest_node and not solution.vehicles[vehicle].current_capacity + instance.nodes[closest_node].demand > instance.capacity_of_vehicles:
+                solution.vehicles[vehicle].destinations.insert(len(solution.vehicles[vehicle].destinations) - 1, Destination(node=instance.nodes[closest_node]))
+                solution.vehicles[vehicle].current_capacity += instance.nodes[closest_node].demand
+                node = solution.vehicles[vehicle].destinations[-2].node
+                unvisited_nodes.remove(closest_node)
+            else:
+                if closest_node:
                     solution.vehicles.append(Vehicle.create_route(instance))
                     vehicle += 1
-            else:
                 break
 
     return solution
