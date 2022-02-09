@@ -8,7 +8,7 @@ class Destination:
         self.arrival_time: float=float(arrival_time)
         self.departure_time: float=float(departure_time)
         self.wait_time: float=float(wait_time)
-    
+
     def __str__(self) -> str:
         return f"Destination(arrival_time={self.arrival_time}, departure_time={self.departure_time}, wait_time={self.wait_time}, {str(self.node)})"
 
