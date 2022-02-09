@@ -101,40 +101,35 @@ def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int,
 
     return T_cooling
 
-def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_crossover: int) -> Tuple[Solution, bool]:
-    if rand(1, 100) <= P_crossover:
-        I_c = Crossover1(instance, copy.deepcopy(I), P)
-        return I_c, False
-    return I, True
+def Crossover(instance: ProblemInstance, I: Solution, P: List[Solution], P_crossover: int) -> Solution:
+    return Crossover1(instance, copy.deepcopy(I), P) if rand(1, 100) <= P_crossover else I
 
-def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, pending_copy: bool) -> Tuple[Solution, bool]:
+def Mutation(instance: ProblemInstance, I: Solution, P_mutation: int, pending_copy: bool) -> Solution:
     if rand(1, 100) <= P_mutation:
         I_c = copy.deepcopy(I) if pending_copy else I
         probability = rand(1, 100)
 
         if 1 <= probability <= 10:
-            I_c = Mutation1(instance, I_c)
+            return Mutation1(instance, I_c)
         elif 11 <= probability <= 20:
-            I_c = Mutation2(instance, I_c)
+            return Mutation2(instance, I_c)
         elif 21 <= probability <= 30:
-            I_c = Mutation3(instance, I_c)
+            return Mutation3(instance, I_c)
         elif 31 <= probability <= 40:
-            I_c = Mutation4(instance, I_c)
+            return Mutation4(instance, I_c)
         elif 41 <= probability <= 50:
-            I_c = Mutation5(instance, I_c)
+            return Mutation5(instance, I_c)
         elif 51 <= probability <= 60:
-            I_c = Mutation6(instance, I_c)
+            return Mutation6(instance, I_c)
         elif 61 <= probability <= 70:
-            I_c = Mutation7(instance, I_c)
+            return Mutation7(instance, I_c)
         elif 71 <= probability <= 80:
-            I_c = Mutation8(instance, I_c)
+            return Mutation8(instance, I_c)
         elif 81 <= probability <= 90:
-            I_c = Mutation9(instance, I_c)
+            return Mutation9(instance, I_c)
         elif 91 <= probability <= 100:
-            I_c = Mutation10(instance, I_c)
-
-        return I_c, False
-    return I, pending_copy
+            return Mutation10(instance, I_c)
+    return I
 
 def Euclidean_distance_dispersion(x1: float, y1: float, x2: float, y2: float) -> float:
     global Hypervolume_total_distance, Hypervolume_cargo_unbalance
@@ -190,9 +185,9 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
 
         while P[0].T > T_stop and not iterations >= TC:
             for i, I in enumerate(P):
-                I_c, pending_copy = Crossover(instance, I, P, P_crossover)
+                I_c = Crossover(instance, I, P, P_crossover)
                 for _ in range(0, rand(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
-                    I_c, pending_copy = Mutation(instance, I_c, P_mutation, pending_copy)
+                    I_c = Mutation(instance, I_c, P_mutation, I_c is I)
                 P[i], parent_changed = MO_Metropolis(I, I_c, I.T)
 
                 if is_nondominated(P[i], ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
