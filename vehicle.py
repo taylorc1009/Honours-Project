@@ -22,17 +22,20 @@ class Vehicle:
         #return len(list(filter(lambda d: (d.node.number != 0), self.destinations))) # this is an alternative to hoping that the list of destinations begins and ends at 0
 
     # TODO: you probably don't need to give these methods the problem instance as each Node object holds the values you're looking for (such as the "ready_time") and they're all in "self.destinations"
+    def calculate_destination_time_window(self, instance: ProblemInstance, previous_destination: int, current_destination: int):
+        previous_node = self.destinations[previous_destination].node.number
+        current_node = self.destinations[current_destination].node.number
+        self.destinations[current_destination].arrival_time = self.destinations[previous_destination].departure_time + instance.get_distance(previous_node, current_node)
+        if self.destinations[current_destination].arrival_time < instance.nodes[current_node].ready_time:  # if the vehicle arrives before "ready_time" then it will have to wait for that moment before serving the node
+            self.destinations[current_destination].wait_time = instance.nodes[current_node].ready_time - self.destinations[current_destination].arrival_time
+            self.destinations[current_destination].arrival_time = instance.nodes[current_node].ready_time
+        else:
+            self.destinations[current_destination].wait_time = 0.0
+        self.destinations[current_destination].departure_time = self.destinations[current_destination].arrival_time + instance.nodes[current_node].service_duration
+
     def calculate_destinations_time_windows(self, instance: ProblemInstance) -> None:
         for i in range(1, len(self.destinations)):
-            previous_node = self.destinations[i - 1].node.number
-            current_node = self.destinations[i].node.number
-            self.destinations[i].arrival_time = self.destinations[i - 1].departure_time + instance.get_distance(previous_node, current_node)
-            if self.destinations[i].arrival_time < instance.nodes[current_node].ready_time: # if the vehicle arrives before "ready_time" then it will have to wait for that moment before serving the node
-                self.destinations[i].wait_time = instance.nodes[current_node].ready_time - self.destinations[i].arrival_time
-                self.destinations[i].arrival_time = instance.nodes[current_node].ready_time
-            else:
-                self.destinations[i].wait_time = 0.0
-            self.destinations[i].departure_time = self.destinations[i].arrival_time + instance.nodes[current_node].service_duration
+            self.calculate_destination_time_window(instance, i - 1, i)
 
     def calculate_vehicle_load(self, instance: ProblemInstance):
         temporary_capacity = 0.0
