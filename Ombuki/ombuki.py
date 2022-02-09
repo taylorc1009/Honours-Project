@@ -66,28 +66,20 @@ def generate_greedy_solution(instance: ProblemInstance) -> Solution:
 def is_nondominated(old_solution: Solution, new_solution: Solution) -> bool:
     return (new_solution.total_distance < old_solution.total_distance and new_solution.num_vehicles <= old_solution.num_vehicles) or (new_solution.total_distance <= old_solution.total_distance and new_solution.num_vehicles < old_solution.num_vehicles)
 
+def is_nondominated_by_any(population: List[Solution], subject_solution: int) -> bool:
+    for i, solution in enumerate(population):
+        if not i == subject_solution and not is_nondominated(solution, population[subject_solution]):
+            return False
+    return True
+
 def pareto_rank(population: List[Solution]) -> None:
     curr_rank = 1
     unranked_solutions = list(arange(0, len(population)))
 
     while unranked_solutions:
-        best_solution = None
-
         for i in unranked_solutions:
-            if best_solution:
-                if is_nondominated(best_solution, population[i]):
-                    best_solution = population[i]
-                    population[i].rank = curr_rank
-                    for j in [j for j, solution in enumerate(population) if solution.rank == curr_rank]:
-                        population[j].rank = INT_MAX
-                elif not is_nondominated(population[i], best_solution):
-                    population[i].rank = curr_rank
-            else:
-                best_solution = population[i]
+            if is_nondominated_by_any(population, i):
                 population[i].rank = curr_rank
-
-        for i in unranked_solutions:
-            if population[i].rank == curr_rank:
                 unranked_solutions.remove(population[i].id)
         curr_rank += 1
 
