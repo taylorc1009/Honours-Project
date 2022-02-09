@@ -166,8 +166,15 @@ def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
     return feasible_solution
 
 def selection_tournament(population: List[Solution]) -> int:
-    rank_one_solutions = list(filter(lambda s: s.rank == 1, population))
-    tournament_set = random.choice(rank_one_solutions, TOURNAMENT_SIZE) if rank_one_solutions else random.choice(population, TOURNAMENT_SIZE)
+    tournament_set = None
+    best_solutions = list(filter(lambda s: s.rank == 1, population))
+    if not best_solutions: # in this instance, the initialising population has been given and no solutions have been ranked yet, so work with any feasible solutions
+        best_solutions = list(filter(lambda s: s.feasible, population))
+
+    if best_solutions:
+        tournament_set = random.choice(best_solutions, TOURNAMENT_SIZE)
+    else:
+        tournament_set = random.choice(population, TOURNAMENT_SIZE)
 
     if rand(1, 100) < TOURNAMENT_PROBABILITY:
         best_solution = population[tournament_set[0].id]
