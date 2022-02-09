@@ -83,39 +83,59 @@ def pareto_rank(population: List[Solution]) -> None:
                 unranked_solutions.remove(population[i].id)
         curr_rank += 1
 
-def transform_to_feasible_network(instance: ProblemInstance, solution: Solution) -> Solution:
+def attempt_feasible_network_transformation(instance: ProblemInstance, solution: Solution) -> Solution:
     feasible_solution = Solution(_id=solution.id, vehicles=[Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)])
-
-    feasible_solution.vehicles[0].destinations[1].arrival_time = instance.get_distance(0, feasible_solution.vehicles[0].destinations[1].node.number)
+    feasible_solution.vehicles[0].current_capacity += solution.vehicles[0].destinations[1].node.demand
+    feasible_solution.vehicles[0].calculate_destination_time_window(instance, 0, 1)
+    """feasible_solution.vehicles[0].destinations[1].arrival_time = instance.get_distance(0, feasible_solution.vehicles[0].destinations[1].node.number)
     if feasible_solution.vehicles[0].destinations[1].arrival_time < feasible_solution.vehicles[0].destinations[1].node.ready_time:
         feasible_solution.vehicles[0].destinations[1].wait_time = feasible_solution.vehicles[0].destinations[1].node.ready_time
         feasible_solution.vehicles[0].destinations[1].arrival_time = feasible_solution.vehicles[0].destinations[1].node.ready_time
-    feasible_solution.vehicles[0].destinations[1].departure_time = feasible_solution.vehicles[0].destinations[1].arrival_time + feasible_solution.vehicles[0].destinations[1].node.service_duration
+    feasible_solution.vehicles[0].destinations[1].departure_time = feasible_solution.vehicles[0].destinations[1].arrival_time + feasible_solution.vehicles[0].destinations[1].node.service_duration"""
 
     f_vehicle = 0
     for vehicle in solution.vehicles:
         for destination in vehicle.get_customers_visited()[1 if vehicle is solution.vehicles[0] else 0:]:
-            inserted = False
+            feasible_insertion = False
+            vehicle_reset = False
+            first_attempted_vehicle = f_vehicle
 
-            while not inserted:
+            while not feasible_insertion:
                 if feasible_solution.vehicles[f_vehicle].current_capacity + destination.node.demand <= instance.capacity_of_vehicles and feasible_solution.vehicles[f_vehicle].destinations[-2].departure_time + instance.get_distance(feasible_solution.vehicles[f_vehicle].destinations[-2].node.number, destination.node.number) <= destination.node.due_date:
                     feasible_solution.vehicles[f_vehicle].destinations.insert(len(feasible_solution.vehicles[f_vehicle].destinations) - 1, copy.deepcopy(destination))
-                    inserted = True
+                    feasible_insertion = True
                 elif f_vehicle == instance.amount_of_vehicles - 1:
-                    f_vehicle = 0
+                    if not vehicle_reset:
+                        f_vehicle = 0
+                        vehicle_reset = True
+                    else: # at this point, no feasible vehicle insertion was found, so select the vehicle with the nearest final destination where capacity constraints are not violated; therefore, this solution is now infeasible
+                        sorted_by_last_destination = sorted(feasible_solution.vehicles, key=lambda v: instance.get_distance(v.destinations[-2].node.number, destination.node.number))
+                        for i, infeasible_vehicle in enumerate(sorted_by_last_destination):
+                            if not infeasible_vehicle.current_capacity + destination.node.demand > instance.capacity_of_vehicles:
+                                sorted_by_last_destination[i].destinations.insert(len(feasible_solution.vehicles[f_vehicle].destinations) - 1, copy.deepcopy(destination))
+                                break
+                        break
+                        """nearest_destination = solution.vehicles[0].destinations[-2].node.number
+                        for infeasible_vehicle in solution.vehicles[1:]:
+                            if instance.get_distance(infeasible_vehicle.destinations[-2].node.number, destination.node.number) < instance.get_distance(nearest_destination.):"""
                 else:
                     if len(feasible_solution.vehicles) < instance.amount_of_vehicles:
                         feasible_solution.vehicles.append(Vehicle.create_route(instance, destination.node))
-                        inserted = True
+                        feasible_insertion = True
                     f_vehicle += 1
 
-            feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time = feasible_solution.vehicles[f_vehicle].destinations[-3].departure_time + instance.get_distance(feasible_solution.vehicles[f_vehicle].destinations[-3].node.number, feasible_solution.vehicles[f_vehicle].destinations[-2].node.number)
+            feasible_solution.vehicles[f_vehicle].current_capacity += destination.node.demand
+            feasible_solution.vehicles[f_vehicle].calculate_destination_time_window(instance, -3, -2)
+            """feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time = feasible_solution.vehicles[f_vehicle].destinations[-3].departure_time + instance.get_distance(feasible_solution.vehicles[f_vehicle].destinations[-3].node.number, feasible_solution.vehicles[f_vehicle].destinations[-2].node.number)
             if feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time < feasible_solution.vehicles[f_vehicle].destinations[-2].node.ready_time:
                 feasible_solution.vehicles[f_vehicle].destinations[-2].wait_time = feasible_solution.vehicles[f_vehicle].destinations[-2].node.ready_time - feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time
                 feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time = feasible_solution.vehicles[f_vehicle].destinations[-2].node.ready_time
             else:
                 feasible_solution.vehicles[f_vehicle].destinations[-2].wait_time = 0.0
-            feasible_solution.vehicles[f_vehicle].destinations[-2].departure_time = feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time + destination.node.service_duration
+            feasible_solution.vehicles[f_vehicle].destinations[-2].departure_time = feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time + destination.node.service_duration"""
+
+            if not feasible_insertion:
+                f_vehicle = first_attempted_vehicle
 
     return feasible_solution
 
@@ -134,20 +154,20 @@ def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -
     return (f_solution, True) if f_solution.feasible and is_nondominated(solution, f_solution) else (solution, False)
 
 def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
-    feasible_solution = transform_to_feasible_network(instance, solution)
+    feasible_solution = attempt_feasible_network_transformation(instance, solution)
     feasible_solution, relocated = relocate_final_destinations(instance, feasible_solution)
 
     if not relocated:
-        solution.calculate_vehicles_loads(instance)
-        solution.calculate_length_of_routes(instance)
-        solution.calculate_nodes_time_windows(instance)
-        solution.objective_function(instance)
+        feasible_solution.calculate_vehicles_loads(instance)
+        feasible_solution.calculate_length_of_routes(instance)
+        feasible_solution.calculate_nodes_time_windows(instance)
+        feasible_solution.objective_function(instance)
 
     return feasible_solution
 
 def selection_tournament(population: List[Solution]) -> int:
     rank_one_solutions = list(filter(lambda s: s.rank == 1, population))
-    tournament_set = random.sample(rank_one_solutions, TOURNAMENT_SIZE)
+    tournament_set = random.choice(rank_one_solutions, TOURNAMENT_SIZE) if rank_one_solutions else random.choice(population, TOURNAMENT_SIZE)
 
     if rand(1, 100) < TOURNAMENT_PROBABILITY:
         best_solution = population[tournament_set[0].id]
@@ -193,7 +213,7 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         random_solution.calculate_nodes_time_windows(instance)
         random_solution.objective_function(instance)
         population.insert(i, random_solution)
-    pareto_rank(population)
+    #pareto_rank(population)
 
     for _ in range(0, generation_span):
         winning_parent = selection_tournament(population)
