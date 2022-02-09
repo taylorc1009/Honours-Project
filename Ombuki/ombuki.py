@@ -1,6 +1,7 @@
 import copy
 import random
 from typing import List, Tuple
+from Ombuki.operators import crossover, mutation
 from problemInstance import ProblemInstance
 from Ombuki.solution import Solution
 from vehicle import Vehicle
@@ -185,19 +186,11 @@ def selection_tournament(population: List[Solution]) -> int:
     else:
         return tournament_set[rand(0, TOURNAMENT_SIZE - 1)].id
 
-def crossover_probability(instance: ProblemInstance, solution: Solution, probability: int) -> Tuple[Solution, bool]:
-    if rand(1, 100) < probability:
-        solution_copy = copy.deepcopy(solution)
-
-        return solution_copy, False
-    return solution, True
+def crossover_probability(instance: ProblemInstance, iterator_parent: Solution, tournament_parent: Solution, probability: int) -> Solution:
+    return crossover(copy.deepcopy(iterator_parent), copy.deepcopy(tournament_parent)) if rand(1, 100) < probability else iterator_parent
 
 def mutation_probability(instance: ProblemInstance, solution: Solution, probability: int, pending_copy: bool) -> Solution:
-    if rand(1, 100) < probability:
-        solution_copy = copy.deepcopy(solution) if pending_copy else solution
-
-        return solution_copy
-    return solution
+    return mutation(copy.deepcopy(solution) if pending_copy else solution) if rand(1, 100) < probability else solution
 
 def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: int, mutation: int) -> List[Solution]:
     population: List[Solution] = list()
@@ -224,10 +217,10 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
 
     for _ in range(0, generation_span):
         winning_parent = selection_tournament(population)
-        for i in range(0, population_size):
-            population[i] = routing_scheme(instance, population[i])
+        for i, solution in enumerate(0, population_size):
+            population[i] = routing_scheme(instance, solution)
             pareto_rank(population)
-            population[i], pending_copy = crossover_probability(instance, population[i], crossover)
-            population[i] = mutation_probability(instance, population[i], mutation, pending_copy)
+            result = crossover_probability(instance, solution, population[winning_parent], crossover)
+            result = mutation_probability(instance, result, mutation, result is population)
 
     return population
