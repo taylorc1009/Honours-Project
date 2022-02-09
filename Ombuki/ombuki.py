@@ -151,7 +151,7 @@ def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -
     f_solution.calculate_nodes_time_windows(instance)
     f_solution.objective_function(instance)
 
-    return (f_solution, True) if f_solution.feasible and is_nondominated(solution, f_solution) else (solution, False)
+    return (f_solution, True) if is_nondominated(solution, f_solution) else (solution, False)
 
 def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
     feasible_solution = attempt_feasible_network_transformation(instance, solution)
