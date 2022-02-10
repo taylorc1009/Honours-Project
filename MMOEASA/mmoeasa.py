@@ -180,7 +180,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
     start = time.time()
     current_multi_start = 0
     while current_multi_start < MS and not iterations >= TC:
-        for i, _ in enumerate(P):
+        for i in range(len(P)):
             P[i].T = P[i].T_default
 
         while P[0].T > T_stop and not iterations >= TC:
