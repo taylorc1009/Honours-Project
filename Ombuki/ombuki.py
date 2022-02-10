@@ -6,10 +6,9 @@ from problemInstance import ProblemInstance
 from Ombuki.solution import Solution
 from vehicle import Vehicle
 from destination import Destination
-from Ombuki.auxiliaries import rand
+from Ombuki.auxiliaries import rand, is_nondominated
 from numpy import arange, round, random
 from Ombuki.constants import INT_MAX, TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY, GREEDY_PERCENT
-
 
 def generate_random_solution(instance: ProblemInstance) -> Solution:
     solution = Solution(_id=0, vehicles=list())
@@ -63,9 +62,6 @@ def generate_greedy_solution(instance: ProblemInstance) -> Solution:
                 break
 
     return solution
-
-def is_nondominated(old_solution: Solution, new_solution: Solution) -> bool:
-    return (new_solution.total_distance < old_solution.total_distance and new_solution.num_vehicles <= old_solution.num_vehicles) or (new_solution.total_distance <= old_solution.total_distance and new_solution.num_vehicles < old_solution.num_vehicles)
 
 def is_nondominated_by_any(population: List[Solution], subject_solution: int) -> bool:
     for i, solution in enumerate(population):
@@ -187,7 +183,7 @@ def selection_tournament(population: List[Solution]) -> int:
         return tournament_set[rand(0, TOURNAMENT_SIZE - 1)].id
 
 def crossover_probability(instance: ProblemInstance, iterator_parent: Solution, tournament_parent: Solution, probability: int) -> Solution:
-    return crossover(copy.deepcopy(iterator_parent), copy.deepcopy(tournament_parent)) if rand(1, 100) < probability else iterator_parent
+    return crossover(instance, copy.deepcopy(iterator_parent), copy.deepcopy(tournament_parent)) if rand(1, 100) < probability else iterator_parent
 
 def mutation_probability(instance: ProblemInstance, solution: Solution, probability: int, pending_copy: bool) -> Solution:
     return mutation(copy.deepcopy(solution) if pending_copy else solution) if rand(1, 100) < probability else solution
@@ -217,10 +213,13 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
 
     for _ in range(0, generation_span):
         winning_parent = selection_tournament(population)
-        for i, solution in enumerate(0, population_size):
+        for i, solution in enumerate(population):
             population[i] = routing_scheme(instance, solution)
-            pareto_rank(population)
             result = crossover_probability(instance, solution, population[winning_parent], crossover)
-            result = mutation_probability(instance, result, mutation, result is population)
+            #result = mutation_probability(instance, result, mutation, result is population)
+            if is_nondominated(population[i], result):
+                population[i] = result
+                print("solution dominated")
+        pareto_rank(population)
 
     return population
