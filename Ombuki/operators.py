@@ -102,22 +102,22 @@ def mutation(instance: ProblemInstance, solution: Solution) -> Solution:
     num_nodes_to_swap = rand(2, MUTATION_REVERSAL_LENGTH)
     first_reversal_node = rand(1, len(instance.nodes) - num_nodes_to_swap)
 
-    vehicle = -1
+    vehicle_num = -1
     num_destinations_tracker = 0
     for i, vehicle in enumerate(solution.vehicles):
         if not num_destinations_tracker + vehicle.get_num_of_customers_visited() > first_reversal_node:
             num_destinations_tracker += vehicle.get_num_of_customers_visited()
         else:
-            vehicle = i
+            vehicle_num = i
             break
 
     first_destination = first_reversal_node - num_destinations_tracker
-    reversed_destinations = get_next_vehicles_destinations(solution, vehicle, first_destination, num_nodes_to_swap)
+    reversed_destinations = get_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap)
     reversed_destinations = list(reversed(reversed_destinations))
-    set_next_vehicles_destinations(solution, vehicle, first_destination, num_nodes_to_swap, reversed_destinations)
+    set_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap, reversed_destinations)
 
-    solution.vehicles[vehicle].calculate_vehicle_load(instance)
-    solution.vehicles[vehicle].calculate_destinations_time_windows(instance)
-    solution.vehicles[vehicle].calculate_length_of_route(instance)
+    solution.vehicles[vehicle_num].calculate_vehicle_load(instance)
+    solution.vehicles[vehicle_num].calculate_destinations_time_windows(instance)
+    solution.vehicles[vehicle_num].calculate_length_of_route(instance)
     solution.objective_function(instance)
     return solution
