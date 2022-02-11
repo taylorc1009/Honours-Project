@@ -214,12 +214,14 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
     for _ in range(0, generation_span):
         winning_parent = selection_tournament(population)
         for i, solution in enumerate(population):
-            population[i] = routing_scheme(instance, solution)
+            if not population[i].feasible:
+                population[i] = routing_scheme(instance, solution)
             result = crossover_probability(instance, solution, population[winning_parent], crossover)
             #result = mutation_probability(instance, result, mutation, result is population)
-            if is_nondominated(population[i], result):
+            if not population[i].feasible or is_nondominated(population[i], result):
                 population[i] = result
-                print("solution dominated")
+                if is_nondominated(population[i], result):
+                    print("solution dominated")
         pareto_rank(population)
 
     return population
