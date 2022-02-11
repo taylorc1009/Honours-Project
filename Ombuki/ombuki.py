@@ -74,10 +74,16 @@ def pareto_rank(population: List[Solution]) -> None:
     unranked_solutions = list(arange(0, len(population)))
 
     while unranked_solutions:
+        could_assign_rank = False
         for i in unranked_solutions:
             if is_nondominated_by_any(population, i):
                 population[i].rank = curr_rank
                 unranked_solutions.remove(population[i].id)
+                could_assign_rank = True
+        if not could_assign_rank:
+            for i in unranked_solutions:
+                population[i].rank = curr_rank
+            break
         curr_rank += 1
 
 def attempt_feasible_network_transformation(instance: ProblemInstance, solution: Solution) -> Solution:
@@ -147,7 +153,6 @@ def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
     return relocated_solution
 
 def selection_tournament(population: List[Solution]) -> int:
-    tournament_set = None
     best_solutions = list(filter(lambda s: s.rank == 1, population))
     if not best_solutions: # in this instance, the initialising population has been given and no solutions have been ranked yet, so work with any feasible solutions
         best_solutions = list(filter(lambda s: s.feasible, population))
