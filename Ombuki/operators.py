@@ -68,16 +68,23 @@ def t_crossover(instance: ProblemInstance, solution: Solution, parent_vehicle: V
 def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solution) -> Solution:
     parent_one_vehicle = parent_one.vehicles[rand(0, len(parent_one.vehicles) - 1)]
     parent_two_vehicle = parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)]
+    parent_two.id = parent_one.id # parent two will be the selection tournament winner, so the ID of parent_one will be the current index of "population" in the main algorithm
 
     # threads cannot return values, so they need to be given a mutable type that can be given the values we'd like to return; in this instance, a list is used
 
     thread_results: List[Solution] = [None, None]
-    child_one_thread = Thread(target=t_crossover, args=(instance, parent_one, parent_two_vehicle, [thread_results, 0]))
+    """child_one_thread = Thread(target=t_crossover, args=(instance, parent_one, parent_two_vehicle, [thread_results, 0]))
     child_two_thread = Thread(target=t_crossover, args=(instance, parent_two, parent_one_vehicle, [thread_results, 1]))
     child_one_thread.start()
     child_two_thread.start()
     child_one_thread.join()
     child_two_thread.join()
+    
+    # this is a temporary measure for debugging; sometimes a thread places "None" in "thread_results" (but only when the operator is threaded)
+    if thread_results[0] == None or thread_results[1] == None:
+        exit()"""
+    t_crossover(instance, parent_one, parent_two_vehicle, [thread_results, 0])
+    t_crossover(instance, parent_two, parent_one_vehicle, [thread_results, 1])
 
     return thread_results[0] if is_nondominated(thread_results[0], thread_results[1]) else thread_results[1]
 
