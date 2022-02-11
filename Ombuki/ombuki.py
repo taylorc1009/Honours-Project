@@ -84,11 +84,6 @@ def attempt_feasible_network_transformation(instance: ProblemInstance, solution:
     feasible_solution = Solution(_id=solution.id, vehicles=[Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)])
     feasible_solution.vehicles[0].current_capacity += solution.vehicles[0].destinations[1].node.demand
     feasible_solution.vehicles[0].calculate_destination_time_window(instance, 0, 1)
-    """feasible_solution.vehicles[0].destinations[1].arrival_time = instance.get_distance(0, feasible_solution.vehicles[0].destinations[1].node.number)
-    if feasible_solution.vehicles[0].destinations[1].arrival_time < feasible_solution.vehicles[0].destinations[1].node.ready_time:
-        feasible_solution.vehicles[0].destinations[1].wait_time = feasible_solution.vehicles[0].destinations[1].node.ready_time
-        feasible_solution.vehicles[0].destinations[1].arrival_time = feasible_solution.vehicles[0].destinations[1].node.ready_time
-    feasible_solution.vehicles[0].destinations[1].departure_time = feasible_solution.vehicles[0].destinations[1].arrival_time + feasible_solution.vehicles[0].destinations[1].node.service_duration"""
 
     f_vehicle = 0
     for vehicle in solution.vehicles:
@@ -112,9 +107,6 @@ def attempt_feasible_network_transformation(instance: ProblemInstance, solution:
                                 sorted_by_last_destination[i].destinations.insert(len(feasible_solution.vehicles[f_vehicle].destinations) - 1, copy.deepcopy(destination))
                                 break
                         break
-                        """nearest_destination = solution.vehicles[0].destinations[-2].node.number
-                        for infeasible_vehicle in solution.vehicles[1:]:
-                            if instance.get_distance(infeasible_vehicle.destinations[-2].node.number, destination.node.number) < instance.get_distance(nearest_destination.):"""
                 else:
                     if len(feasible_solution.vehicles) < instance.amount_of_vehicles:
                         feasible_solution.vehicles.append(Vehicle.create_route(instance, destination.node))
@@ -123,20 +115,12 @@ def attempt_feasible_network_transformation(instance: ProblemInstance, solution:
 
             feasible_solution.vehicles[f_vehicle].current_capacity += destination.node.demand
             feasible_solution.vehicles[f_vehicle].calculate_destination_time_window(instance, -3, -2)
-            """feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time = feasible_solution.vehicles[f_vehicle].destinations[-3].departure_time + instance.get_distance(feasible_solution.vehicles[f_vehicle].destinations[-3].node.number, feasible_solution.vehicles[f_vehicle].destinations[-2].node.number)
-            if feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time < feasible_solution.vehicles[f_vehicle].destinations[-2].node.ready_time:
-                feasible_solution.vehicles[f_vehicle].destinations[-2].wait_time = feasible_solution.vehicles[f_vehicle].destinations[-2].node.ready_time - feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time
-                feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time = feasible_solution.vehicles[f_vehicle].destinations[-2].node.ready_time
-            else:
-                feasible_solution.vehicles[f_vehicle].destinations[-2].wait_time = 0.0
-            feasible_solution.vehicles[f_vehicle].destinations[-2].departure_time = feasible_solution.vehicles[f_vehicle].destinations[-2].arrival_time + destination.node.service_duration"""
-
             if not feasible_insertion:
                 f_vehicle = first_attempted_vehicle
 
     return feasible_solution
 
-def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -> Tuple[Solution, bool]:
+def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -> Solution:
     f_solution = copy.deepcopy(solution)
 
     for i in range(0, len(f_solution.vehicles)):
@@ -148,19 +132,19 @@ def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -
     f_solution.calculate_nodes_time_windows(instance)
     f_solution.objective_function(instance)
 
-    return (f_solution, True) if is_nondominated(solution, f_solution) else (solution, False)
+    return f_solution if is_nondominated(solution, f_solution) else solution
 
 def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
     feasible_solution = attempt_feasible_network_transformation(instance, solution)
-    feasible_solution, relocated = relocate_final_destinations(instance, feasible_solution)
+    relocated_solution = relocate_final_destinations(instance, feasible_solution)
 
-    if not relocated:
+    if relocated_solution is feasible_solution:
         feasible_solution.calculate_vehicles_loads(instance)
         feasible_solution.calculate_length_of_routes(instance)
         feasible_solution.calculate_nodes_time_windows(instance)
         feasible_solution.objective_function(instance)
 
-    return feasible_solution
+    return relocated_solution
 
 def selection_tournament(population: List[Solution]) -> int:
     tournament_set = None
