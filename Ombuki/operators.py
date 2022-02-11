@@ -84,17 +84,19 @@ def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solut
 
 def get_next_vehicles_destinations(solution: Solution, vehicle: int, first_destination: int, remaining_destinations: int):
     num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
-    if num_customers - first_destination < remaining_destinations:
-        return solution.vehicles[vehicle].destinations[1:-2] + get_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - num_customers)
+    position = (num_customers + 1) - first_destination
+    if position < remaining_destinations and remaining_destinations > 1:
+        return solution.vehicles[vehicle].destinations[first_destination:num_customers+1] + get_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - position)
     else:
         return solution.vehicles[vehicle].destinations[first_destination:first_destination+remaining_destinations]
 
 def set_next_vehicles_destinations(solution: Solution, vehicle: int, first_destination: int, remaining_destinations: int, reversed_destinations: List[Destination]):
     num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
-    if num_customers - first_destination < remaining_destinations:
-        solution.vehicles[vehicle].destinations[1:-2] = reversed_destinations[0:num_customers]
-        del reversed_destinations[0:num_customers]
-        set_next_vehicles_destinations(solution, vehicle + 1, 0, remaining_destinations - num_customers, reversed_destinations)
+    position = (num_customers + 1) - first_destination
+    if position < remaining_destinations and remaining_destinations > 1:
+        solution.vehicles[vehicle].destinations[first_destination:num_customers+1] = reversed_destinations[0:position]
+        del reversed_destinations[0:position]
+        set_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - position, reversed_destinations)
     else:
         solution.vehicles[vehicle].destinations[first_destination:first_destination+remaining_destinations] = reversed_destinations
 
@@ -116,4 +118,8 @@ def mutation(instance: ProblemInstance, solution: Solution) -> Solution:
     reversed_destinations = list(reversed(reversed_destinations))
     set_next_vehicles_destinations(solution, vehicle, first_destination, num_nodes_to_swap, reversed_destinations)
 
+    solution.vehicles[vehicle].calculate_vehicle_load(instance)
+    solution.vehicles[vehicle].calculate_destinations_time_windows(instance)
+    solution.vehicles[vehicle].calculate_length_of_route(instance)
+    solution.objective_function(instance)
     return solution
