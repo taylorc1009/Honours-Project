@@ -1,14 +1,14 @@
 import copy
 from random import shuffle
-from typing import List, Union
+from typing import Dict
 from Ombuki.constants import INT_MAX
 from Ombuki.auxiliaries import rand, is_nondominated
 from Ombuki.solution import Solution
-from threading import Thread
+from threading import Thread, currentThread
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 
-def t_crossover(instance: ProblemInstance, solution: Solution, parent_vehicle: Vehicle, result: List[Union[List[Solution], int]]):
+def t_crossover(instance: ProblemInstance, solution: Solution, parent_vehicle: Vehicle, result: Dict[str, Solution]):
     nodes_to_remove = set([d.node.number for d in parent_vehicle.get_customers_visited()])
     for i, vehicle in enumerate(solution.vehicles):
         j = 1
@@ -63,7 +63,7 @@ def t_crossover(instance: ProblemInstance, solution: Solution, parent_vehicle: V
             # do something to accommodate the infeasible solution
             continue
 
-    result[0][result[1]] = solution
+    result[currentThread().getName()] = solution
 
 def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solution) -> Solution:
     parent_one_vehicle = parent_one.vehicles[rand(0, len(parent_one.vehicles) - 1)]
@@ -71,22 +71,15 @@ def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solut
     parent_two.id = parent_one.id # parent two will be the selection tournament winner, so the ID of parent_one will be the current index of "population" in the main algorithm
 
     # threads cannot return values, so they need to be given a mutable type that can be given the values we'd like to return; in this instance, a list is used
-
-    thread_results: List[Solution] = [None, None]
-    """child_one_thread = Thread(target=t_crossover, args=(instance, parent_one, parent_two_vehicle, [thread_results, 0]))
-    child_two_thread = Thread(target=t_crossover, args=(instance, parent_two, parent_one_vehicle, [thread_results, 1]))
+    thread_results: Dict[str, Solution] = {"child_one": None, "child_two": None}
+    child_one_thread = Thread(name="child_one", target=t_crossover, args=(instance, parent_one, parent_two_vehicle, thread_results))
+    child_two_thread = Thread(name="child_two", target=t_crossover, args=(instance, parent_two, parent_one_vehicle, thread_results))
     child_one_thread.start()
     child_two_thread.start()
     child_one_thread.join()
     child_two_thread.join()
-    
-    # this is a temporary measure for debugging; sometimes a thread places "None" in "thread_results" (but only when the operator is threaded)
-    if thread_results[0] == None or thread_results[1] == None:
-        exit()"""
-    t_crossover(instance, parent_one, parent_two_vehicle, [thread_results, 0])
-    t_crossover(instance, parent_two, parent_one_vehicle, [thread_results, 1])
 
-    return thread_results[0] if is_nondominated(thread_results[0], thread_results[1]) else thread_results[1]
+    return thread_results["child_one"] if is_nondominated(thread_results["child_one"], thread_results["child_two"]) else thread_results["child_two"]
 
 def mutation(solution: Solution) -> Solution:
     pass
