@@ -1,10 +1,11 @@
 import copy
 from random import shuffle
-from typing import Dict
-from Ombuki.constants import INT_MAX
+from typing import Dict, List
+from Ombuki.constants import INT_MAX, MUTATION_REVERSAL_LENGTH
 from Ombuki.auxiliaries import rand, is_nondominated
 from Ombuki.solution import Solution
 from threading import Thread, currentThread
+from destination import Destination
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 
@@ -81,5 +82,38 @@ def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solut
 
     return thread_results["child_one"] if is_nondominated(thread_results["child_one"], thread_results["child_two"]) else thread_results["child_two"]
 
-def mutation(solution: Solution) -> Solution:
-    pass
+def get_next_vehicles_destinations(solution: Solution, vehicle: int, first_destination: int, remaining_destinations: int):
+    num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
+    if num_customers - first_destination < remaining_destinations:
+        return solution.vehicles[vehicle].destinations[1:-2] + get_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - num_customers)
+    else:
+        return solution.vehicles[vehicle].destinations[first_destination:first_destination+remaining_destinations]
+
+def set_next_vehicles_destinations(solution: Solution, vehicle: int, first_destination: int, remaining_destinations: int, reversed_destinations: List[Destination]):
+    num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
+    if num_customers - first_destination < remaining_destinations:
+        solution.vehicles[vehicle].destinations[1:-2] = reversed_destinations[0:num_customers]
+        del reversed_destinations[0:num_customers]
+        set_next_vehicles_destinations(solution, vehicle + 1, 0, remaining_destinations - num_customers, reversed_destinations)
+    else:
+        solution.vehicles[vehicle].destinations[first_destination:first_destination+remaining_destinations] = reversed_destinations
+
+def mutation(instance: ProblemInstance, solution: Solution) -> Solution:
+    num_nodes_to_swap = rand(2, MUTATION_REVERSAL_LENGTH)
+    first_reversal_node = rand(1, len(instance.nodes) - num_nodes_to_swap)
+
+    vehicle = -1
+    num_destinations_tracker = 0
+    for i, vehicle in enumerate(solution.vehicles):
+        if not num_destinations_tracker + vehicle.get_num_of_customers_visited() > first_reversal_node:
+            num_destinations_tracker += vehicle.get_num_of_customers_visited()
+        else:
+            vehicle = i
+            break
+
+    first_destination = first_reversal_node - num_destinations_tracker
+    reversed_destinations = get_next_vehicles_destinations(solution, vehicle, first_destination, num_nodes_to_swap)
+    reversed_destinations = list(reversed(reversed_destinations))
+    set_next_vehicles_destinations(solution, vehicle, first_destination, num_nodes_to_swap, reversed_destinations)
+
+    return solution
