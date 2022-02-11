@@ -21,9 +21,7 @@ def t_crossover(instance: ProblemInstance, solution: Solution, parent_vehicle: V
             else:
                 j += 1
 
-    #solution.calculate_vehicles_loads(instance)
     solution.calculate_nodes_time_windows(instance)
-    #solution.calculate_length_of_routes(instance)
 
     randomized_destinations = list(range(len(parent_vehicle.destinations)))
     shuffle(randomized_destinations)
