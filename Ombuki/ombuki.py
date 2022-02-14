@@ -172,10 +172,7 @@ def selection_tournament(population: List[Solution]) -> int:
         return tournament_set[rand(0, TOURNAMENT_SIZE - 1)].id
 
 def crossover_probability(instance: ProblemInstance, iterator_parent: Solution, tournament_parent: Solution, probability: int) -> Solution:
-    if rand(1, 100) < probability:
-        crossover_solution = crossover(instance, iterator_parent, tournament_parent)
-        return crossover_solution if is_nondominated(iterator_parent, crossover_solution) else iterator_parent
-    return iterator_parent
+    return crossover(instance, iterator_parent, tournament_parent) if rand(1, 100) < probability else iterator_parent
 
 def mutation_probability(instance: ProblemInstance, solution: Solution, probability: int, pending_copy: bool) -> Solution:
     if rand(1, 100) < probability:
