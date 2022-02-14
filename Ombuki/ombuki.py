@@ -210,9 +210,9 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
             result = crossover_probability(instance, solution, population[winning_parent], crossover)
             result = mutation_probability(instance, result, mutation, result is solution)
             if not population[i].feasible or is_nondominated(population[i], result):
-                population[i] = result
                 if is_nondominated(population[i], result):
                     print("solution dominated")
+                population[i] = result
         pareto_rank(population)
 
     return population
