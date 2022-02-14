@@ -110,7 +110,7 @@ def attempt_feasible_network_transformation(instance: ProblemInstance, solution:
                         sorted_by_last_destination = sorted(feasible_solution.vehicles, key=lambda v: instance.get_distance(v.destinations[-2].node.number, destination.node.number))
                         for i, infeasible_vehicle in enumerate(sorted_by_last_destination):
                             if not infeasible_vehicle.current_capacity + destination.node.demand > instance.capacity_of_vehicles:
-                                sorted_by_last_destination[i].destinations.insert(len(feasible_solution.vehicles[f_vehicle].destinations) - 1, copy.deepcopy(destination))
+                                feasible_solution.vehicles[i].destinations.insert(len(feasible_solution.vehicles[i].destinations) - 1, copy.deepcopy(destination))
                                 break
                         break
                 else:
@@ -142,7 +142,12 @@ def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -
 
 def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
     feasible_solution = attempt_feasible_network_transformation(instance, solution)
+    if set(range(len(instance.nodes))).difference([d.node.number for v in feasible_solution.vehicles for d in v.destinations]):
+        feasible_solution = attempt_feasible_network_transformation(instance, solution)
+
     relocated_solution = relocate_final_destinations(instance, feasible_solution)
+    if set(range(len(instance.nodes))).difference([d.node.number for v in relocated_solution.vehicles for d in v.destinations]):
+        relocated_solution = relocate_final_destinations(instance, feasible_solution)
 
     if relocated_solution is feasible_solution:
         feasible_solution.calculate_vehicles_loads(instance)
