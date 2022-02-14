@@ -69,7 +69,6 @@ def crossover_thread(instance: ProblemInstance, solution: Solution, parent_vehic
 def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solution) -> Solution:
     parent_one_vehicle = parent_one.vehicles[rand(0, len(parent_one.vehicles) - 1)]
     parent_two_vehicle = parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)]
-    parent_two.id = parent_one.id # parent two will be the selection tournament winner, so the ID of parent_one will be the current index of "population" in the main algorithm
 
     # threads cannot return values, so they need to be given a mutable type that can be given the values we'd like to return; in this instance, a list is used
     thread_results: Dict[str, Solution] = {"child_one": None, "child_two": None}
@@ -80,6 +79,7 @@ def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solut
     child_one_thread.join()
     child_two_thread.join()
 
+    thread_results["child_two"].id = thread_results["child_one"].id
     return thread_results["child_one"] if is_nondominated(thread_results["child_one"], thread_results["child_two"]) else thread_results["child_two"]
 
 def get_next_vehicles_destinations(solution: Solution, vehicle: int, first_destination: int, remaining_destinations: int):
