@@ -9,7 +9,7 @@ from destination import Destination
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 
-def t_crossover(instance: ProblemInstance, solution: Solution, parent_vehicle: Vehicle, result: Dict[str, Solution]) -> None:
+def crossover_thread(instance: ProblemInstance, solution: Solution, parent_vehicle: Vehicle, result: Dict[str, Solution]) -> None:
     crossover_solution = copy.deepcopy(solution)
     
     nodes_to_remove = set([d.node.number for d in parent_vehicle.get_customers_visited()])
@@ -45,27 +45,24 @@ def t_crossover(instance: ProblemInstance, solution: Solution, parent_vehicle: V
                     distance_to_next = instance.get_distance(vehicle.destinations[j].node.number, vehicle.destinations[j + 1].node.number)
 
                     if not (vehicle.destinations[j - 1].departure_time + distance_from_previous > vehicle.destinations[j].node.due_date or vehicle.destinations[j].departure_time + distance_to_next > vehicle.destinations[j + 1].node.due_date):
-                        if (distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next) or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next):
+                        if ((distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next) or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next)):
                             best_vehicle, best_position, shortest_from_previous, shortest_to_next = i, j, distance_from_previous, distance_to_next
 
                     del crossover_solution.vehicles[i].destinations[j]
+
         if best_vehicle >= 0 and best_position > 0:
             crossover_solution.vehicles[best_vehicle].destinations.insert(best_position, copy.deepcopy(parent_destination))
-            """for k in range(j, len(vehicle.destinations)):
-                crossover_solution.vehicles[i].calculate_destination_time_window(instance, k - 1, k)"""
-            crossover_solution.vehicles[best_vehicle].calculate_vehicle_load(instance)
-            crossover_solution.vehicles[best_vehicle].calculate_destinations_time_windows(instance)
-            crossover_solution.vehicles[best_vehicle].calculate_length_of_route(instance)
-            crossover_solution.objective_function(instance)
         elif len(crossover_solution.vehicles) < instance.amount_of_vehicles:
+            best_vehicle = len(crossover_solution.vehicles)
             crossover_solution.vehicles.append(Vehicle.create_route(instance, copy.deepcopy(parent_destination.node)))
-            crossover_solution.vehicles[-1].calculate_vehicle_load(instance)
-            crossover_solution.vehicles[-1].calculate_destinations_time_windows(instance)
-            crossover_solution.vehicles[-1].calculate_length_of_route(instance)
-            crossover_solution.objective_function(instance)
         else:
             # do something to accommodate the infeasible solution
             continue
+
+        crossover_solution.vehicles[best_vehicle].calculate_vehicle_load(instance)
+        crossover_solution.vehicles[best_vehicle].calculate_destinations_time_windows(instance)
+        crossover_solution.vehicles[best_vehicle].calculate_length_of_route(instance)
+        crossover_solution.objective_function(instance)
 
     result[currentThread().getName()] = crossover_solution
 
@@ -76,8 +73,8 @@ def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solut
 
     # threads cannot return values, so they need to be given a mutable type that can be given the values we'd like to return; in this instance, a list is used
     thread_results: Dict[str, Solution] = {"child_one": None, "child_two": None}
-    child_one_thread = Thread(name="child_one", target=t_crossover, args=(instance, parent_one, parent_two_vehicle, thread_results))
-    child_two_thread = Thread(name="child_two", target=t_crossover, args=(instance, parent_two, parent_one_vehicle, thread_results))
+    child_one_thread = Thread(name="child_one", target=crossover_thread, args=(instance, parent_one, parent_two_vehicle, thread_results))
+    child_two_thread = Thread(name="child_two", target=crossover_thread, args=(instance, parent_two, parent_one_vehicle, thread_results))
     child_one_thread.start()
     child_two_thread.start()
     child_one_thread.join()
