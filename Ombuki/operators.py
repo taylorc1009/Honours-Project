@@ -79,6 +79,11 @@ def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solut
     child_one_thread.join()
     child_two_thread.join()
 
+    if set(range(len(instance.nodes))).difference([d.node.number for v in thread_results["child_one"].vehicles for d in v.destinations]):
+        exit()
+    if set(range(len(instance.nodes))).difference([d.node.number for v in thread_results["child_two"].vehicles for d in v.destinations]):
+        exit()
+
     thread_results["child_two"].id = thread_results["child_one"].id
     return thread_results["child_one"] if is_nondominated(thread_results["child_one"], thread_results["child_two"]) else thread_results["child_two"]
 
@@ -106,7 +111,7 @@ def set_next_vehicles_destinations(solution: Solution, vehicle: int, first_desti
 
 def mutation(instance: ProblemInstance, solution: Solution) -> Solution:
     num_nodes_to_swap = rand(2, MUTATION_REVERSAL_LENGTH)
-    first_reversal_node = rand(1, len(instance.nodes) - num_nodes_to_swap)
+    first_reversal_node = rand(1, (len(instance.nodes) - 1) - num_nodes_to_swap)
 
     vehicle_num = -1
     num_destinations_tracker = 0
@@ -116,6 +121,9 @@ def mutation(instance: ProblemInstance, solution: Solution) -> Solution:
         else:
             vehicle_num = i
             break
+
+    if set(range(len(instance.nodes))).difference([d.node.number for v in solution.vehicles for d in v.destinations]):
+        exit()
 
     if vehicle_num == -1:
         exit()
