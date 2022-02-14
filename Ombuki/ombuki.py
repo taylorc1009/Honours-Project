@@ -175,7 +175,10 @@ def crossover_probability(instance: ProblemInstance, iterator_parent: Solution, 
     return crossover(instance, copy.deepcopy(iterator_parent), copy.deepcopy(tournament_parent)) if rand(1, 100) < probability else iterator_parent
 
 def mutation_probability(instance: ProblemInstance, solution: Solution, probability: int, pending_copy: bool) -> Solution:
-    return mutation(instance, copy.deepcopy(solution) if pending_copy else solution) if rand(1, 100) < probability else solution
+    if rand(1, 100) < probability:
+        mutated_solution = mutation(instance, copy.deepcopy(solution) if pending_copy else solution)
+        return mutated_solution if is_nondominated(solution, mutated_solution) else solution
+    return solution
 
 def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: int, mutation: int) -> List[Solution]:
     population: List[Solution] = list()
@@ -205,7 +208,7 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
             if not population[i].feasible:
                 population[i] = routing_scheme(instance, solution)
             result = crossover_probability(instance, solution, population[winning_parent], crossover)
-            result = mutation_probability(instance, result, mutation, result is population)
+            result = mutation_probability(instance, result, mutation, result is solution)
             if not population[i].feasible or is_nondominated(population[i], result):
                 population[i] = result
                 if is_nondominated(population[i], result):
