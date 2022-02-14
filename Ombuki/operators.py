@@ -9,32 +9,37 @@ from destination import Destination
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 
-def t_crossover(instance: ProblemInstance, solution: Solution, parent_vehicle: Vehicle, result: Dict[str, Solution]):
+def t_crossover(instance: ProblemInstance, solution: Solution, parent_vehicle: Vehicle, result: Dict[str, Solution]) -> None:
+    crossover_solution = copy.deepcopy(solution)
+    
     nodes_to_remove = set([d.node.number for d in parent_vehicle.get_customers_visited()])
-    for i, vehicle in enumerate(solution.vehicles):
+    for i, vehicle in enumerate(crossover_solution.vehicles):
         j = 1
         while j <= vehicle.get_num_of_customers_visited():
-            destination = solution.vehicles[i].destinations[j]
+            destination = crossover_solution.vehicles[i].destinations[j]
             if destination.node.number in nodes_to_remove:
-                solution.vehicles[i].current_capacity -= destination.node.demand
-                del solution.vehicles[i].destinations[j]
+                crossover_solution.vehicles[i].current_capacity -= destination.node.demand
+                if crossover_solution.vehicles[i].get_num_of_customers_visited() > 0:
+                    del crossover_solution.vehicles[i].destinations[j]
+                else:
+                    del crossover_solution.vehicles[i]
             else:
                 j += 1
 
-    solution.calculate_nodes_time_windows(instance)
+    crossover_solution.calculate_nodes_time_windows(instance)
 
     randomized_destinations = list(range(len(parent_vehicle.destinations)))
     shuffle(randomized_destinations)
     for d in randomized_destinations:
         parent_destination = parent_vehicle.destinations[d]
         best_vehicle, best_position = -1, 0
-        shortest_from_previous, shortest_to_next = (float(INT_MAX),) * 2
+        shortest_from_previous, shortest_to_next = float(INT_MAX), float(INT_MAX)
 
-        for i, vehicle in enumerate(solution.vehicles):
+        for i, vehicle in enumerate(crossover_solution.vehicles):
             if not vehicle.current_capacity + parent_destination.node.demand > instance.capacity_of_vehicles:
-                for j in range(1, len(solution.vehicles[i].destinations)):
-                    solution.vehicles[i].destinations.insert(j, parent_destination)
-                    solution.vehicles[i].calculate_destination_time_window(instance, j - 1, j)
+                for j in range(1, len(crossover_solution.vehicles[i].destinations)):
+                    crossover_solution.vehicles[i].destinations.insert(j, parent_destination)
+                    crossover_solution.vehicles[i].calculate_destination_time_window(instance, j - 1, j)
 
                     distance_from_previous = instance.get_distance(vehicle.destinations[j - 1].node.number, vehicle.destinations[j].node.number)
                     distance_to_next = instance.get_distance(vehicle.destinations[j].node.number, vehicle.destinations[j + 1].node.number)
@@ -43,26 +48,26 @@ def t_crossover(instance: ProblemInstance, solution: Solution, parent_vehicle: V
                         if (distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next) or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next):
                             best_vehicle, best_position, shortest_from_previous, shortest_to_next = i, j, distance_from_previous, distance_to_next
 
-                    del solution.vehicles[i].destinations[j]
+                    del crossover_solution.vehicles[i].destinations[j]
         if best_vehicle >= 0 and best_position > 0:
-            solution.vehicles[best_vehicle].destinations.insert(best_position, copy.deepcopy(parent_destination))
+            crossover_solution.vehicles[best_vehicle].destinations.insert(best_position, copy.deepcopy(parent_destination))
             """for k in range(j, len(vehicle.destinations)):
-                solution.vehicles[i].calculate_destination_time_window(instance, k - 1, k)"""
-            solution.vehicles[best_vehicle].calculate_vehicle_load(instance)
-            solution.vehicles[best_vehicle].calculate_destinations_time_windows(instance)
-            solution.vehicles[best_vehicle].calculate_length_of_route(instance)
-            solution.objective_function(instance)
-        elif len(solution.vehicles) < instance.amount_of_vehicles:
-            solution.vehicles.append(Vehicle.create_route(instance, copy.deepcopy(parent_destination.node)))
-            solution.vehicles[-1].calculate_vehicle_load(instance)
-            solution.vehicles[-1].calculate_destinations_time_windows(instance)
-            solution.vehicles[-1].calculate_length_of_route(instance)
-            solution.objective_function(instance)
+                crossover_solution.vehicles[i].calculate_destination_time_window(instance, k - 1, k)"""
+            crossover_solution.vehicles[best_vehicle].calculate_vehicle_load(instance)
+            crossover_solution.vehicles[best_vehicle].calculate_destinations_time_windows(instance)
+            crossover_solution.vehicles[best_vehicle].calculate_length_of_route(instance)
+            crossover_solution.objective_function(instance)
+        elif len(crossover_solution.vehicles) < instance.amount_of_vehicles:
+            crossover_solution.vehicles.append(Vehicle.create_route(instance, copy.deepcopy(parent_destination.node)))
+            crossover_solution.vehicles[-1].calculate_vehicle_load(instance)
+            crossover_solution.vehicles[-1].calculate_destinations_time_windows(instance)
+            crossover_solution.vehicles[-1].calculate_length_of_route(instance)
+            crossover_solution.objective_function(instance)
         else:
             # do something to accommodate the infeasible solution
             continue
 
-    result[currentThread().getName()] = solution
+    result[currentThread().getName()] = crossover_solution
 
 def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solution) -> Solution:
     parent_one_vehicle = parent_one.vehicles[rand(0, len(parent_one.vehicles) - 1)]
@@ -81,6 +86,8 @@ def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solut
     return thread_results["child_one"] if is_nondominated(thread_results["child_one"], thread_results["child_two"]) else thread_results["child_two"]
 
 def get_next_vehicles_destinations(solution: Solution, vehicle: int, first_destination: int, remaining_destinations: int):
+    if not 0 <= vehicle < len(solution.vehicles):
+        exit()
     num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
     position = (num_customers + 1) - first_destination
     if position < remaining_destinations and remaining_destinations > 1:
@@ -89,6 +96,8 @@ def get_next_vehicles_destinations(solution: Solution, vehicle: int, first_desti
         return solution.vehicles[vehicle].destinations[first_destination:first_destination+remaining_destinations]
 
 def set_next_vehicles_destinations(solution: Solution, vehicle: int, first_destination: int, remaining_destinations: int, reversed_destinations: List[Destination]):
+    if not 0 <= vehicle < len(solution.vehicles):
+        exit()
     num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
     position = (num_customers + 1) - first_destination
     if position < remaining_destinations and remaining_destinations > 1:
@@ -110,6 +119,9 @@ def mutation(instance: ProblemInstance, solution: Solution) -> Solution:
         else:
             vehicle_num = i
             break
+
+    if vehicle_num == -1:
+        exit()
 
     first_destination = first_reversal_node - num_destinations_tracker
     reversed_destinations = get_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap)
