@@ -206,7 +206,10 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         winning_parent = selection_tournament(population)
         for i, solution in enumerate(population):
             if not population[i].feasible:
+                was_feasible = population[i].feasible
                 population[i] = routing_scheme(instance, solution)
+                if not was_feasible and population[i].feasible:
+                    print(f"{i} made feasible by routing scheme")
             result = crossover_probability(instance, solution, population[winning_parent], crossover)
             result = mutation_probability(instance, result, mutation, result is solution)
             if not population[i].feasible or is_nondominated(population[i], result):
