@@ -13,18 +13,24 @@ def crossover_thread(instance: ProblemInstance, solution: Solution, parent_vehic
     crossover_solution = copy.deepcopy(solution)
     
     nodes_to_remove = set([d.node.number for d in parent_vehicle.get_customers_visited()])
-    for i, vehicle in enumerate(crossover_solution.vehicles):
+    i = 0
+    while i < len(crossover_solution.vehicles):
+        increment = True
         j = 1
-        while j <= vehicle.get_num_of_customers_visited():
+        while j <= crossover_solution.vehicles[i].get_num_of_customers_visited():
             destination = crossover_solution.vehicles[i].destinations[j]
             if destination.node.number in nodes_to_remove:
                 crossover_solution.vehicles[i].current_capacity -= destination.node.demand
-                if crossover_solution.vehicles[i].get_num_of_customers_visited() > 0:
+                if crossover_solution.vehicles[i].get_num_of_customers_visited() - 1 > 0:
                     del crossover_solution.vehicles[i].destinations[j]
                 else:
+                    increment = False
                     del crossover_solution.vehicles[i]
+                    break # break, otherwise the while loop will start searching the next vehicle with "j" as the same value; without incrementing "i" and starting "j" at 0
             else:
                 j += 1
+        if increment:
+            i += 1
 
     crossover_solution.calculate_nodes_time_windows(instance)
 
@@ -80,9 +86,13 @@ def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solut
     child_two_thread.join()
 
     if set(range(len(instance.nodes))).difference([d.node.number for v in thread_results["child_one"].vehicles for d in v.destinations]):
-        exit()
+        child_one_thread = Thread(name="child_one", target=crossover_thread, args=(instance, parent_one, parent_two_vehicle, thread_results))
+        child_one_thread.start()
+        child_one_thread.join()
     if set(range(len(instance.nodes))).difference([d.node.number for v in thread_results["child_two"].vehicles for d in v.destinations]):
-        exit()
+        child_two_thread = Thread(name="child_two", target=crossover_thread, args=(instance, parent_two, parent_one_vehicle, thread_results))
+        child_two_thread.start()
+        child_two_thread.join()
 
     thread_results["child_two"].id = thread_results["child_one"].id
     return thread_results["child_one"] if is_nondominated(thread_results["child_one"], thread_results["child_two"]) else thread_results["child_two"]
