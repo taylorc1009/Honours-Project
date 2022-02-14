@@ -14,12 +14,13 @@ def crossover_thread(instance: ProblemInstance, solution: Solution, parent_vehic
     
     nodes_to_remove = set([d.node.number for d in parent_vehicle.get_customers_visited()])
     i = 0
-    while i < len(crossover_solution.vehicles):
+    while i < len(crossover_solution.vehicles) and nodes_to_remove:
         increment = True
         j = 1
-        while j <= crossover_solution.vehicles[i].get_num_of_customers_visited():
+        while j <= crossover_solution.vehicles[i].get_num_of_customers_visited() and nodes_to_remove:
             destination = crossover_solution.vehicles[i].destinations[j]
             if destination.node.number in nodes_to_remove:
+                nodes_to_remove.remove(destination.node.number)
                 crossover_solution.vehicles[i].current_capacity -= destination.node.demand
                 if crossover_solution.vehicles[i].get_num_of_customers_visited() - 1 > 0:
                     del crossover_solution.vehicles[i].destinations[j]
