@@ -107,6 +107,7 @@ def attempt_feasible_network_transformation(instance: ProblemInstance, solution:
                         f_vehicle = 0
                         vehicle_reset = True
                     else: # at this point, no feasible vehicle insertion was found, so select the vehicle with the nearest final destination where capacity constraints are not violated; therefore, this solution is now infeasible
+                        # TODO: this should probably search for the node with the nearest time window instead of smallest distance? For feasibility purposes
                         sorted_by_last_destination = sorted(feasible_solution.vehicles, key=lambda v: instance.get_distance(v.destinations[-2].node.number, destination.node.number))
                         for f_vehicle, infeasible_vehicle in enumerate(sorted_by_last_destination):
                             if not infeasible_vehicle.current_capacity + destination.node.demand > instance.capacity_of_vehicles:
