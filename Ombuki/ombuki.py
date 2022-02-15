@@ -108,9 +108,9 @@ def attempt_feasible_network_transformation(instance: ProblemInstance, solution:
                         vehicle_reset = True
                     else: # at this point, no feasible vehicle insertion was found, so select the vehicle with the nearest final destination where capacity constraints are not violated; therefore, this solution is now infeasible
                         sorted_by_last_destination = sorted(feasible_solution.vehicles, key=lambda v: instance.get_distance(v.destinations[-2].node.number, destination.node.number))
-                        for i, infeasible_vehicle in enumerate(sorted_by_last_destination):
+                        for f_vehicle, infeasible_vehicle in enumerate(sorted_by_last_destination):
                             if not infeasible_vehicle.current_capacity + destination.node.demand > instance.capacity_of_vehicles:
-                                feasible_solution.vehicles[i].destinations.insert(len(feasible_solution.vehicles[i].destinations) - 1, copy.deepcopy(destination))
+                                feasible_solution.vehicles[f_vehicle].destinations.insert(len(feasible_solution.vehicles[f_vehicle].destinations) - 1, copy.deepcopy(destination))
                                 break
                         break
                 else:
