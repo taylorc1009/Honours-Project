@@ -36,7 +36,7 @@ def crossover_thread(instance: ProblemInstance, solution: Solution, parent_vehic
     crossover_solution.calculate_nodes_time_windows(instance)
     crossover_solution.calculate_vehicles_loads(instance)
 
-    randomized_destinations = list(range(len(parent_vehicle.destinations)))
+    randomized_destinations = list(range(1, len(parent_vehicle.destinations) - 1))
     shuffle(randomized_destinations)
     for d in randomized_destinations:
         parent_destination = parent_vehicle.destinations[d]
