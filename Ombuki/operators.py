@@ -42,6 +42,7 @@ def crossover_thread(instance: ProblemInstance, solution: Solution, parent_vehic
         parent_destination = parent_vehicle.destinations[d]
         best_vehicle, best_position = -1, 0
         shortest_from_previous, shortest_to_next = float(INT_MAX), float(INT_MAX)
+        found_feasible_location = False
 
         for i, vehicle in enumerate(crossover_solution.vehicles):
             if not vehicle.current_capacity + parent_destination.node.demand > instance.capacity_of_vehicles:
@@ -52,20 +53,20 @@ def crossover_thread(instance: ProblemInstance, solution: Solution, parent_vehic
                     distance_from_previous = instance.get_distance(vehicle.destinations[j - 1].node.number, vehicle.destinations[j].node.number)
                     distance_to_next = instance.get_distance(vehicle.destinations[j].node.number, vehicle.destinations[j + 1].node.number)
 
-                    if not (vehicle.destinations[j - 1].departure_time + distance_from_previous > vehicle.destinations[j].node.due_date or vehicle.destinations[j].departure_time + distance_to_next > vehicle.destinations[j + 1].node.due_date)\
-                            and ((distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next) or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next)):
-                        best_vehicle, best_position, shortest_from_previous, shortest_to_next = i, j, distance_from_previous, distance_to_next
+                    if not (vehicle.destinations[j - 1].departure_time + distance_from_previous > vehicle.destinations[j].node.due_date or vehicle.destinations[j].departure_time + distance_to_next > vehicle.destinations[j + 1].node.due_date):
+                        if (distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next) or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next):
+                            best_vehicle, best_position, shortest_from_previous, shortest_to_next = i, j, distance_from_previous, distance_to_next
+                            found_feasible_location = True
+                        elif not found_feasible_location: # until a feasible location is found, record the best infeasible location as it will be needed in case no feasible location is found
+                            best_vehicle, best_position, shortest_from_previous, shortest_to_next = i, j, distance_from_previous, distance_to_next
 
                     del crossover_solution.vehicles[i].destinations[j]
 
-        if best_vehicle >= 0 and best_position > 0:
-            crossover_solution.vehicles[best_vehicle].destinations.insert(best_position, copy.deepcopy(parent_destination))
-        elif len(crossover_solution.vehicles) < instance.amount_of_vehicles:
+        if not found_feasible_location and len(crossover_solution.vehicles) < instance.amount_of_vehicles:
             best_vehicle = len(crossover_solution.vehicles)
             crossover_solution.vehicles.append(Vehicle.create_route(instance, copy.deepcopy(parent_destination.node)))
         else:
-            # do something to accommodate the infeasible solution
-            continue
+            crossover_solution.vehicles[best_vehicle].destinations.insert(best_position, copy.deepcopy(parent_destination))
 
         crossover_solution.vehicles[best_vehicle].calculate_vehicle_load(instance)
         crossover_solution.vehicles[best_vehicle].calculate_destinations_time_windows(instance)
