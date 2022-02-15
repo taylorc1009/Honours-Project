@@ -107,11 +107,12 @@ def attempt_feasible_network_transformation(instance: ProblemInstance, solution:
                         f_vehicle = 0
                         vehicle_reset = True
                     else: # at this point, no feasible vehicle insertion was found, so select the vehicle with the nearest final destination where capacity constraints are not violated; therefore, this solution is now infeasible
-                        # TODO: this should probably search for the node with the nearest time window instead of smallest distance? For feasibility purposes
-                        sorted_by_last_destination = sorted(feasible_solution.vehicles, key=lambda v: instance.get_distance(v.destinations[-2].node.number, destination.node.number))
-                        for f_vehicle, infeasible_vehicle in enumerate(sorted_by_last_destination):
+                        key_value_pairs = {i: vehicle for i, vehicle in enumerate(feasible_solution.vehicles)}
+                        # TODO: this sort should probably search for the node with the nearest time window instead of smallest distance? For feasibility purposes
+                        sorted_by_last_destination = sorted(key_value_pairs.items(), key=lambda v: instance.get_distance(v[1].destinations[-2].node.number, destination.node.number))
+                        for f_vehicle, infeasible_vehicle in sorted_by_last_destination:
                             if not infeasible_vehicle.current_capacity + destination.node.demand > instance.capacity_of_vehicles:
-                                feasible_solution.vehicles[f_vehicle].destinations.insert(len(feasible_solution.vehicles[f_vehicle].destinations) - 1, copy.deepcopy(destination))
+                                infeasible_vehicle.destinations.insert(len(infeasible_vehicle.destinations) - 1, copy.deepcopy(destination))
                                 break
                         break
                 else:
@@ -216,8 +217,10 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
                 population[i] = routing_scheme(instance, solution)
                 if not was_feasible and population[i].feasible:
                     print(f"{i} made feasible by routing scheme")
+
             result = crossover_probability(instance, solution, population[winning_parent], crossover)
             result = mutation_probability(instance, result, mutation, result is solution)
+
             if not population[i].feasible or is_nondominated(population[i], result):
                 if is_nondominated(population[i], result):
                     print("solution dominated")
