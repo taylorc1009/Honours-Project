@@ -101,26 +101,20 @@ def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solut
     return thread_results["child_one"] if is_nondominated(thread_results["child_one"], thread_results["child_two"]) else thread_results["child_two"]
 
 def get_next_vehicles_destinations(solution: Solution, vehicle: int, first_destination: int, remaining_destinations: int):
-    if not 0 <= vehicle < len(solution.vehicles):
-        exit()
     num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
-    position = (num_customers + 1) - first_destination
-    if position < remaining_destinations and remaining_destinations > 1:
-        return solution.vehicles[vehicle].destinations[first_destination:num_customers+1] + get_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - position)
+    if num_customers < first_destination + remaining_destinations:
+        return solution.vehicles[vehicle].destinations[first_destination:num_customers] + get_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - (num_customers - first_destination))
     else:
-        return solution.vehicles[vehicle].destinations[first_destination:first_destination+remaining_destinations]
+        return solution.vehicles[vehicle].destinations[first_destination:first_destination + remaining_destinations]
 
 def set_next_vehicles_destinations(solution: Solution, vehicle: int, first_destination: int, remaining_destinations: int, reversed_destinations: List[Destination]):
-    if not 0 <= vehicle < len(solution.vehicles):
-        exit()
     num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
-    position = (num_customers + 1) - first_destination
-    if position < remaining_destinations and remaining_destinations > 1:
-        solution.vehicles[vehicle].destinations[first_destination:num_customers+1] = reversed_destinations[0:position]
-        del reversed_destinations[0:position]
-        set_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - position, reversed_destinations)
+    if num_customers < first_destination + remaining_destinations:
+        solution.vehicles[vehicle].destinations[first_destination:num_customers] = reversed_destinations[:num_customers - first_destination]
+        del reversed_destinations[:num_customers - first_destination]
+        set_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - (num_customers - first_destination), reversed_destinations)
     else:
-        solution.vehicles[vehicle].destinations[first_destination:first_destination+remaining_destinations] = reversed_destinations
+        solution.vehicles[vehicle].destinations[first_destination:first_destination + remaining_destinations] = reversed_destinations
 
 def mutation(instance: ProblemInstance, solution: Solution) -> Solution:
     num_nodes_to_swap = rand(2, MUTATION_REVERSAL_LENGTH)
@@ -142,6 +136,9 @@ def mutation(instance: ProblemInstance, solution: Solution) -> Solution:
         exit()
 
     first_destination = first_reversal_node - num_destinations_tracker
+    if not first_destination:
+        first_destination += 1
+
     reversed_destinations = get_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap)
     reversed_destinations = list(reversed(reversed_destinations))
     set_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap, reversed_destinations)
