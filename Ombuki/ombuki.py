@@ -223,7 +223,7 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
 
             if not population[i].feasible or is_nondominated(population[i], result):
                 if is_nondominated(population[i], result):
-                    print("solution dominated")
+                    print(f"solution {i} dominated")
                 population[i] = result
         pareto_rank(population)
 
