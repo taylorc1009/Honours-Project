@@ -197,9 +197,9 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                     print(f"{len(ND)=}, ND={i}, {iterations=}, time={round(time.time() - start, 1)}s")
                     prev_ND_id = i
 
-                    should_write = False
-                    if should_write: # use the debugger to edit the value in "should_write" if you'd like a solution to be written to a CSV
-                        MMOEASA_write_solution_for_validation(P[i], instance.capacity_of_vehicles)
+                    """should_write = False # use the debugger to edit the value in "should_write" if you'd like a solution to be written to a CSV
+                    if should_write:
+                        MMOEASA_write_solution_for_validation(P[i], instance.capacity_of_vehicles)"""
                 elif parent_changed and i == prev_ND_id:
                     print(f"ND solution ({prev_ND_id}) changed in P ({iterations=}, time={round(time.time() - start, 1)}s)")
 
