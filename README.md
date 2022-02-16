@@ -17,7 +17,7 @@ How to execute the application:
    2. `main.py [ -h | --help ]` can provide further instructions.
 
 How to externally validate solutions:
-1. Use the function `write_solution_for_validation` from `data.py` in the Python application to output a solution to a CSV,
+1. Use the function `MMOEASA_write_solution_for_validation` from `data.py` in the Python application to output a solution to a CSV,
 2. Compile the C application in `/MMOEASA/validator`;
    1. Using either the Makefile or CMake
 3. Execute the application `objective_function.exe`;
