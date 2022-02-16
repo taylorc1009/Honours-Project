@@ -107,7 +107,7 @@ def get_next_vehicles_destinations(solution: Solution, vehicle: int, first_desti
         exit()
     num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
     if num_customers < first_destination + remaining_destinations:
-        return solution.vehicles[vehicle].destinations[first_destination:num_customers] + get_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - ((num_customers + 1) - first_destination))
+        return solution.vehicles[vehicle].destinations[first_destination:num_customers + 1] + get_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - ((num_customers + 1) - first_destination))
     else:
         return solution.vehicles[vehicle].destinations[first_destination:first_destination + remaining_destinations]
 
@@ -118,12 +118,14 @@ def set_next_vehicles_destinations(solution: Solution, vehicle: int, first_desti
         exit()
     num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
     if num_customers < first_destination + remaining_destinations:
-        solution.vehicles[vehicle].destinations[first_destination:num_customers] = reversed_destinations[:num_customers - first_destination]
-        del reversed_destinations[:num_customers - first_destination]
-        set_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - ((num_customers + 1) - first_destination), reversed_destinations)
+        num_customers_inclusive = (num_customers + 1) - first_destination
+        solution.vehicles[vehicle].destinations[first_destination:num_customers + 1] = reversed_destinations[:num_customers_inclusive]
+        del reversed_destinations[:num_customers_inclusive]
+        set_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - num_customers_inclusive, reversed_destinations)
     else:
         solution.vehicles[vehicle].destinations[first_destination:first_destination + remaining_destinations] = reversed_destinations
-    if [d.node.number for d in solution.vehicles[vehicle].get_customers_visited() if not d.node.number] or (solution.vehicles[vehicle].destinations[0].node.number or solution.vehicles[vehicle].destinations[-1].node.number):
+        reversed_destinations.clear()
+    if [d.node.number for d in solution.vehicles[vehicle].get_customers_visited() if not d.node.number] or (solution.vehicles[vehicle].destinations[0].node.number or solution.vehicles[vehicle].destinations[-1].node.number) or reversed_destinations:
         print("hi")
 
 def mutation(instance: ProblemInstance, solution: Solution) -> Solution:
@@ -148,10 +150,13 @@ def mutation(instance: ProblemInstance, solution: Solution) -> Solution:
     first_destination = (first_reversal_node - num_destinations_tracker) + 1
 
     reversed_destinations = get_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap)
-    if [d.node.number for d in reversed_destinations if not d.node.number]:
+    if [d.node.number for d in reversed_destinations if not d.node.number] or len(reversed_destinations) != num_nodes_to_swap:
         reversed_destinations = get_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap)
     reversed_destinations = list(reversed(reversed_destinations))
     set_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap, reversed_destinations)
+
+    if set(range(len(instance.nodes))).difference([d.node.number for v in solution.vehicles for d in v.destinations]):
+        set_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap, reversed_destinations)
 
     solution.vehicles[vehicle_num].calculate_vehicle_load(instance)
     solution.vehicles[vehicle_num].calculate_destinations_time_windows(instance)
