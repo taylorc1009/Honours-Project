@@ -2,9 +2,9 @@ import re
 from pathlib import Path
 from node import Node
 from problemInstance import ProblemInstance
-from mmoeasaSolution import Solution
+from mmoeasaSolution import MMOEASASolution
 
-def open_problem_instance(filename) -> ProblemInstance:
+def open_problem_instance(filename: str) -> ProblemInstance:
     try:
         with open(filename, 'r') as file:
             problemInstance = None
@@ -26,7 +26,7 @@ def open_problem_instance(filename) -> ProblemInstance:
         exc = BaseException(f"Couldn't open file \"{filename}\"\nCause: {e}")
         raise exc from None
 
-def MMOEASA_write_solution_for_validation(solution: Solution, max_capacity: int) -> None:
+def MMOEASA_write_solution_for_validation(solution: MMOEASASolution, max_capacity: int) -> None:
     relative_path = str(Path(__file__).parent.resolve()) + "\\MMOEASA\\validator\\solution.csv"
 
     with open(relative_path, "w+") as csv:
