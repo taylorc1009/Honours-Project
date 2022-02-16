@@ -1,6 +1,6 @@
 import copy
 import random
-from typing import List, Tuple
+from typing import List
 from Ombuki.operators import crossover, mutation
 from problemInstance import ProblemInstance
 from Ombuki.solution import OmbukiSolution
