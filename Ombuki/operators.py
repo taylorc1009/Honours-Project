@@ -88,23 +88,12 @@ def crossover(instance: ProblemInstance, parent_one: OmbukiSolution, parent_two:
     child_one_thread.join()
     child_two_thread.join()
 
-    if set(range(len(instance.nodes))).difference([d.node.number for v in thread_results["child_one"].vehicles for d in v.destinations]):
-        child_one_thread = Thread(name="child_one", target=crossover_thread, args=(instance, parent_one, parent_two_vehicle, thread_results))
-        child_one_thread.start()
-        child_one_thread.join()
-    if set(range(len(instance.nodes))).difference([d.node.number for v in thread_results["child_two"].vehicles for d in v.destinations]):
-        child_two_thread = Thread(name="child_two", target=crossover_thread, args=(instance, parent_two, parent_one_vehicle, thread_results))
-        child_two_thread.start()
-        child_two_thread.join()
-
     thread_results["child_two"].id = thread_results["child_one"].id
     return thread_results["child_one"] if is_nondominated(thread_results["child_one"], thread_results["child_two"]) else thread_results["child_two"]
 
 def get_next_vehicles_destinations(solution: OmbukiSolution, vehicle: int, first_destination: int, remaining_destinations: int) -> List[Destination]:
     if not remaining_destinations:
         return list()
-    if not 0 <= vehicle < len(solution.vehicles):
-        exit()
     num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
     if num_customers < first_destination + remaining_destinations:
         return solution.vehicles[vehicle].destinations[first_destination:num_customers + 1] + get_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - ((num_customers + 1) - first_destination))
@@ -114,8 +103,6 @@ def get_next_vehicles_destinations(solution: OmbukiSolution, vehicle: int, first
 def set_next_vehicles_destinations(solution: OmbukiSolution, vehicle: int, first_destination: int, remaining_destinations: int, reversed_destinations: List[Destination]) -> None:
     if not (remaining_destinations and reversed_destinations):
         return
-    if not 0 <= vehicle < len(solution.vehicles):
-        exit()
     num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
     if num_customers < first_destination + remaining_destinations:
         num_customers_inclusive = (num_customers + 1) - first_destination
@@ -125,8 +112,6 @@ def set_next_vehicles_destinations(solution: OmbukiSolution, vehicle: int, first
     else:
         solution.vehicles[vehicle].destinations[first_destination:first_destination + remaining_destinations] = reversed_destinations
         reversed_destinations.clear()
-    if [d.node.number for d in solution.vehicles[vehicle].get_customers_visited() if not d.node.number] or (solution.vehicles[vehicle].destinations[0].node.number or solution.vehicles[vehicle].destinations[-1].node.number) or reversed_destinations:
-        print("hi")
 
 def mutation(instance: ProblemInstance, solution: OmbukiSolution) -> OmbukiSolution:
     num_nodes_to_swap = rand(2, MUTATION_REVERSAL_LENGTH)
@@ -141,22 +126,11 @@ def mutation(instance: ProblemInstance, solution: OmbukiSolution) -> OmbukiSolut
             vehicle_num = i
             break
 
-    if set(range(len(instance.nodes))).difference([d.node.number for v in solution.vehicles for d in v.destinations]):
-        exit()
-
-    if vehicle_num == -1:
-        exit()
-
     first_destination = (first_reversal_node - num_destinations_tracker) + 1
 
     reversed_destinations = get_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap)
-    if [d.node.number for d in reversed_destinations if not d.node.number] or len(reversed_destinations) != num_nodes_to_swap:
-        reversed_destinations = get_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap)
     reversed_destinations = list(reversed(reversed_destinations))
     set_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap, reversed_destinations)
-
-    if set(range(len(instance.nodes))).difference([d.node.number for v in solution.vehicles for d in v.destinations]):
-        set_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap, reversed_destinations)
 
     solution.vehicles[vehicle_num].calculate_vehicle_load(instance)
     solution.vehicles[vehicle_num].calculate_destinations_time_windows(instance)
