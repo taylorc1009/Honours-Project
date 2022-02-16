@@ -1,6 +1,6 @@
 #include "data.h"
 
-struct Solution* var_io(io_args in) {
+struct MMOEASASolution* var_io(io_args in) {
     char* file_out = in.file ? in.file : "solution.csv";
     return read_csv_base(file_out);
 }
@@ -42,9 +42,9 @@ void inline read_float(FILE* restrict file, float* restrict var) {
     free(str);
 }
 
-struct Solution* read_csv_base(char* restrict filename) {
+struct MMOEASASolution* read_csv_base(char* restrict filename) {
     FILE* file;
-    struct Solution* solution = NULL;
+    struct MMOEASASolution* solution = NULL;
 
     if (file = fopen(filename, "rb")) {
         fseek(file, 0, SEEK_END);
@@ -52,7 +52,7 @@ struct Solution* read_csv_base(char* restrict filename) {
         if (len > 0) {
             rewind(file);
 
-            solution = (struct Solution*)malloc(sizeof(struct Solution));
+            solution = (struct MMOEASASolution*)malloc(sizeof(struct MMOEASASolution));
 
             read_int(file, &solution->vehicle_max_capacity);
             read_int(file, (int*)&solution->feasible);

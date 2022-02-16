@@ -3,15 +3,15 @@ import random
 from typing import List, Tuple
 from Ombuki.operators import crossover, mutation
 from problemInstance import ProblemInstance
-from Ombuki.solution import Solution
+from Ombuki.solution import OmbukiSolution
 from vehicle import Vehicle
 from destination import Destination
 from Ombuki.auxiliaries import rand, is_nondominated
 from numpy import arange, round, random
 from Ombuki.constants import INT_MAX, TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY, GREEDY_PERCENT
 
-def generate_random_solution(instance: ProblemInstance) -> Solution:
-    solution = Solution(_id=0, vehicles=list())
+def generate_random_solution(instance: ProblemInstance) -> OmbukiSolution:
+    solution = OmbukiSolution(_id=0, vehicles=list())
 
     for i in range(1, len(instance.nodes)):
         infeasible_vehicles = set()
@@ -31,8 +31,8 @@ def generate_random_solution(instance: ProblemInstance) -> Solution:
 
     return solution
 
-def generate_greedy_solution(instance: ProblemInstance) -> Solution:
-    solution = Solution(_id=0, vehicles=[Vehicle.create_route(instance)])
+def generate_greedy_solution(instance: ProblemInstance) -> OmbukiSolution:
+    solution = OmbukiSolution(_id=0, vehicles=[Vehicle.create_route(instance)])
     unvisited_nodes = list(arange(1, len(instance.nodes)))
     vehicle = 0
 
@@ -63,13 +63,13 @@ def generate_greedy_solution(instance: ProblemInstance) -> Solution:
 
     return solution
 
-def is_nondominated_by_any(population: List[Solution], subject_solution: int) -> bool:
+def is_nondominated_by_any(population: List[OmbukiSolution], subject_solution: int) -> bool:
     for i, solution in enumerate(population):
         if not i == subject_solution and not is_nondominated(solution, population[subject_solution]):
             return False
     return True
 
-def pareto_rank(population: List[Solution]) -> None:
+def pareto_rank(population: List[OmbukiSolution]) -> None:
     curr_rank = 1
     unranked_solutions = list(arange(0, len(population)))
 
@@ -86,8 +86,8 @@ def pareto_rank(population: List[Solution]) -> None:
             break
         curr_rank += 1
 
-def attempt_feasible_network_transformation(instance: ProblemInstance, solution: Solution) -> Solution:
-    feasible_solution = Solution(_id=solution.id, vehicles=[Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)])
+def attempt_feasible_network_transformation(instance: ProblemInstance, solution: OmbukiSolution) -> OmbukiSolution:
+    feasible_solution = OmbukiSolution(_id=solution.id, vehicles=[Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)])
     feasible_solution.vehicles[0].current_capacity += solution.vehicles[0].destinations[1].node.demand
     feasible_solution.vehicles[0].calculate_destination_time_window(instance, 0, 1)
 
@@ -128,7 +128,7 @@ def attempt_feasible_network_transformation(instance: ProblemInstance, solution:
 
     return feasible_solution
 
-def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -> Solution:
+def relocate_final_destinations(instance: ProblemInstance, solution: OmbukiSolution) -> OmbukiSolution:
     f_solution = copy.deepcopy(solution)
 
     for i in range(0, len(f_solution.vehicles)):
@@ -142,7 +142,7 @@ def relocate_final_destinations(instance: ProblemInstance, solution: Solution) -
 
     return f_solution if is_nondominated(solution, f_solution) else solution
 
-def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
+def routing_scheme(instance: ProblemInstance, solution: OmbukiSolution) -> OmbukiSolution:
     feasible_solution = attempt_feasible_network_transformation(instance, solution)
     if set(range(len(instance.nodes))).difference([d.node.number for v in feasible_solution.vehicles for d in v.destinations]):
         feasible_solution = attempt_feasible_network_transformation(instance, solution)
@@ -159,7 +159,7 @@ def routing_scheme(instance: ProblemInstance, solution: Solution) -> Solution:
 
     return relocated_solution
 
-def selection_tournament(population: List[Solution]) -> int:
+def selection_tournament(population: List[OmbukiSolution]) -> int:
     best_solutions = list(filter(lambda s: s.rank == 1, population))
     if not best_solutions: # in this instance, the initialising population has been given and no solutions have been ranked yet, so work with any feasible solutions
         best_solutions = list(filter(lambda s: s.feasible, population))
@@ -178,18 +178,18 @@ def selection_tournament(population: List[Solution]) -> int:
     else:
         return tournament_set[rand(0, TOURNAMENT_SIZE - 1)].id
 
-def crossover_probability(instance: ProblemInstance, iterator_parent: Solution, tournament_parent: Solution, probability: int) -> Solution:
+def crossover_probability(instance: ProblemInstance, iterator_parent: OmbukiSolution, tournament_parent: OmbukiSolution, probability: int) -> OmbukiSolution:
     return crossover(instance, iterator_parent, tournament_parent) if rand(1, 100) < probability else iterator_parent
 
-def mutation_probability(instance: ProblemInstance, solution: Solution, probability: int, pending_copy: bool) -> Solution:
+def mutation_probability(instance: ProblemInstance, solution: OmbukiSolution, probability: int, pending_copy: bool) -> OmbukiSolution:
     if rand(1, 100) < probability:
         mutated_solution = mutation(instance, copy.deepcopy(solution) if pending_copy else solution)
         return mutated_solution if is_nondominated(solution, mutated_solution) else solution
     return solution
 
-def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: int, mutation: int) -> List[Solution]:
-    population: List[Solution] = list()
-    #pareto_optimal: List[Solution] = list()
+def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: int, mutation: int) -> List[OmbukiSolution]:
+    population: List[OmbukiSolution] = list()
+    #pareto_optimal: List[OmbukiSolution] = list()
 
     num_greedy_solutions = int(round(float(population_size * GREEDY_PERCENT)))
     for i in range(0, num_greedy_solutions):

@@ -3,33 +3,19 @@ from typing import List, Dict
 from MMOEASA.constants import MMOEASA_INFINITY
 from vehicle import Vehicle
 from problemInstance import ProblemInstance
+from solution import Solution
 
-class Solution:
+class MMOEASASolution(Solution):
     def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, T_default: float=0.0, T: float=0.0, T_cooling: float=0.0, total_distance: float=0.0, distance_unbalance: float=0.0, cargo_unbalance: float=0.0) -> None:
-        self.id: int=int(_id)
-        self.vehicles: List[Vehicle]=vehicles
-        self.feasible: bool=feasible
+        super(MMOEASASolution, self).__init__(_id=_id, vehicles=vehicles, feasible=feasible, total_distance=total_distance)
         self.T_default: float=float(T_default)
         self.T: float=float(T)
         self.T_cooling: float=float(T_cooling)
-        self.total_distance: float=float(total_distance)
         self.distance_unbalance: float=float(distance_unbalance)
         self.cargo_unbalance: float=float(cargo_unbalance)
 
     def __str__(self) -> str:
         return f"id={self.id}, feasible={self.feasible}, T_default={self.T_default}, T={self.T}, T_cooling={self.T_cooling}, total_distance={self.total_distance}, distance_unbalance={self.distance_unbalance}, cargo_unbalance={self.cargo_unbalance}, {len(self.vehicles)=}, {[(i, str(v)) for i, v in enumerate(self.vehicles)]}"
-
-    def calculate_nodes_time_windows(self, instance: ProblemInstance) -> None:
-        for i, _ in enumerate(self.vehicles):
-            self.vehicles[i].calculate_destinations_time_windows(instance)
-
-    def calculate_vehicles_loads(self, instance: ProblemInstance) -> None:
-        for i, _ in enumerate(self.vehicles):
-            self.vehicles[i].calculate_vehicle_load(instance)
-
-    def calculate_length_of_routes(self, instance: ProblemInstance) -> None:
-        for i, _ in enumerate(self.vehicles):
-            self.vehicles[i].calculate_length_of_route(instance)
 
     def objective_function(self, instance: ProblemInstance) -> None:
         vehicle = 0
@@ -68,4 +54,4 @@ class Solution:
             self.cargo_unbalance = maximum_cargo - minimum_cargo
 
     def __deepcopy__(self, memodict: Dict=None):
-        return Solution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, T_default=self.T_default, T=self.T, T_cooling=self.T_cooling, total_distance=self.total_distance, distance_unbalance=self.distance_unbalance, cargo_unbalance=self.cargo_unbalance)
+        return MMOEASASolution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, T_default=self.T_default, T=self.T, T_cooling=self.T_cooling, total_distance=self.total_distance, distance_unbalance=self.distance_unbalance, cargo_unbalance=self.cargo_unbalance)

@@ -1,7 +1,7 @@
 #include <string.h>
 #include "data.h"
 
-void free_Solution(struct Solution* solution) {
+void free_Solution(struct MMOEASASolution* solution) {
     for (int v = 0; v < solution->vehicles->size; v++) {
         struct Vehicle* vehicle = (struct Vehicle*)solution->vehicles->at(solution->vehicles, v);
         for (int d = 0; d < vehicle->destinations->size; d++) {
@@ -17,7 +17,7 @@ void free_Solution(struct Solution* solution) {
     free(solution);
 }
 
-void objective_function(struct Solution* restrict I)
+void objective_function(struct MMOEASASolution* restrict I)
 {
     float minimum_distance, maximum_distance, minimum_cargo, maximum_cargo;
     I->total_distance = 0;
@@ -66,13 +66,13 @@ void objective_function(struct Solution* restrict I)
     }
 }
 
-void output_objectives(const char* restrict formula_origin, struct Solution* restrict solution) {
+void output_objectives(const char* restrict formula_origin, struct MMOEASASolution* restrict solution) {
     printf("%s's objective function:\n - feasible: %s\n - objectives:\n    - total distance = %f\n    - distance_unbalance = %f\n    - cargo_unbalance = %f\n", formula_origin, solution->feasible ? "true" : "false", solution->total_distance, solution->distance_unbalance, solution->cargo_unbalance);
 }
 
 int main(int argc, char** argv) {
     char* filename = argc > 1 ? argv[1] : NULL; // "read_csv" can accept a null filename as it will default to "solution.csv" if this is so
-    struct Solution* solution = read_csv(.file=filename);
+    struct MMOEASASolution* solution = read_csv(.file=filename);
 
     if (solution) {
         output_objectives("Python script", solution);

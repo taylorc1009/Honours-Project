@@ -25,7 +25,7 @@ struct Vehicle {
     struct List* destinations;
 };
 
-struct Solution {
+struct MMOEASASolution {
     float total_distance;
     float distance_unbalance;
     float cargo_unbalance;

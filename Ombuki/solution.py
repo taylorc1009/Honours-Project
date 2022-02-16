@@ -3,30 +3,16 @@ from typing import List, Dict
 from Ombuki.constants import INT_MAX
 from vehicle import Vehicle
 from problemInstance import ProblemInstance
+from solution import Solution
 
-class Solution:
+class OmbukiSolution(Solution):
     def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, total_distance: float=0.0, num_vehicles: int=0, rank: int=INT_MAX) -> None:
-        self.id: int=int(_id)
-        self.vehicles: List[Vehicle]=vehicles
-        self.feasible: bool=feasible
-        self.total_distance: float=float(total_distance)
+        super(OmbukiSolution, self).__init__(_id=_id, vehicles=vehicles, feasible=feasible, total_distance=total_distance)
         self.num_vehicles: int=int(len(vehicles) if vehicles else num_vehicles) # the reason this objective is a variable instead of just using "len(vehicles)" is because if the solution is invalid, it needs to be set to a very high number
         self.rank: int=int(rank)
 
     def __str__(self) -> str:
         return f"id={self.id}, feasible={self.feasible}, total_distance={self.total_distance}, {len(self.vehicles)=}, {[(i, str(v)) for i, v in enumerate(self.vehicles)]}"
-
-    def calculate_nodes_time_windows(self, instance: ProblemInstance) -> None:
-        for i, _ in enumerate(self.vehicles):
-            self.vehicles[i].calculate_destinations_time_windows(instance)
-
-    def calculate_vehicles_loads(self, instance: ProblemInstance) -> None:
-        for i, _ in enumerate(self.vehicles):
-            self.vehicles[i].calculate_vehicle_load(instance)
-
-    def calculate_length_of_routes(self, instance: ProblemInstance) -> None:
-        for i, _ in enumerate(self.vehicles):
-            self.vehicles[i].calculate_length_of_route(instance)
 
     def objective_function(self, instance: ProblemInstance):
         vehicle = 0
@@ -46,4 +32,4 @@ class Solution:
             vehicle += 1
 
     def __deepcopy__(self, memodict: Dict=None):
-        return Solution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, total_distance=self.total_distance)
+        return OmbukiSolution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, total_distance=self.total_distance)

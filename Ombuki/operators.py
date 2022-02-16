@@ -3,13 +3,13 @@ from random import shuffle
 from typing import Dict, List
 from Ombuki.constants import INT_MAX, MUTATION_REVERSAL_LENGTH
 from Ombuki.auxiliaries import rand, is_nondominated
-from Ombuki.solution import Solution
+from Ombuki.solution import OmbukiSolution
 from threading import Thread, currentThread
 from destination import Destination
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 
-def crossover_thread(instance: ProblemInstance, solution: Solution, parent_vehicle: Vehicle, result: Dict[str, Solution]) -> None:
+def crossover_thread(instance: ProblemInstance, solution: OmbukiSolution, parent_vehicle: Vehicle, result: Dict[str, OmbukiSolution]) -> None:
     crossover_solution = copy.deepcopy(solution)
     
     nodes_to_remove = set([d.node.number for d in parent_vehicle.get_customers_visited()])
@@ -75,12 +75,12 @@ def crossover_thread(instance: ProblemInstance, solution: Solution, parent_vehic
 
     result[currentThread().getName()] = crossover_solution
 
-def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solution) -> Solution:
+def crossover(instance: ProblemInstance, parent_one: OmbukiSolution, parent_two: OmbukiSolution) -> OmbukiSolution:
     parent_one_vehicle = parent_one.vehicles[rand(0, len(parent_one.vehicles) - 1)]
     parent_two_vehicle = parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)]
 
     # threads cannot return values, so they need to be given a mutable type that can be given the values we'd like to return; in this instance, a list is used
-    thread_results: Dict[str, Solution] = {"child_one": None, "child_two": None}
+    thread_results: Dict[str, OmbukiSolution] = {"child_one": None, "child_two": None}
     child_one_thread = Thread(name="child_one", target=crossover_thread, args=(instance, parent_one, parent_two_vehicle, thread_results))
     child_two_thread = Thread(name="child_two", target=crossover_thread, args=(instance, parent_two, parent_one_vehicle, thread_results))
     child_one_thread.start()
@@ -100,7 +100,7 @@ def crossover(instance: ProblemInstance, parent_one: Solution, parent_two: Solut
     thread_results["child_two"].id = thread_results["child_one"].id
     return thread_results["child_one"] if is_nondominated(thread_results["child_one"], thread_results["child_two"]) else thread_results["child_two"]
 
-def get_next_vehicles_destinations(solution: Solution, vehicle: int, first_destination: int, remaining_destinations: int) -> List[Destination]:
+def get_next_vehicles_destinations(solution: OmbukiSolution, vehicle: int, first_destination: int, remaining_destinations: int) -> List[Destination]:
     if not remaining_destinations:
         return list()
     if not 0 <= vehicle < len(solution.vehicles):
@@ -111,7 +111,7 @@ def get_next_vehicles_destinations(solution: Solution, vehicle: int, first_desti
     else:
         return solution.vehicles[vehicle].destinations[first_destination:first_destination + remaining_destinations]
 
-def set_next_vehicles_destinations(solution: Solution, vehicle: int, first_destination: int, remaining_destinations: int, reversed_destinations: List[Destination]) -> None:
+def set_next_vehicles_destinations(solution: OmbukiSolution, vehicle: int, first_destination: int, remaining_destinations: int, reversed_destinations: List[Destination]) -> None:
     if not (remaining_destinations and reversed_destinations):
         return
     if not 0 <= vehicle < len(solution.vehicles):
@@ -128,7 +128,7 @@ def set_next_vehicles_destinations(solution: Solution, vehicle: int, first_desti
     if [d.node.number for d in solution.vehicles[vehicle].get_customers_visited() if not d.node.number] or (solution.vehicles[vehicle].destinations[0].node.number or solution.vehicles[vehicle].destinations[-1].node.number) or reversed_destinations:
         print("hi")
 
-def mutation(instance: ProblemInstance, solution: Solution) -> Solution:
+def mutation(instance: ProblemInstance, solution: OmbukiSolution) -> OmbukiSolution:
     num_nodes_to_swap = rand(2, MUTATION_REVERSAL_LENGTH)
     first_reversal_node = rand(1, (len(instance.nodes) - 1) - num_nodes_to_swap)
 
