@@ -5,11 +5,12 @@ from numpy import arange
 class ProblemInstance:
     distances: List[float]=None
 
-    def __init__(self, name: str, amount_of_vehicles: int, capacity_of_vehicles: int, nodes: Dict[int, Node]=None) -> None:
+    def __init__(self, name: str, amount_of_vehicles: int, capacity_of_vehicles: int, nodes: Dict[int, Node]=None, acceptance_criterion: str="") -> None:
         self.name: str=name
         self.amount_of_vehicles: int=int(amount_of_vehicles)
         self.capacity_of_vehicles: int=int(capacity_of_vehicles)
         self.nodes: Dict[int, Node]=nodes
+        self.acceptance_criterion: str=str(acceptance_criterion)
 
     def __str__(self) -> str:
         return f"{self.name}, {self.amount_of_vehicles}, {self.capacity_of_vehicles}, {[(key, str(value)) for key, value in self.nodes.items()]}"

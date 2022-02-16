@@ -1,7 +1,8 @@
-from typing import List
+from typing import List, Union
 from numpy import random
 from MMOEASA.constants import INT_MAX
 from mmoeasaSolution import MMOEASASolution
+from ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 from destination import Destination
@@ -15,7 +16,7 @@ def rand(start: int, end: int, exclude_values: List[int]=None) -> int:
         random_val = random.randint(start, end + offset)
     return random_val
 
-def insert_unvisited_node(I: MMOEASASolution, instance: ProblemInstance, node: int) -> MMOEASASolution:
+def insert_unvisited_node(I: Union[MMOEASASolution, OmbukiSolution], instance: ProblemInstance, node: int) -> Union[MMOEASASolution, OmbukiSolution]:
     inserted = False
     vehicle = 0
 

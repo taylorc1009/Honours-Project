@@ -7,10 +7,7 @@ from solution import Solution
 
 class MMOEASASolution(Solution):
     def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, T_default: float=0.0, T: float=0.0, T_cooling: float=0.0, total_distance: float=0.0, distance_unbalance: float=0.0, cargo_unbalance: float=0.0) -> None:
-        super(MMOEASASolution, self).__init__(_id=_id, vehicles=vehicles, feasible=feasible, total_distance=total_distance)
-        self.T_default: float=float(T_default)
-        self.T: float=float(T)
-        self.T_cooling: float=float(T_cooling)
+        super(MMOEASASolution, self).__init__(_id=_id, vehicles=vehicles, feasible=feasible, total_distance=total_distance, T_default=T_default, T=T, T_cooling=T_cooling)
         self.distance_unbalance: float=float(distance_unbalance)
         self.cargo_unbalance: float=float(cargo_unbalance)
 

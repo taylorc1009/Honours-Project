@@ -31,11 +31,12 @@ def execute_Ombuki(problemInstance: ProblemInstance) -> None:
         print("\n", str(solution))
 
 if __name__ == '__main__':
-    if not 1 < len(sys.argv) < 4:
-        print("If you're unsure how to use the application, give the argument -h (--help) for information")
-    elif sys.argv[1] in {"--help", "-h"}: # if the user gave one of these arguments on the command line then a help message is ourputted
-        print(f"Format: main(.py) [ algorithm ] [ problem instance ]{os.linesep}{os.linesep}"
+    if sys.argv[1] in {"--help", "-h"}: # if the user gave one of these arguments on the command line then a help message is ourputted
+        print(f"Format: main(.py) [ algorithm ] [ problem instance ] [ acceptance criteria ]{os.linesep}{os.linesep}"
               f"The algorithms available to solve the problem are:{os.linesep}"
+              f" - MMOEASA{os.linesep}"
+              f" - Ombuki{os.linesep}{os.linesep}"
+              f"You can also use MMOEASA's or Ombuki's acceptance criterion with the opposite algorithm by giving either:"
               f" - MMOEASA{os.linesep}"
               f" - Ombuki{os.linesep}{os.linesep}"
               f"There's multiple types of problems in Solomon's instances, here's what they are:{os.linesep}"
@@ -54,15 +55,17 @@ if __name__ == '__main__':
               f" - solomon_[ number of customers ]/[ customers' location ][ width of time windows ]XX.txt (where XX is the instance number; see the folder \"solomon_[ number of customers ]\" for available instances){os.linesep}{os.linesep}"
               f"An example command is: \"main.py MMOEASA solomon_100/C101.txt\""
         )
-    elif len(sys.argv) == 3:
-        problemInstance = open_problem_instance(sys.argv[2])
+    elif len(sys.argv) == 4:
+        problem_instance = open_problem_instance(sys.argv[2], sys.argv[3])
 
-        problemInstance.calculate_distances()
+        problem_instance.calculate_distances()
 
         if sys.argv[1].upper() == "MMOEASA":
-            execute_MMOEASA(problemInstance)
+            execute_MMOEASA(problem_instance)
         elif sys.argv[1].upper() == "OMBUKI":
-            execute_Ombuki(problemInstance)
+            execute_Ombuki(problem_instance)
         else:
             exc = ValueError(f"Algorithm \"{sys.argv[1]}\" was not recognised")
             raise exc
+    else:
+        print("If you're unsure how to use the application, give the argument -h (--help) for information")

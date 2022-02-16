@@ -3,11 +3,14 @@ import time
 from MMOEASA.auxiliaries import rand
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from MMOEASA.constants import INT_MAX, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS, MMOEASA_INFINITY
+from Ombuki.auxiliaries import is_nondominated as ombuki_is_nondominated
+from Ombuki.ombuki import is_nondominated_by_any
 from mmoeasaSolution import MMOEASASolution
+from ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
 from destination import Destination
 from vehicle import Vehicle
-from typing import List, Tuple
+from typing import List, Tuple, Union
 from numpy import sqrt, exp
 from data import MMOEASA_write_solution_for_validation
 
@@ -23,13 +26,13 @@ def update_Hypervolumes(HV_TD: float, HV_DU: float, HV_CU: float) -> None:
 
     print(f"Hypervolumes modified: TD={Hypervolume_total_distance}, DU={Hypervolume_distance_unbalance}, CU={Hypervolume_cargo_unbalance}")
 
-def TWIH(instance: ProblemInstance) -> MMOEASASolution:
+def TWIH(instance: ProblemInstance) -> Union[MMOEASASolution, OmbukiSolution]:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
 
-    solution = MMOEASASolution(_id=0, vehicles=list())
+    solution = MMOEASASolution(_id=0, vehicles=list()) if instance.acceptance_criterion == "MMOEASA" else OmbukiSolution(_id=0, vehicles=list())
     D_i = 0 # list of destinations iterator
 
-    for i in range(0, instance.amount_of_vehicles - 1):
+    for _ in range(0, instance.amount_of_vehicles - 1):
         if D_i >= len(instance.nodes) - 1:
             break
         if sorted_nodes[D_i].number == 0:
@@ -46,7 +49,7 @@ def TWIH(instance: ProblemInstance) -> MMOEASASolution:
 
     return solution
 
-def TWIH_initialiser(instance: ProblemInstance) -> MMOEASASolution:
+def TWIH_initialiser(instance: ProblemInstance) -> Union[MMOEASASolution, OmbukiSolution]:
     solution = TWIH(instance)
 
     solution.calculate_nodes_time_windows(instance)
@@ -101,10 +104,10 @@ def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int,
 
     return T_cooling
 
-def Crossover(instance: ProblemInstance, I: MMOEASASolution, P: List[MMOEASASolution], P_crossover: int) -> MMOEASASolution:
+def Crossover(instance: ProblemInstance, I: Union[MMOEASASolution, OmbukiSolution], P: List[Union[MMOEASASolution, OmbukiSolution]], P_crossover: int) -> Union[MMOEASASolution, OmbukiSolution]:
     return Crossover1(instance, copy.deepcopy(I), P) if rand(1, 100) <= P_crossover else I
 
-def Mutation(instance: ProblemInstance, I: MMOEASASolution, P_mutation: int, pending_copy: bool) -> MMOEASASolution:
+def Mutation(instance: ProblemInstance, I: Union[MMOEASASolution, OmbukiSolution], P_mutation: int, pending_copy: bool) -> Union[MMOEASASolution, OmbukiSolution]:
     if rand(1, 100) <= P_mutation:
         I_c = copy.deepcopy(I) if pending_copy else I
         probability = rand(1, 100)
@@ -161,13 +164,13 @@ def is_nondominated(I: MMOEASASolution, ND: List[MMOEASASolution]) -> bool:
     else:
         return I.feasible
 
-def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float, Hypervolumes: List[float]) -> List[MMOEASASolution]:
-    P: List[MMOEASASolution] = list()
-    ND: List[MMOEASASolution] = list()
+def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float, Hypervolumes: List[float]) -> List[Union[MMOEASASolution, OmbukiSolution]]:
+    P: List[Union[MMOEASASolution, OmbukiSolution]] = list()
+    ND: List[Union[MMOEASASolution, OmbukiSolution]] = list()
     iterations = 0
     update_Hypervolumes(*Hypervolumes)
 
-    prev_ND_id = 0
+    prev_ND_id = -1
 
     TWIH_solution = TWIH_initialiser(instance)
     for i in range(p):
@@ -188,9 +191,19 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 I_c = Crossover(instance, I, P, P_crossover)
                 for _ in range(0, rand(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
                     I_c = Mutation(instance, I_c, P_mutation, I_c is I)
-                P[i], parent_changed = MO_Metropolis(I, I_c, I.T)
 
-                if is_nondominated(P[i], ND): # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
+                child_dominated, nondominated = False, False
+                if instance.acceptance_criterion == "Ombuki":
+                    child_dominated = ombuki_is_nondominated(I, I_c) if I_c.feasible else True
+                    if child_dominated or (not len(ND) and I_c.feasible):
+                        P[i] = I_c
+                        nondominated = is_nondominated_by_any(P, i) if len(ND) else I_c.feasible
+                else:
+                    P[i], child_dominated = MO_Metropolis(I, I_c, I.T)
+                    if child_dominated:
+                        nondominated = is_nondominated(P[i], ND)
+
+                if nondominated: # this should be something like "if P[i] is unique and not dominated by all elements in the Non-Dominated set, then add it to ND and sort ND"
                     if len(ND) >= p:
                         ND.pop(0)
                     ND.append(copy.deepcopy(P[i]))
@@ -200,7 +213,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                     """should_write = False # use the debugger to edit the value in "should_write" if you'd like a solution to be written to a CSV
                     if should_write:
                         MMOEASA_write_solution_for_validation(P[i], instance.capacity_of_vehicles)"""
-                elif parent_changed and i == prev_ND_id:
+                elif child_dominated and i == prev_ND_id:
                     print(f"ND solution ({prev_ND_id}) changed in P ({iterations=}, time={round(time.time() - start, 1)}s)")
 
                 P[i].T *= P[i].T_cooling
