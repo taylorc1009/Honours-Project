@@ -3,7 +3,7 @@ import time
 from MMOEASA.auxiliaries import rand
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from MMOEASA.constants import INT_MAX, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS, MMOEASA_INFINITY
-from MMOEASA.solution import MMOEASASolution
+from mmoeasaSolution import MMOEASASolution
 from problemInstance import ProblemInstance
 from destination import Destination
 from vehicle import Vehicle

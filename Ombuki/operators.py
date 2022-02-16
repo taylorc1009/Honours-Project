@@ -3,7 +3,7 @@ from random import shuffle
 from typing import Dict, List
 from Ombuki.constants import INT_MAX, MUTATION_REVERSAL_LENGTH
 from Ombuki.auxiliaries import rand, is_nondominated
-from Ombuki.solution import OmbukiSolution
+from ombukiSolution import OmbukiSolution
 from threading import Thread, currentThread
 from destination import Destination
 from problemInstance import ProblemInstance

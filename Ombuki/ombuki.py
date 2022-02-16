@@ -3,7 +3,7 @@ import random
 from typing import List
 from Ombuki.operators import crossover, mutation
 from problemInstance import ProblemInstance
-from Ombuki.solution import OmbukiSolution
+from ombukiSolution import OmbukiSolution
 from vehicle import Vehicle
 from destination import Destination
 from Ombuki.auxiliaries import rand, is_nondominated
@@ -189,7 +189,6 @@ def mutation_probability(instance: ProblemInstance, solution: OmbukiSolution, pr
 
 def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: int, mutation: int) -> List[OmbukiSolution]:
     population: List[OmbukiSolution] = list()
-    #pareto_optimal: List[OmbukiSolution] = list()
 
     num_greedy_solutions = int(round(float(population_size * GREEDY_PERCENT)))
     for i in range(0, num_greedy_solutions):

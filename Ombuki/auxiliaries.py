@@ -1,7 +1,7 @@
 from numpy import random
 from Ombuki.constants import INT_MAX
 from typing import Set
-from Ombuki.solution import OmbukiSolution
+from ombukiSolution import OmbukiSolution
 
 def rand(start: int, end: int, exclude_values: Set[int]=None) -> int:
     # '+ 1' to make the random number generator inclusive of the "end" value

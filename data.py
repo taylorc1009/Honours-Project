@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 from node import Node
 from problemInstance import ProblemInstance
-from MMOEASA.solution import Solution
+from mmoeasaSolution import Solution
 
 def open_problem_instance(filename) -> ProblemInstance:
     try:

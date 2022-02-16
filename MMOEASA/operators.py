@@ -1,6 +1,6 @@
 import copy
 from MMOEASA.constants import MMOEASA_INFINITY
-from MMOEASA.solution import MMOEASASolution
+from mmoeasaSolution import MMOEASASolution
 from MMOEASA.auxiliaries import insert_unvisited_node, rand
 from problemInstance import ProblemInstance
 from typing import List, Tuple, Set

@@ -1,5 +1,5 @@
 from typing import List, Tuple
-from MMOEASA.solution import MMOEASASolution
+from mmoeasaSolution import MMOEASASolution
 
 def calculate_median_Hypervolumes(ND_solutions: List[MMOEASASolution], TWIH_Hypervolumes: Tuple[float, float, float]) -> float:
     prev_TD, prev_DU, prev_CU = ref_TD, ref_DU, ref_CU = TWIH_Hypervolumes[0], TWIH_Hypervolumes[1], TWIH_Hypervolumes[2]
