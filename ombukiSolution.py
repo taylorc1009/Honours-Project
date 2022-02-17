@@ -1,15 +1,14 @@
 import copy
 from typing import List, Dict
-from Ombuki.constants import INT_MAX
+from constants import INT_MAX
 from vehicle import Vehicle
 from problemInstance import ProblemInstance
 from solution import Solution
 
 class OmbukiSolution(Solution):
     def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, total_distance: float=0.0, num_vehicles: int=0, rank: int=INT_MAX, T_default: float=0.0, T: float=0.0, T_cooling: float=0.0) -> None:
-        super(OmbukiSolution, self).__init__(_id=_id, vehicles=vehicles, feasible=feasible, total_distance=total_distance, T_default=T_default, T=T, T_cooling=T_cooling)
+        super(OmbukiSolution, self).__init__(_id=_id, vehicles=vehicles, feasible=feasible, total_distance=total_distance, T_default=T_default, T=T, T_cooling=T_cooling, rank=rank)
         self.num_vehicles: int=int(len(vehicles) if vehicles else num_vehicles) # the reason this objective is a variable instead of just using "len(vehicles)" is because if the solution is invalid, it needs to be set to a very high number
-        self.rank: int=int(rank)
 
     def __str__(self) -> str:
         return f"id={self.id}, feasible={self.feasible}, total_distance={self.total_distance}, {len(self.vehicles)=}, {[(i, str(v)) for i, v in enumerate(self.vehicles)]}"

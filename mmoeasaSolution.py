@@ -1,13 +1,14 @@
 import copy
 from typing import List, Dict
 from MMOEASA.constants import MMOEASA_INFINITY
+from constants import INT_MAX
 from vehicle import Vehicle
 from problemInstance import ProblemInstance
 from solution import Solution
 
 class MMOEASASolution(Solution):
-    def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, T_default: float=0.0, T: float=0.0, T_cooling: float=0.0, total_distance: float=0.0, distance_unbalance: float=0.0, cargo_unbalance: float=0.0) -> None:
-        super(MMOEASASolution, self).__init__(_id=_id, vehicles=vehicles, feasible=feasible, total_distance=total_distance, T_default=T_default, T=T, T_cooling=T_cooling)
+    def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, T_default: float=0.0, T: float=0.0, T_cooling: float=0.0, total_distance: float=0.0, distance_unbalance: float=0.0, cargo_unbalance: float=0.0, rank: int=INT_MAX) -> None:
+        super(MMOEASASolution, self).__init__(_id=_id, vehicles=vehicles, feasible=feasible, total_distance=total_distance, T_default=T_default, T=T, T_cooling=T_cooling, rank=rank)
         self.distance_unbalance: float=float(distance_unbalance)
         self.cargo_unbalance: float=float(cargo_unbalance)
 
@@ -51,4 +52,4 @@ class MMOEASASolution(Solution):
             self.cargo_unbalance = maximum_cargo - minimum_cargo
 
     def __deepcopy__(self, memodict: Dict=None):
-        return MMOEASASolution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, T_default=self.T_default, T=self.T, T_cooling=self.T_cooling, total_distance=self.total_distance, distance_unbalance=self.distance_unbalance, cargo_unbalance=self.cargo_unbalance)
+        return MMOEASASolution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, T_default=self.T_default, T=self.T, T_cooling=self.T_cooling, total_distance=self.total_distance, distance_unbalance=self.distance_unbalance, cargo_unbalance=self.cargo_unbalance, rank=self.rank)
