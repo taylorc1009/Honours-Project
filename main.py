@@ -31,15 +31,14 @@ def execute_Ombuki(problem_instance: ProblemInstance, Hypervolumes: List[float]=
         print("\n", str(solution))
 
 if __name__ == '__main__':
-    if sys.argv[1] in {"--help", "-h"}: # if the user gave one of these arguments on the command line then a help message is ourputted
+    if not len(sys.argv) > 1:
+        print("If you're unsure how to use the application, give the argument -h (--help) for information")
+    elif sys.argv[1] in {"--help", "-h"}: # if the user gave one of these arguments on the command line then a help message is ourputted
         print(f"Format: main(.py) [ algorithm ] [ problem instance ] [ acceptance criteria ]{os.linesep}{os.linesep}"
-              f"The algorithms available to solve the problem are:{os.linesep}"
+              f"The algorithms and acceptance criteria available to solve the problem are:{os.linesep}"
               f" - MMOEASA{os.linesep}"
               f" - Ombuki{os.linesep}{os.linesep}"
-              f"You can also use MMOEASA's or Ombuki's acceptance criterion with the opposite algorithm by giving either:"
-              f" - MMOEASA{os.linesep}"
-              f" - Ombuki{os.linesep}{os.linesep}"
-              f"There's multiple types of problems in Solomon's instances, here's what they are:{os.linesep}"
+              f"There's multiple types of problems in Solomon's instances, and here's what they are:{os.linesep}"
               f" - Number of customers:{os.linesep}"
               f"   - 25 - 25 customers{os.linesep}"
               f"   - 50 - 50 customers{os.linesep}"
@@ -52,9 +51,13 @@ if __name__ == '__main__':
               f"   - 1 - destinations with narrow time windows{os.linesep}"
               f"   - 2 - destinations with wide time windows{os.linesep}{os.linesep}"
               f"To execute a problem set, please enter a problem's filename. The details required, and the argument format, are:{os.linesep}"
-              f" - solomon_[ number of customers ]/[ customers' location ][ width of time windows ]XX.txt (where XX is the instance number; see the folder \"solomon_[ number of customers ]\" for available instances){os.linesep}{os.linesep}"
+              f" - solomon_[ number of customers ]/[ customers' location ][ width of time windows ]XX.txt{os.linesep}"
+              f" - Where XX is the instance number; see the folder \"solomon_[ number of customers ]\" for available instances{os.linesep}{os.linesep}"
               f"An example command is: \"main.py MMOEASA solomon_100/C101.txt\"")
     elif len(sys.argv) == 4:
+        if not sys.argv[3].upper() in {"MMOEASA", "OMBUKI"}:
+            exc = ValueError(f"Acceptance criterion \"{sys.argv[1]}\" was not recognised")
+            raise exc
         problem_instance = open_problem_instance(sys.argv[2], sys.argv[3])
 
         problem_instance.calculate_distances()
@@ -71,5 +74,3 @@ if __name__ == '__main__':
         else:
             exc = ValueError(f"Algorithm \"{sys.argv[1]}\" was not recognised")
             raise exc
-    else:
-        print("If you're unsure how to use the application, give the argument -h (--help) for information")
