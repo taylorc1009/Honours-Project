@@ -144,12 +144,7 @@ def relocate_final_destinations(instance: ProblemInstance, solution: OmbukiSolut
 
 def routing_scheme(instance: ProblemInstance, solution: OmbukiSolution) -> OmbukiSolution:
     feasible_solution = attempt_feasible_network_transformation(instance, solution)
-    if set(range(len(instance.nodes))).difference([d.node.number for v in feasible_solution.vehicles for d in v.destinations]):
-        feasible_solution = attempt_feasible_network_transformation(instance, solution)
-
     relocated_solution = relocate_final_destinations(instance, feasible_solution)
-    if set(range(len(instance.nodes))).difference([d.node.number for v in relocated_solution.vehicles for d in v.destinations]):
-        relocated_solution = relocate_final_destinations(instance, feasible_solution)
 
     if relocated_solution is feasible_solution:
         feasible_solution.calculate_vehicles_loads(instance)
