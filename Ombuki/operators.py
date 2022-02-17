@@ -1,13 +1,14 @@
 import copy
 from random import shuffle
 from typing import Dict, List
-from Ombuki.constants import INT_MAX, MUTATION_REVERSAL_LENGTH
+from Ombuki.constants import MUTATION_REVERSAL_LENGTH
 from Ombuki.auxiliaries import rand, is_nondominated
 from ombukiSolution import OmbukiSolution
 from threading import Thread, currentThread
 from destination import Destination
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
+from constants import INT_MAX
 
 def crossover_thread(instance: ProblemInstance, solution: OmbukiSolution, parent_vehicle: Vehicle, result: Dict[str, OmbukiSolution]) -> None:
     crossover_solution = copy.deepcopy(solution)

@@ -8,7 +8,8 @@ from vehicle import Vehicle
 from destination import Destination
 from Ombuki.auxiliaries import rand, is_nondominated
 from numpy import arange, round, random
-from Ombuki.constants import INT_MAX, TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY, GREEDY_PERCENT
+from Ombuki.constants import TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY, GREEDY_PERCENT
+from constants import INT_MAX
 
 def generate_random_solution(instance: ProblemInstance) -> OmbukiSolution:
     solution = OmbukiSolution(_id=0, vehicles=list())

@@ -1,5 +1,5 @@
 from numpy import random
-from Ombuki.constants import INT_MAX
+from constants import INT_MAX
 from typing import Set
 from ombukiSolution import OmbukiSolution
 
