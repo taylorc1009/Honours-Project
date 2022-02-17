@@ -1,13 +1,11 @@
 import sys
 import os
-import json
 from problemInstance import ProblemInstance
 from data import open_problem_instance
 from MMOEASA.mmoeasa import MMOEASA, TWIH_ref_point
 from MMOEASA.evaluation import calculate_median_Hypervolumes
 from MMOEASA.constants import POPULATION_SIZE
 from Ombuki.ombuki import Ombuki
-from typing import List
 
 def execute_MMOEASA(problem_instance: ProblemInstance) -> None:
     num_customers = len(problem_instance.nodes) - 1
