@@ -9,7 +9,7 @@ def TWIH_ref_point(instance: ProblemInstance) -> Tuple[float, float]:
     solution.calculate_length_of_routes(instance)
     solution.total_distance = sum([vehicle.route_distance for vehicle in solution.vehicles])
 
-    return solution.total_distance * 2, solution.num_vehicles * 2
+    return solution.total_distance * 2, len(solution.vehicles) * 2
 
 def calculate_median_Hypervolumes(ND_solutions: List[OmbukiSolution], TWIH_Hypervolumes: Tuple[float, float]) -> float:
     prev_TD, prev_NV = ref_TD, ref_NV = TWIH_Hypervolumes[0], TWIH_Hypervolumes[0]
