@@ -232,10 +232,11 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
             child_dominated = False
             if not population[i].feasible:
                 population[i] = result
-            if instance.acceptance_criterion == "MMOEASA":
-                population[i], child_dominated = MO_Metropolis(instance, solution, result, 100.0)
-            elif is_nondominated(population[i], result):
-                population[i], child_dominated = result, True
+            elif result.feasible:
+                if instance.acceptance_criterion == "MMOEASA":
+                    population[i], child_dominated = MO_Metropolis(instance, solution, result, 100.0)
+                elif is_nondominated(population[i], result):
+                    population[i], child_dominated = result, True
 
             if child_dominated:
                 print(f"solution {i} dominated")
