@@ -132,9 +132,9 @@ def MO_Metropolis(instance: ProblemInstance, Parent: MMOEASASolution, Child: MMO
         return Parent, False
     else:
         d_df = Euclidean_distance_dispersion(instance, Child.total_distance, Child.cargo_unbalance, Parent.total_distance, Parent.cargo_unbalance)
-        random_val = rand(0, INT_MAX - 1) / INT_MAX
+        random_val = rand(0, INT_MAX) / INT_MAX
         d_pt_pt = d_df / T ** 2
-        pt_exp = exp(-1 * d_pt_pt)
+        pt_exp = exp(-1.0 * d_pt_pt)
 
         if random_val < pt_exp:
             return Child, not (Child.cargo_unbalance == Parent.cargo_unbalance and Child.total_distance == Parent.total_distance)
