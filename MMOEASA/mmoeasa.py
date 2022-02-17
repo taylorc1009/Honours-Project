@@ -1,10 +1,9 @@
 import copy
 import time
-from MMOEASA.auxiliaries import rand
+from MMOEASA.auxiliaries import rand, Child_dominates
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from MMOEASA.constants import MAX_SIMULTANEOUS_MUTATIONS, INFINITY
-from Ombuki.auxiliaries import is_nondominated as ombuki_is_nondominated
-from Ombuki.ombuki import is_nondominated_by_any
+from Ombuki.auxiliaries import is_nondominated as ombuki_is_nondominated, is_nondominated_by_any
 from mmoeasaSolution import MMOEASASolution
 from ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
@@ -14,18 +13,6 @@ from constants import INT_MAX
 from typing import List, Tuple, Union
 from numpy import sqrt, exp
 from data import MMOEASA_write_solution_for_validation
-
-Hypervolume_total_distance: float=0.0
-Hypervolume_distance_unbalance: float=0.0 # currently, the distance unbalance objective is unused in the objective function, but this may change
-Hypervolume_cargo_unbalance: float=0.0
-
-def update_Hypervolumes(HV_TD: float, HV_DU: float, HV_CU: float) -> None:
-    global Hypervolume_total_distance, Hypervolume_distance_unbalance, Hypervolume_cargo_unbalance
-    Hypervolume_total_distance = float(HV_TD)
-    Hypervolume_distance_unbalance = float(HV_DU)
-    Hypervolume_cargo_unbalance = float(HV_CU)
-
-    print(f"Hypervolumes modified: TD={Hypervolume_total_distance}, DU={Hypervolume_distance_unbalance}, CU={Hypervolume_cargo_unbalance}")
 
 def TWIH(instance: ProblemInstance) -> Union[MMOEASASolution, OmbukiSolution]:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
@@ -135,20 +122,16 @@ def Mutation(instance: ProblemInstance, I: Union[MMOEASASolution, OmbukiSolution
             return Mutation10(instance, I_c)
     return I
 
-def Euclidean_distance_dispersion(x1: float, y1: float, x2: float, y2: float) -> float:
-    global Hypervolume_total_distance, Hypervolume_cargo_unbalance
-    return sqrt(((x2 - x1) / 2 * Hypervolume_total_distance) ** 2 + ((y2 - y1) / 2 * Hypervolume_cargo_unbalance) ** 2)
+def Euclidean_distance_dispersion(instance: ProblemInstance, x1: float, y1: float, x2: float, y2: float) -> float:
+    return sqrt(((x2 - x1) / 2 * instance.Hypervolume_total_distance) ** 2 + ((y2 - y1) / 2 * instance.Hypervolume_cargo_unbalance) ** 2)
 
-def Child_dominates(Parent: MMOEASASolution, Child: MMOEASASolution) -> bool:
-    return (Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance) or (Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance)
-
-def MO_Metropolis(Parent: MMOEASASolution, Child: MMOEASASolution, T: float) -> Tuple[MMOEASASolution, bool]:  # TODO: change back to " -> MMOEASASolution" return type once debugging of MO_Metropolis has finished
+def MO_Metropolis(instance: ProblemInstance, Parent: MMOEASASolution, Child: MMOEASASolution, T: float) -> Tuple[MMOEASASolution, bool]:  # TODO: change back to " -> MMOEASASolution" return type once debugging of MO_Metropolis has finished
     if Child_dominates(Parent, Child):
         return Child, True
     elif T <= 0.00001:
         return Parent, False
     else:
-        d_df = Euclidean_distance_dispersion(Child.total_distance, Child.cargo_unbalance, Parent.total_distance, Parent.cargo_unbalance)
+        d_df = Euclidean_distance_dispersion(instance, Child.total_distance, Child.cargo_unbalance, Parent.total_distance, Parent.cargo_unbalance)
         random_val = rand(0, INT_MAX - 1) / INT_MAX
         d_pt_pt = d_df / T ** 2
         pt_exp = exp(-1 * d_pt_pt)
@@ -165,11 +148,12 @@ def is_nondominated(I: MMOEASASolution, ND: List[MMOEASASolution]) -> bool:
     else:
         return I.feasible
 
-def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float, Hypervolumes: List[float]) -> List[Union[MMOEASASolution, OmbukiSolution]]:
+def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float, Hypervolumes: List[float]=None) -> List[Union[MMOEASASolution, OmbukiSolution]]:
     P: List[Union[MMOEASASolution, OmbukiSolution]] = list()
     ND: List[Union[MMOEASASolution, OmbukiSolution]] = list()
     iterations = 0
-    update_Hypervolumes(*Hypervolumes)
+    if instance.acceptance_criterion == "MMOEASA":
+        instance.update_Hypervolumes(*Hypervolumes)
 
     prev_ND_id = -1
 
@@ -177,17 +161,19 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
     for i in range(p):
         P.insert(i, copy.deepcopy(TWIH_solution))
         P[i].id = i
-        P[i].T_default = T_max - float(i) * ((T_max - T_min) / float(p - 1))
-        P[i].T_cooling = Calculate_cooling(i, T_max, T_min, T_stop, p, TC)
+        if instance.acceptance_criterion == "MMOEASA":
+            P[i].T_default = T_max - float(i) * ((T_max - T_min) / float(p - 1))
+            P[i].T_cooling = Calculate_cooling(i, T_max, T_min, T_stop, p, TC)
     del TWIH_solution
 
     start = time.time()
     current_multi_start = 0
     while current_multi_start < MS and not iterations >= TC:
-        for i in range(len(P)):
-            P[i].T = P[i].T_default
+        if instance.acceptance_criterion == "MMOEASA":
+            for i in range(len(P)):
+                P[i].T = P[i].T_default
 
-        while P[0].T > T_stop and not iterations >= TC:
+        while (instance.acceptance_criterion == "MMOEASA" and P[0].T > T_stop and not iterations >= TC) or not iterations >= TC:
             for i, I in enumerate(P):
                 I_c = Crossover(instance, I, P, P_crossover)
                 for _ in range(0, rand(1, MAX_SIMULTANEOUS_MUTATIONS)):
@@ -198,9 +184,9 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                     child_dominated = ombuki_is_nondominated(I, I_c) if I_c.feasible else True
                     if child_dominated or (not len(ND) and I_c.feasible):
                         P[i] = I_c
-                        nondominated = is_nondominated_by_any(P, i) if len(ND) else I_c.feasible
+                        nondominated = is_nondominated_by_any(ND, P[i]) if len(ND) else I_c.feasible
                 else:
-                    P[i], child_dominated = MO_Metropolis(I, I_c, I.T)
+                    P[i], child_dominated = MO_Metropolis(instance, I, I_c, I.T)
                     if child_dominated:
                         nondominated = is_nondominated(P[i], ND)
 
@@ -217,12 +203,14 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 elif child_dominated and i == prev_ND_id:
                     print(f"ND solution ({prev_ND_id}) changed in P ({iterations=}, time={round(time.time() - start, 1)}s)")
 
-                P[i].T *= P[i].T_cooling
+                if instance.acceptance_criterion == "MMOEASA":
+                    P[i].T *= P[i].T_cooling
             iterations += 1
             if not iterations % (TC / 10):
                 print(f"{iterations=}, {P[0].T=}, time={round(time.time() - start, 1)}s")
 
-        current_multi_start += 1
+        if instance.acceptance_criterion == "MMOEASA":
+            current_multi_start += 1
         if iterations < TC:
             print("multi-start occurred")
     return ND

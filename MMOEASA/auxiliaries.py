@@ -8,6 +8,9 @@ from vehicle import Vehicle
 from destination import Destination
 import copy
 
+def Child_dominates(Parent: MMOEASASolution, Child: MMOEASASolution) -> bool:
+    return (Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance) or (Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance)
+
 def rand(start: int, end: int, exclude_values: List[int]=None) -> int:
     # '+ 1' to make the random number generator inclusive of the "end" value
     offset = 1 if end < INT_MAX else 0

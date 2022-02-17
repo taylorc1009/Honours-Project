@@ -1,9 +1,11 @@
 from typing import Dict, List
 from node import Node
-from numpy import arange
 
 class ProblemInstance:
     distances: List[float]=None
+    Hypervolume_total_distance: float=0.0
+    Hypervolume_distance_unbalance: float=0.0  # currently, the distance unbalance objective is unused in the objective function, but this may change
+    Hypervolume_cargo_unbalance: float=0.0
 
     def __init__(self, name: str, amount_of_vehicles: int, capacity_of_vehicles: int, nodes: Dict[int, Node]=None, acceptance_criterion: str="") -> None:
         self.name: str=name
@@ -26,3 +28,10 @@ class ProblemInstance:
 
     def get_distance(self, from_node: int, to_node: int):
         return self.distances[len(self.nodes) * from_node + to_node]
+
+    def update_Hypervolumes(self, HV_TD: float, HV_DU: float, HV_CU: float) -> None:
+        self.Hypervolume_total_distance = float(HV_TD)
+        self.Hypervolume_distance_unbalance = float(HV_DU)
+        self.Hypervolume_cargo_unbalance = float(HV_CU)
+
+        print(f"Hypervolumes modified: TD={self.Hypervolume_total_distance}, DU={self.Hypervolume_distance_unbalance}, CU={self.Hypervolume_cargo_unbalance}")

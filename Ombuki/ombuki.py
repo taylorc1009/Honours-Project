@@ -1,18 +1,21 @@
 import copy
 import random
-from typing import List
+from typing import List, Union
 from Ombuki.operators import crossover, mutation
+from mmoeasaSolution import MMOEASASolution
 from problemInstance import ProblemInstance
 from ombukiSolution import OmbukiSolution
 from vehicle import Vehicle
 from destination import Destination
-from Ombuki.auxiliaries import rand, is_nondominated
+from Ombuki.auxiliaries import rand, is_nondominated, is_nondominated_by_any, mmoeasa_is_nondominated_by_any
 from numpy import arange, round, random
 from Ombuki.constants import TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY, GREEDY_PERCENT
 from constants import INT_MAX
+from MMOEASA.mmoeasa import MO_Metropolis
+from MMOEASA.auxiliaries import Child_dominates as mmoeasa_is_nondominated
 
-def generate_random_solution(instance: ProblemInstance) -> OmbukiSolution:
-    solution = OmbukiSolution(_id=0, vehicles=list())
+def generate_random_solution(instance: ProblemInstance) -> Union[OmbukiSolution, MMOEASASolution]:
+    solution = OmbukiSolution(_id=0, vehicles=list()) if instance.acceptance_criterion == "Ombuki" else MMOEASASolution(_id=0, vehicles=list())
 
     for i in range(1, len(instance.nodes)):
         infeasible_vehicles = set()
@@ -32,8 +35,8 @@ def generate_random_solution(instance: ProblemInstance) -> OmbukiSolution:
 
     return solution
 
-def generate_greedy_solution(instance: ProblemInstance) -> OmbukiSolution:
-    solution = OmbukiSolution(_id=0, vehicles=[Vehicle.create_route(instance)])
+def generate_greedy_solution(instance: ProblemInstance) -> Union[OmbukiSolution, MMOEASASolution]:
+    solution = OmbukiSolution(_id=0, vehicles=[Vehicle.create_route(instance)]) if instance.acceptance_criterion == "Ombuki" else MMOEASASolution(_id=0, vehicles=[Vehicle.create_route(instance)])
     unvisited_nodes = list(arange(1, len(instance.nodes)))
     vehicle = 0
 
@@ -64,20 +67,19 @@ def generate_greedy_solution(instance: ProblemInstance) -> OmbukiSolution:
 
     return solution
 
-def is_nondominated_by_any(population: List[OmbukiSolution], subject_solution: int) -> bool:
-    for i, solution in enumerate(population):
-        if not i == subject_solution and not is_nondominated(solution, population[subject_solution]):
-            return False
-    return True
-
-def pareto_rank(population: List[OmbukiSolution]) -> None:
+def pareto_rank(instance: ProblemInstance, population: List[Union[OmbukiSolution, MMOEASASolution]]) -> None:
     curr_rank = 1
     unranked_solutions = list(arange(0, len(population)))
 
     while unranked_solutions:
         could_assign_rank = False
         for i in unranked_solutions:
-            if is_nondominated_by_any(population, i):
+            if instance.acceptance_criterion == "MMOEASA":
+                if mmoeasa_is_nondominated_by_any(population, i):
+                    population[i].rank = curr_rank
+                    unranked_solutions.remove(population[i].id)
+                    could_assign_rank = True
+            elif is_nondominated_by_any(population, i):
                 population[i].rank = curr_rank
                 unranked_solutions.remove(population[i].id)
                 could_assign_rank = True
@@ -87,8 +89,9 @@ def pareto_rank(population: List[OmbukiSolution]) -> None:
             break
         curr_rank += 1
 
-def attempt_feasible_network_transformation(instance: ProblemInstance, solution: OmbukiSolution) -> OmbukiSolution:
-    feasible_solution = OmbukiSolution(_id=solution.id, vehicles=[Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)])
+def attempt_feasible_network_transformation(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
+    vehicles = [Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)]
+    feasible_solution = OmbukiSolution(_id=solution.id, vehicles=vehicles) if instance.acceptance_criterion == "Ombuki" else MMOEASASolution(_id=solution.id, vehicles=vehicles)
     feasible_solution.vehicles[0].current_capacity += solution.vehicles[0].destinations[1].node.demand
     feasible_solution.vehicles[0].calculate_destination_time_window(instance, 0, 1)
 
@@ -129,7 +132,7 @@ def attempt_feasible_network_transformation(instance: ProblemInstance, solution:
 
     return feasible_solution
 
-def relocate_final_destinations(instance: ProblemInstance, solution: OmbukiSolution) -> OmbukiSolution:
+def relocate_final_destinations(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
     f_solution = copy.deepcopy(solution)
 
     for i in range(0, len(f_solution.vehicles)):
@@ -141,9 +144,11 @@ def relocate_final_destinations(instance: ProblemInstance, solution: OmbukiSolut
     f_solution.calculate_nodes_time_windows(instance)
     f_solution.objective_function(instance)
 
+    if instance.acceptance_criterion == "MMOEASA":
+        return f_solution if mmoeasa_is_nondominated(solution, f_solution) else solution
     return f_solution if is_nondominated(solution, f_solution) else solution
 
-def routing_scheme(instance: ProblemInstance, solution: OmbukiSolution) -> OmbukiSolution:
+def routing_scheme(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
     feasible_solution = attempt_feasible_network_transformation(instance, solution)
     relocated_solution = relocate_final_destinations(instance, feasible_solution)
 
@@ -155,7 +160,7 @@ def routing_scheme(instance: ProblemInstance, solution: OmbukiSolution) -> Ombuk
 
     return relocated_solution
 
-def selection_tournament(population: List[OmbukiSolution]) -> int:
+def selection_tournament(instance: ProblemInstance, population: List[Union[OmbukiSolution, MMOEASASolution]]) -> int:
     best_solutions = list(filter(lambda s: s.rank == 1, population))
     if not best_solutions: # in this instance, the initialising population has been given and no solutions have been ranked yet, so work with any feasible solutions
         best_solutions = list(filter(lambda s: s.feasible, population))
@@ -168,23 +173,28 @@ def selection_tournament(population: List[OmbukiSolution]) -> int:
     if rand(1, 100) < TOURNAMENT_PROBABILITY:
         best_solution = population[tournament_set[0].id]
         for solution in tournament_set:
-            if is_nondominated(best_solution, population[solution.id]):
+            if instance.acceptance_criterion == "MMOEASA":
+                if mmoeasa_is_nondominated(best_solution, population[solution.id]):
+                    best_solution = population[solution.id]
+            elif is_nondominated(best_solution, population[solution.id]):
                 best_solution = population[solution.id]
         return best_solution.id
     else:
         return tournament_set[rand(0, TOURNAMENT_SIZE - 1)].id
 
-def crossover_probability(instance: ProblemInstance, iterator_parent: OmbukiSolution, tournament_parent: OmbukiSolution, probability: int) -> OmbukiSolution:
+def crossover_probability(instance: ProblemInstance, iterator_parent: Union[OmbukiSolution, MMOEASASolution], tournament_parent: Union[OmbukiSolution, MMOEASASolution], probability: int) -> Union[OmbukiSolution, MMOEASASolution]:
     return crossover(instance, iterator_parent, tournament_parent) if rand(1, 100) < probability else iterator_parent
 
-def mutation_probability(instance: ProblemInstance, solution: OmbukiSolution, probability: int, pending_copy: bool) -> OmbukiSolution:
+def mutation_probability(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], probability: int, pending_copy: bool) -> Union[OmbukiSolution, MMOEASASolution]:
     if rand(1, 100) < probability:
         mutated_solution = mutation(instance, copy.deepcopy(solution) if pending_copy else solution)
+        if instance.acceptance_criterion == "MMOEASA":
+            return mutated_solution if mmoeasa_is_nondominated(solution, mutated_solution) else solution
         return mutated_solution if is_nondominated(solution, mutated_solution) else solution
     return solution
 
-def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: int, mutation: int) -> List[OmbukiSolution]:
-    population: List[OmbukiSolution] = list()
+def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: int, mutation: int, Hypervolumes: List[float]=None) -> List[Union[OmbukiSolution, MMOEASASolution]]:
+    population: List[Union[OmbukiSolution, MMOEASASolution]] = list()
 
     num_greedy_solutions = int(round(float(population_size * GREEDY_PERCENT)))
     for i in range(0, num_greedy_solutions):
@@ -204,8 +214,11 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         random_solution.objective_function(instance)
         population.insert(i, random_solution)
 
+    if instance.acceptance_criterion == "MMOEASA":
+        instance.update_Hypervolumes(*Hypervolumes)
+
     for _ in range(0, generation_span):
-        winning_parent = selection_tournament(population)
+        winning_parent = selection_tournament(instance, population)
         for i, solution in enumerate(population):
             if not population[i].feasible:
                 was_feasible = population[i].feasible
@@ -216,10 +229,16 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
             result = crossover_probability(instance, solution, population[winning_parent], crossover)
             result = mutation_probability(instance, result, mutation, result is solution)
 
-            if not population[i].feasible or is_nondominated(population[i], result):
-                if is_nondominated(population[i], result):
-                    print(f"solution {i} dominated")
+            child_dominated = False
+            if not population[i].feasible:
                 population[i] = result
-        pareto_rank(population)
+            if instance.acceptance_criterion == "MMOEASA":
+                population[i], child_dominated = MO_Metropolis(instance, solution, result, 100.0)
+            elif is_nondominated(population[i], result):
+                population[i], child_dominated = result, True
+
+            if child_dominated:
+                print(f"solution {i} dominated")
+        pareto_rank(instance, population)
 
     return population

@@ -1,16 +1,18 @@
 import copy
 from random import shuffle
-from typing import Dict, List
+from typing import Dict, List, Union
 from Ombuki.constants import MUTATION_REVERSAL_LENGTH
 from Ombuki.auxiliaries import rand, is_nondominated
 from ombukiSolution import OmbukiSolution
+from mmoeasaSolution import MMOEASASolution
 from threading import Thread, currentThread
 from destination import Destination
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 from constants import INT_MAX
+from MMOEASA.mmoeasa import Child_dominates as mmoeasa_is_nondominated
 
-def crossover_thread(instance: ProblemInstance, solution: OmbukiSolution, parent_vehicle: Vehicle, result: Dict[str, OmbukiSolution]) -> None:
+def crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], parent_vehicle: Vehicle, result: Dict[str, Union[OmbukiSolution, MMOEASASolution]]) -> None:
     crossover_solution = copy.deepcopy(solution)
     
     nodes_to_remove = set([d.node.number for d in parent_vehicle.get_customers_visited()])
@@ -76,12 +78,12 @@ def crossover_thread(instance: ProblemInstance, solution: OmbukiSolution, parent
 
     result[currentThread().getName()] = crossover_solution
 
-def crossover(instance: ProblemInstance, parent_one: OmbukiSolution, parent_two: OmbukiSolution) -> OmbukiSolution:
+def crossover(instance: ProblemInstance, parent_one: Union[OmbukiSolution, MMOEASASolution], parent_two: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
     parent_one_vehicle = parent_one.vehicles[rand(0, len(parent_one.vehicles) - 1)]
     parent_two_vehicle = parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)]
 
     # threads cannot return values, so they need to be given a mutable type that can be given the values we'd like to return; in this instance, a list is used
-    thread_results: Dict[str, OmbukiSolution] = {"child_one": None, "child_two": None}
+    thread_results: Dict[str, Union[OmbukiSolution, MMOEASASolution]] = {"child_one": None, "child_two": None}
     child_one_thread = Thread(name="child_one", target=crossover_thread, args=(instance, parent_one, parent_two_vehicle, thread_results))
     child_two_thread = Thread(name="child_two", target=crossover_thread, args=(instance, parent_two, parent_one_vehicle, thread_results))
     child_one_thread.start()
@@ -90,9 +92,11 @@ def crossover(instance: ProblemInstance, parent_one: OmbukiSolution, parent_two:
     child_two_thread.join()
 
     thread_results["child_two"].id = thread_results["child_one"].id
+    if instance.acceptance_criterion == "MMOEASA":
+        return thread_results["child_one"] if mmoeasa_is_nondominated(thread_results["child_one"], thread_results["child_two"]) else thread_results["child_two"]
     return thread_results["child_one"] if is_nondominated(thread_results["child_one"], thread_results["child_two"]) else thread_results["child_two"]
 
-def get_next_vehicles_destinations(solution: OmbukiSolution, vehicle: int, first_destination: int, remaining_destinations: int) -> List[Destination]:
+def get_next_vehicles_destinations(solution: Union[OmbukiSolution, MMOEASASolution], vehicle: int, first_destination: int, remaining_destinations: int) -> List[Destination]:
     if not remaining_destinations:
         return list()
     num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
@@ -101,7 +105,7 @@ def get_next_vehicles_destinations(solution: OmbukiSolution, vehicle: int, first
     else:
         return solution.vehicles[vehicle].destinations[first_destination:first_destination + remaining_destinations]
 
-def set_next_vehicles_destinations(solution: OmbukiSolution, vehicle: int, first_destination: int, remaining_destinations: int, reversed_destinations: List[Destination]) -> None:
+def set_next_vehicles_destinations(solution: Union[OmbukiSolution, MMOEASASolution], vehicle: int, first_destination: int, remaining_destinations: int, reversed_destinations: List[Destination]) -> None:
     if not (remaining_destinations and reversed_destinations):
         return
     num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
@@ -114,7 +118,7 @@ def set_next_vehicles_destinations(solution: OmbukiSolution, vehicle: int, first
         solution.vehicles[vehicle].destinations[first_destination:first_destination + remaining_destinations] = reversed_destinations
         reversed_destinations.clear()
 
-def mutation(instance: ProblemInstance, solution: OmbukiSolution) -> OmbukiSolution:
+def mutation(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
     num_nodes_to_swap = rand(2, MUTATION_REVERSAL_LENGTH)
     first_reversal_node = rand(1, (len(instance.nodes) - 1) - num_nodes_to_swap)
 

@@ -6,8 +6,8 @@ from problemInstance import ProblemInstance
 from solution import Solution
 
 class OmbukiSolution(Solution):
-    def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, total_distance: float=0.0, num_vehicles: int=0, rank: int=INT_MAX, T_default: float=0.0, T: float=0.0, T_cooling: float=0.0) -> None:
-        super(OmbukiSolution, self).__init__(_id=_id, vehicles=vehicles, feasible=feasible, total_distance=total_distance, T_default=T_default, T=T, T_cooling=T_cooling, rank=rank)
+    def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, total_distance: float=0.0, num_vehicles: int=0, rank: int=INT_MAX) -> None:
+        super(OmbukiSolution, self).__init__(_id=_id, vehicles=vehicles, feasible=feasible, total_distance=total_distance, rank=rank) # initialise every solution's temperature (in Ombuki) to 100 and don't modify it later so that Simulated Annealing isn't used when MMOEASA's acceptance criterion, "MO_Metropolis", is being utilised
         self.num_vehicles: int=int(len(vehicles) if vehicles else num_vehicles) # the reason this objective is a variable instead of just using "len(vehicles)" is because if the solution is invalid, it needs to be set to a very high number
 
     def __str__(self) -> str:
@@ -31,4 +31,4 @@ class OmbukiSolution(Solution):
             vehicle += 1
 
     def __deepcopy__(self, memodict: Dict=None):
-        return OmbukiSolution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, total_distance=self.total_distance, num_vehicles=self.num_vehicles, rank=self.rank, T_default=self.T_default, T=self.T, T_cooling=self.T_cooling)
+        return OmbukiSolution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, total_distance=self.total_distance, num_vehicles=self.num_vehicles, rank=self.rank)
