@@ -2,7 +2,7 @@ import copy
 import time
 from MMOEASA.auxiliaries import rand
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
-from MMOEASA.constants import INT_MAX, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS, MMOEASA_INFINITY
+from MMOEASA.constants import MMOEASA_MAX_SIMULTANEOUS_MUTATIONS, MMOEASA_INFINITY
 from Ombuki.auxiliaries import is_nondominated as ombuki_is_nondominated
 from Ombuki.ombuki import is_nondominated_by_any
 from mmoeasaSolution import MMOEASASolution
@@ -10,6 +10,7 @@ from ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
 from destination import Destination
 from vehicle import Vehicle
+from constants import INT_MAX
 from typing import List, Tuple, Union
 from numpy import sqrt, exp
 from data import MMOEASA_write_solution_for_validation

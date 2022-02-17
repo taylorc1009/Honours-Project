@@ -1,6 +1,6 @@
 from typing import List, Union
 from numpy import random
-from MMOEASA.constants import INT_MAX
+from constants import INT_MAX
 from mmoeasaSolution import MMOEASASolution
 from ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
