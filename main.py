@@ -9,7 +9,7 @@ from MMOEASA.constants import POPULATION_SIZE
 from Ombuki.ombuki import Ombuki
 from typing import List
 
-def execute_MMOEASA(problem_instance: ProblemInstance, Hypervolumes: List[float]=None) -> None:
+def execute_MMOEASA(problem_instance: ProblemInstance) -> None:
     num_customers = len(problem_instance.nodes) - 1
     
     TC = 0 # termination condition = the number of iterations to perform
@@ -25,7 +25,7 @@ def execute_MMOEASA(problem_instance: ProblemInstance, Hypervolumes: List[float]
         print("\n", str(solution))
     print(calculate_median_Hypervolumes(ND_solutions, TWIH_ref_point(problem_instance))) # TODO: currently, the TWIH usually has a cargo unbalance of 20 and the ND_solutions usually have as low as 90; therefore, TWIH_ref_point's Hypervolume may need to be multiplied by a higher value
 
-def execute_Ombuki(problem_instance: ProblemInstance, Hypervolumes: List[float]=None) -> None:
+def execute_Ombuki(problem_instance: ProblemInstance) -> None:
     ND_solutions = Ombuki(problem_instance, 300, 350, 80, 10)
     for solution in ND_solutions:
         print("\n", str(solution))
