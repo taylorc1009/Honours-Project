@@ -2,7 +2,7 @@ import copy
 import time
 from MMOEASA.auxiliaries import rand
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
-from MMOEASA.constants import MMOEASA_MAX_SIMULTANEOUS_MUTATIONS, MMOEASA_INFINITY
+from MMOEASA.constants import MAX_SIMULTANEOUS_MUTATIONS, INFINITY
 from Ombuki.auxiliaries import is_nondominated as ombuki_is_nondominated
 from Ombuki.ombuki import is_nondominated_by_any
 from mmoeasaSolution import MMOEASASolution
@@ -62,7 +62,7 @@ def TWIH_initialiser(instance: ProblemInstance) -> Union[MMOEASASolution, Ombuki
 
 def TWIH_ref_point(instance: ProblemInstance) -> Tuple[float, float, float]:
     solution = TWIH(instance)
-    minimum_distance, maximum_distance, minimum_cargo, maximum_cargo = MMOEASA_INFINITY, 0, MMOEASA_INFINITY, 0
+    minimum_distance, maximum_distance, minimum_cargo, maximum_cargo = INFINITY, 0, INFINITY, 0
 
     solution.calculate_length_of_routes(instance)
 
@@ -190,7 +190,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
         while P[0].T > T_stop and not iterations >= TC:
             for i, I in enumerate(P):
                 I_c = Crossover(instance, I, P, P_crossover)
-                for _ in range(0, rand(1, MMOEASA_MAX_SIMULTANEOUS_MUTATIONS)):
+                for _ in range(0, rand(1, MAX_SIMULTANEOUS_MUTATIONS)):
                     I_c = Mutation(instance, I_c, P_mutation, I_c is I)
 
                 child_dominated, nondominated = False, False

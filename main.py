@@ -5,7 +5,7 @@ from problemInstance import ProblemInstance
 from data import open_problem_instance
 from MMOEASA.mmoeasa import MMOEASA, TWIH_ref_point
 from MMOEASA.evaluation import calculate_median_Hypervolumes
-from MMOEASA.constants import MMOEASA_POPULATION_SIZE
+from MMOEASA.constants import POPULATION_SIZE
 from Ombuki.ombuki import Ombuki
 
 def execute_MMOEASA(problemInstance: ProblemInstance) -> None:
@@ -20,7 +20,7 @@ def execute_MMOEASA(problemInstance: ProblemInstance) -> None:
             TC = 2000
 
         Hypervolumes = json.load(json_file)
-        ND_solutions = MMOEASA(problemInstance, MMOEASA_POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0, Hypervolumes[problemInstance.name]) # TODO: try changing the numerical parameters to command line arguments and experiment with them
+        ND_solutions = MMOEASA(problemInstance, POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0, Hypervolumes[problemInstance.name]) # TODO: try changing the numerical parameters to command line arguments and experiment with them
         for solution in ND_solutions:
             print("\n", str(solution))
         print(calculate_median_Hypervolumes(ND_solutions, TWIH_ref_point(problemInstance))) # TODO: currently, the TWIH usually has a cargo unbalance of 20 and the ND_solutions usually have as low as 90; therefore, TWIH_ref_point's Hypervolume may need to be multiplied by a higher value

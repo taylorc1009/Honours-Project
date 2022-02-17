@@ -1,5 +1,5 @@
 import copy
-from MMOEASA.constants import MMOEASA_INFINITY
+from MMOEASA.constants import INFINITY
 from mmoeasaSolution import MMOEASASolution
 from ombukiSolution import OmbukiSolution
 from MMOEASA.auxiliaries import insert_unvisited_node, rand
@@ -51,7 +51,7 @@ def Mutation2(instance: ProblemInstance, I_c: Union[MMOEASASolution, OmbukiSolut
     num_customers = I_c.vehicles[random_vehicle].get_num_of_customers_visited()
     origin_position = rand(1, num_customers)
 
-    best_location, fitness_of_best_location = origin_position, MMOEASA_INFINITY
+    best_location, fitness_of_best_location = origin_position, INFINITY
     for i in range(1, num_customers + 1):
         if not i == origin_position:
             I_c = move_destination(instance, I_c, random_vehicle, origin_position, random_vehicle, i)
@@ -86,7 +86,7 @@ def Mutation4(instance: ProblemInstance, I_c: Union[MMOEASASolution, OmbukiSolut
 
     random_destination_vehicle = get_random_vehicle(I_c, exclude_values=[random_origin_vehicle])
 
-    best_location, fitness_of_best_location = -1, MMOEASA_INFINITY
+    best_location, fitness_of_best_location = -1, INFINITY
     for i in range(1, I_c.vehicles[random_destination_vehicle].get_num_of_customers_visited() + 1):
         I_c = move_destination(instance, I_c, random_origin_vehicle, origin_position, random_destination_vehicle, i)
 
@@ -118,7 +118,7 @@ def Mutation6(instance: ProblemInstance, I_c: Union[MMOEASASolution, OmbukiSolut
     random_origin_vehicle = get_random_vehicle(I_c)
     origin_position = rand(1, I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited())
 
-    best_vehicle, best_location, fitness_of_best_location = -1, -1, MMOEASA_INFINITY
+    best_vehicle, best_location, fitness_of_best_location = -1, -1, INFINITY
     for destination_vehicle in range(0, len(I_c.vehicles)):
         if not random_origin_vehicle == destination_vehicle:
             num_customers = I_c.vehicles[destination_vehicle].get_num_of_customers_visited()
@@ -144,7 +144,7 @@ def Mutation7(instance: ProblemInstance, I_c: Union[MMOEASASolution, OmbukiSolut
     random_origin_vehicle = get_random_vehicle(I_c)
     origin_position = rand(1, I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited())
 
-    best_vehicle, best_location, smallest_time_window_difference = -1, -1, MMOEASA_INFINITY
+    best_vehicle, best_location, smallest_time_window_difference = -1, -1, INFINITY
     for destination_vehicle in range(0, len(I_c.vehicles)):
         if not random_origin_vehicle == destination_vehicle:
             num_customers = I_c.vehicles[destination_vehicle].get_num_of_customers_visited()
@@ -222,7 +222,7 @@ def Mutation10(instance: ProblemInstance, I_c: Union[MMOEASASolution, OmbukiSolu
                 for destination_position in range(1, num_customers_destination + 1):
                     I_c = move_destination(instance, I_c, random_origin_vehicle, origin_position, destination_vehicle, destination_position)
 
-                    if I_c.total_distance > MMOEASA_INFINITY / 2:
+                    if I_c.total_distance > INFINITY / 2:
                         I_c = move_destination(instance, I_c, destination_vehicle, destination_position, random_origin_vehicle, origin_position)
                     else:
                         node_reallocated = True
