@@ -20,13 +20,13 @@ def execute_MMOEASA(problem_instance: ProblemInstance, Hypervolumes: List[float]
     elif num_customers == 100:
         TC = 2000
 
-    ND_solutions = MMOEASA(problem_instance, POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0, Hypervolumes) # TODO: try changing the numerical parameters to command line arguments and experiment with them
+    ND_solutions = MMOEASA(problem_instance, POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0) # TODO: try changing the numerical parameters to command line arguments and experiment with them
     for solution in ND_solutions:
         print("\n", str(solution))
     print(calculate_median_Hypervolumes(ND_solutions, TWIH_ref_point(problem_instance))) # TODO: currently, the TWIH usually has a cargo unbalance of 20 and the ND_solutions usually have as low as 90; therefore, TWIH_ref_point's Hypervolume may need to be multiplied by a higher value
 
 def execute_Ombuki(problem_instance: ProblemInstance, Hypervolumes: List[float]=None) -> None:
-    ND_solutions = Ombuki(problem_instance, 300, 350, 80, 10, Hypervolumes=Hypervolumes)
+    ND_solutions = Ombuki(problem_instance, 300, 350, 80, 10)
     for solution in ND_solutions:
         print("\n", str(solution))
 
@@ -62,15 +62,10 @@ if __name__ == '__main__':
 
         problem_instance.calculate_distances()
 
-        Hypervolumes = None
-        if sys.argv[3] == "MMOEASA":
-            with open(f"solomon_{len(problem_instance.nodes) - 1}/hypervolumes.json") as json_file:
-                Hypervolumes = json.load(json_file)[problem_instance.name]
-
         if sys.argv[1].upper() == "MMOEASA":
-            execute_MMOEASA(problem_instance, Hypervolumes=Hypervolumes)
+            execute_MMOEASA(problem_instance)
         elif sys.argv[1].upper() == "OMBUKI":
-            execute_Ombuki(problem_instance, Hypervolumes=Hypervolumes)
+            execute_Ombuki(problem_instance)
         else:
             exc = ValueError(f"Algorithm \"{sys.argv[1]}\" was not recognised")
             raise exc

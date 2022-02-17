@@ -1,4 +1,5 @@
 import re
+import json
 from pathlib import Path
 from node import Node
 from problemInstance import ProblemInstance
@@ -20,6 +21,9 @@ def open_problem_instance(filename: str, acceptance_criterion: str) -> ProblemIn
                         else: # if the current line doesn't contain only two values, it will, instead, always contain seven and lines with seven values represent destinations
                             node = Node(*cur_line)
                             problem_instance.nodes[int(node.number)] = node
+            if acceptance_criterion == "MMOEASA":
+                with open(f"solomon_{len(problem_instance.nodes) - 1}/hypervolumes.json") as json_file:
+                    problem_instance.update_Hypervolumes(*json.load(json_file)[problem_instance.name])
 
         return problem_instance
     except BaseException as e:

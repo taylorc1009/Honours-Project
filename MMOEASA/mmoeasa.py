@@ -148,12 +148,10 @@ def is_nondominated(I: MMOEASASolution, ND: List[MMOEASASolution]) -> bool:
     else:
         return I.feasible
 
-def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float, Hypervolumes: List[float]=None) -> List[Union[MMOEASASolution, OmbukiSolution]]:
+def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float) -> List[Union[MMOEASASolution, OmbukiSolution]]:
     P: List[Union[MMOEASASolution, OmbukiSolution]] = list()
     ND: List[Union[MMOEASASolution, OmbukiSolution]] = list()
     iterations = 0
-    if instance.acceptance_criterion == "MMOEASA":
-        instance.update_Hypervolumes(*Hypervolumes)
 
     prev_ND_id = -1
 

@@ -193,7 +193,7 @@ def mutation_probability(instance: ProblemInstance, solution: Union[OmbukiSoluti
         return mutated_solution if is_nondominated(solution, mutated_solution) else solution
     return solution
 
-def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: int, mutation: int, Hypervolumes: List[float]=None) -> List[Union[OmbukiSolution, MMOEASASolution]]:
+def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: int, mutation: int) -> List[Union[OmbukiSolution, MMOEASASolution]]:
     population: List[Union[OmbukiSolution, MMOEASASolution]] = list()
 
     num_greedy_solutions = int(round(float(population_size * GREEDY_PERCENT)))
@@ -213,9 +213,6 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         random_solution.calculate_nodes_time_windows(instance)
         random_solution.objective_function(instance)
         population.insert(i, random_solution)
-
-    if instance.acceptance_criterion == "MMOEASA":
-        instance.update_Hypervolumes(*Hypervolumes)
 
     for _ in range(0, generation_span):
         winning_parent = selection_tournament(instance, population)
