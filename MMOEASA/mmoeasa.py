@@ -47,28 +47,6 @@ def TWIH_initialiser(instance: ProblemInstance) -> Union[MMOEASASolution, Ombuki
 
     return solution
 
-def TWIH_ref_point(instance: ProblemInstance) -> Tuple[float, float, float]:
-    solution = TWIH(instance)
-    minimum_distance, maximum_distance, minimum_cargo, maximum_cargo = INFINITY, 0, INFINITY, 0
-
-    solution.calculate_length_of_routes(instance)
-
-    solution.total_distance = sum([vehicle.route_distance for vehicle in solution.vehicles])
-
-    for vehicle in solution.vehicles:
-        if vehicle.route_distance < minimum_distance:
-            minimum_distance = vehicle.route_distance
-        if vehicle.route_distance > maximum_distance:
-            maximum_distance = vehicle.route_distance
-        if vehicle.current_capacity < minimum_cargo:
-            minimum_cargo = vehicle.current_capacity
-        if vehicle.current_capacity > maximum_cargo:
-            maximum_cargo = vehicle.current_capacity
-    solution.distance_unbalance = maximum_distance - minimum_distance
-    solution.cargo_unbalance = maximum_cargo - minimum_cargo
-
-    return solution.total_distance * 2, solution.distance_unbalance * 2, solution.cargo_unbalance * 2
-
 def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int, TC: int) -> float:
     jump_temperatures = (T_max - T_min) / float(p - 1) if p > 1 else 0.0
     T_2 = T_max - float(i) * jump_temperatures

@@ -2,14 +2,13 @@ import sys
 import os
 from problemInstance import ProblemInstance
 from data import open_problem_instance
-from MMOEASA.mmoeasa import MMOEASA, TWIH_ref_point
-from MMOEASA.evaluation import calculate_median_Hypervolumes
+from MMOEASA.mmoeasa import MMOEASA
 from MMOEASA.constants import POPULATION_SIZE
 from Ombuki.ombuki import Ombuki
+from evaluation import calculate_area
 
 def execute_MMOEASA(problem_instance: ProblemInstance) -> None:
     num_customers = len(problem_instance.nodes) - 1
-    
     TC = 0 # termination condition = the number of iterations to perform
     if num_customers == 25:
         TC = 100000
@@ -19,14 +18,15 @@ def execute_MMOEASA(problem_instance: ProblemInstance) -> None:
         TC = 2000
 
     ND_solutions = MMOEASA(problem_instance, POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0) # TODO: try changing the numerical parameters to command line arguments and experiment with them
-    for solution in ND_solutions:
-        print("\n", str(solution))
-    print(calculate_median_Hypervolumes(ND_solutions, TWIH_ref_point(problem_instance))) # TODO: currently, the TWIH usually has a cargo unbalance of 20 and the ND_solutions usually have as low as 90; therefore, TWIH_ref_point's Hypervolume may need to be multiplied by a higher value
+    #for solution in ND_solutions:
+        #print("\n", str(solution))
+    return ND_solutions
 
 def execute_Ombuki(problem_instance: ProblemInstance) -> None:
     ND_solutions = Ombuki(problem_instance, 300, 350, 80, 10)
-    for solution in ND_solutions:
-        print("\n", str(solution))
+    #for solution in ND_solutions:
+        #print("\n", str(solution))
+    return ND_solutions
 
 if __name__ == '__main__':
     if not len(sys.argv) > 1:
@@ -60,10 +60,13 @@ if __name__ == '__main__':
 
         problem_instance.calculate_distances()
 
+        nondominated_set = None
         if sys.argv[1].upper() == "MMOEASA":
-            execute_MMOEASA(problem_instance)
+            nondominated_set = execute_MMOEASA(problem_instance)
         elif sys.argv[1].upper() == "OMBUKI":
-            execute_Ombuki(problem_instance)
+            nondominated_set = execute_Ombuki(problem_instance)
         else:
             exc = ValueError(f"Algorithm \"{sys.argv[1]}\" was not recognised")
             raise exc
+
+        calculate_area(problem_instance, nondominated_set)
