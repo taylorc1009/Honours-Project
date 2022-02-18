@@ -157,7 +157,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
 
                 child_dominated, nondominated = False, False
                 if instance.acceptance_criterion == "Ombuki":
-                    child_dominated = ombuki_is_nondominated(I, I_c) if I_c.feasible else True
+                    child_dominated = ombuki_is_nondominated(I, I_c) if I.feasible else True
                     if child_dominated or (not len(ND) and I_c.feasible):
                         P[i] = I_c
                         nondominated = is_nondominated_by_any(ND, P[i]) if len(ND) else I_c.feasible
