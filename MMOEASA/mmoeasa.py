@@ -183,7 +183,10 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                     P[i].T *= P[i].T_cooling
             iterations += 1
             if not iterations % (TC / 10):
-                print(f"{iterations=}, {P[0].T=}, time={round(time.time() - start, 1)}s")
+                if instance.acceptance_criterion == "MMOEASA":
+                    print(f"{iterations=}, {P[0].T=}, time={round(time.time() - start, 1)}s")
+                else:
+                    print(f"{iterations=}, time={round(time.time() - start, 1)}s")
 
         if instance.acceptance_criterion == "MMOEASA":
             current_multi_start += 1
