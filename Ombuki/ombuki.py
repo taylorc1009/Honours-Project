@@ -1,5 +1,6 @@
 import copy
 import random
+import time
 from typing import List, Union
 from Ombuki.operators import crossover, mutation
 from mmoeasaSolution import MMOEASASolution
@@ -69,7 +70,7 @@ def generate_greedy_solution(instance: ProblemInstance) -> Union[OmbukiSolution,
 
 def pareto_rank(instance: ProblemInstance, population: List[Union[OmbukiSolution, MMOEASASolution]]) -> None:
     curr_rank = 1
-    unranked_solutions = list(arange(0, len(population)))
+    unranked_solutions = list(range(0, len(population)))
 
     while unranked_solutions:
         could_assign_rank = False
@@ -214,6 +215,7 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         random_solution.objective_function(instance)
         population.insert(i, random_solution)
 
+    start = time.time()
     for _ in range(0, generation_span):
         winning_parent = selection_tournament(instance, population)
         for i, solution in enumerate(population):
@@ -238,6 +240,8 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
             if child_dominated:
                 print(f"solution {i} dominated")
         pareto_rank(instance, population)
+        if not _ % (generation_span / 10):
+            print(f"iterations={_}, time={round(time.time() - start, 1)}")
 
     # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
     nondominated_set = list()
