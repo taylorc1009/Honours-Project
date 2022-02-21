@@ -1,5 +1,8 @@
 import sys
 import os
+from typing import List, Union
+from mmoeasaSolution import MMOEASASolution
+from ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
 from data import open_problem_instance
 from MMOEASA.mmoeasa import MMOEASA
@@ -7,7 +10,7 @@ from MMOEASA.constants import POPULATION_SIZE
 from Ombuki.ombuki import Ombuki
 from evaluation import calculate_area
 
-def execute_MMOEASA(problem_instance: ProblemInstance) -> None:
+def execute_MMOEASA(problem_instance: ProblemInstance) -> List[Union[MMOEASASolution, OmbukiSolution]]:
     num_customers = len(problem_instance.nodes) - 1
     TC = 0 # termination condition = the number of iterations to perform
     if num_customers == 25:
@@ -17,16 +20,16 @@ def execute_MMOEASA(problem_instance: ProblemInstance) -> None:
     elif num_customers == 100:
         TC = 2000
 
-    ND_solutions = MMOEASA(problem_instance, POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0) # TODO: try changing the numerical parameters to command line arguments and experiment with them
-    #for solution in ND_solutions:
+    nondominated_solutions = MMOEASA(problem_instance, POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0) # TODO: try changing the numerical parameters to command line arguments and experiment with them
+    #for solution in nondominated_solutions:
         #print("\n", str(solution))
-    return ND_solutions
+    return nondominated_solutions
 
-def execute_Ombuki(problem_instance: ProblemInstance) -> None:
-    ND_solutions = Ombuki(problem_instance, 300, 350, 80, 10)
-    #for solution in ND_solutions:
+def execute_Ombuki(problem_instance: ProblemInstance) -> List[Union[OmbukiSolution, MMOEASASolution]]:
+    nondominated_solutions = Ombuki(problem_instance, 300, 350, 80, 10)
+    #for solution in nondominated_solutions:
         #print("\n", str(solution))
-    return ND_solutions
+    return nondominated_solutions
 
 if __name__ == '__main__':
     if not len(sys.argv) > 1:
