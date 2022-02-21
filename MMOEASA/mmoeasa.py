@@ -1,9 +1,9 @@
 import copy
 import time
-from MMOEASA.auxiliaries import rand, Child_dominates
+from MMOEASA.auxiliaries import rand, is_nondominated, is_nondominated_by_any, ombuki_is_nondominated_by_any
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
-from MMOEASA.constants import MAX_SIMULTANEOUS_MUTATIONS, INFINITY
-from Ombuki.auxiliaries import is_nondominated as ombuki_is_nondominated, is_nondominated_by_any
+from MMOEASA.constants import MAX_SIMULTANEOUS_MUTATIONS
+from Ombuki.auxiliaries import is_nondominated as ombuki_is_nondominated
 from mmoeasaSolution import MMOEASASolution
 from ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
@@ -104,7 +104,7 @@ def Euclidean_distance_dispersion(instance: ProblemInstance, x1: float, y1: floa
     return sqrt(((x2 - x1) / 2 * instance.Hypervolume_total_distance) ** 2 + ((y2 - y1) / 2 * instance.Hypervolume_cargo_unbalance) ** 2)
 
 def MO_Metropolis(instance: ProblemInstance, Parent: MMOEASASolution, Child: MMOEASASolution, T: float) -> Tuple[MMOEASASolution, bool]:  # TODO: change back to " -> MMOEASASolution" return type once debugging of MO_Metropolis has finished
-    if Child_dominates(Parent, Child):
+    if is_nondominated(Parent, Child):
         return Child, True
     elif T <= 0.00001:
         return Parent, False
@@ -119,19 +119,10 @@ def MO_Metropolis(instance: ProblemInstance, Parent: MMOEASASolution, Child: MMO
         else:
             return Parent, False
 
-def is_nondominated(I: MMOEASASolution, ND: List[MMOEASASolution]) -> bool:
-    if ND:
-        nondominated = ND[-1] # the only non-dominated solution we need to check is the solution at the end of the non-dominated set; the last non-dominated solution will dominate every preceding solution
-        return (I.total_distance < nondominated.total_distance and I.cargo_unbalance <= nondominated.cargo_unbalance) or (I.total_distance <= nondominated.total_distance and I.cargo_unbalance < nondominated.cargo_unbalance)
-    else:
-        return I.feasible
-
 def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float) -> List[Union[MMOEASASolution, OmbukiSolution]]:
     P: List[Union[MMOEASASolution, OmbukiSolution]] = list()
     ND: List[Union[MMOEASASolution, OmbukiSolution]] = list()
     iterations = 0
-
-    prev_ND_id = -1
 
     TWIH_solution = TWIH_initialiser(instance)
     for i in range(p):
@@ -155,29 +146,24 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 for _ in range(0, rand(1, MAX_SIMULTANEOUS_MUTATIONS)):
                     I_c = Mutation(instance, I_c, P_mutation, I_c is I)
 
-                child_dominated, nondominated = False, False
+                child_dominated, dominated_any = False, False
                 if instance.acceptance_criterion == "Ombuki":
-                    child_dominated = ombuki_is_nondominated(I, I_c) if I.feasible else True
-                    if child_dominated or (not len(ND) and I_c.feasible):
+                    child_dominated = ombuki_is_nondominated(I, I_c)
+                    if child_dominated or (not len(ND) and I_c.feasible) or not P[i].feasible:
                         P[i] = I_c
-                        nondominated = is_nondominated_by_any(ND, P[i]) if len(ND) else I_c.feasible
+                        dominated_any = ombuki_is_nondominated_by_any(ND, P[i]) if len(ND) else I_c.feasible
                 else:
                     P[i], child_dominated = MO_Metropolis(instance, I, I_c, I.T)
                     if child_dominated:
-                        nondominated = is_nondominated(P[i], ND)
+                        dominated_any = is_nondominated_by_any(ND, P[i]) if len(ND) else I_c.feasible
 
-                if nondominated:
-                    if len(ND) >= p:
-                        ND.pop(0)
+                if dominated_any or (child_dominated and len(ND) < p):
                     ND.append(copy.deepcopy(P[i]))
-                    print(f"{len(ND)=}, ND={i}, {iterations=}, time={round(time.time() - start, 1)}s")
-                    prev_ND_id = i
+                    print(f"{len(ND)=}, {iterations=}, time={round(time.time() - start, 1)}s")
 
                     """should_write = False # use the debugger to edit the value in "should_write" if you'd like a solution to be written to a CSV
                     if should_write:
                         MMOEASA_write_solution_for_validation(P[i], instance.capacity_of_vehicles)"""
-                elif child_dominated and i == prev_ND_id:
-                    print(f"ND solution ({prev_ND_id}) changed in P ({iterations=}, time={round(time.time() - start, 1)}s)")
 
                 if instance.acceptance_criterion == "MMOEASA":
                     P[i].T *= P[i].T_cooling

@@ -8,8 +8,33 @@ from vehicle import Vehicle
 from destination import Destination
 import copy
 
-def Child_dominates(Parent: MMOEASASolution, Child: MMOEASASolution) -> bool:
+def is_nondominated(Parent: MMOEASASolution, Child: MMOEASASolution) -> bool:
     return (Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance) or (Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance)
+
+def is_nondominated_by_any(nondominated_set: List[MMOEASASolution], subject_solution: MMOEASASolution) -> bool:
+    i = 0
+    for solution in nondominated_set:
+        if not is_nondominated(solution, subject_solution):
+            nondominated_set[i] = solution
+            i += 1
+    if i != len(nondominated_set):
+        del nondominated_set[i:]
+        return True
+    return False
+
+def ombuki_is_nondominated(old_solution: OmbukiSolution, new_solution: OmbukiSolution) -> bool:
+    return (new_solution.total_distance < old_solution.total_distance and new_solution.num_vehicles <= old_solution.num_vehicles) or (new_solution.total_distance <= old_solution.total_distance and new_solution.num_vehicles < old_solution.num_vehicles)
+
+def ombuki_is_nondominated_by_any(nondominated_set: List[OmbukiSolution], subject_solution: OmbukiSolution) -> bool:
+    i = 0
+    for solution in nondominated_set:
+        if not ombuki_is_nondominated(solution, subject_solution):
+            nondominated_set[i] = solution
+            i += 1
+    if i != len(nondominated_set):
+        del nondominated_set[i:]
+        return True
+    return False
 
 def rand(start: int, end: int, exclude_values: List[int]=None) -> int:
     # '+ 1' to make the random number generator inclusive of the "end" value

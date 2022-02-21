@@ -3,7 +3,6 @@ from constants import INT_MAX
 from typing import Set, List, Union
 from mmoeasaSolution import MMOEASASolution
 from ombukiSolution import OmbukiSolution
-from MMOEASA.auxiliaries import Child_dominates as mmoeasa_is_nondominated
 
 def rand(start: int, end: int, exclude_values: Set[int]=None) -> int:
     # '+ 1' to make the random number generator inclusive of the "end" value
@@ -22,6 +21,9 @@ def is_nondominated_by_any(population: List[OmbukiSolution], subject_solution: U
         if not i == (subject_solution if is_int else subject_solution.id) and not is_nondominated(solution, population[subject_solution] if is_int else subject_solution):
             return False
     return True
+
+def mmoeasa_is_nondominated(Parent: MMOEASASolution, Child: MMOEASASolution) -> bool:
+    return (Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance) or (Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance)
 
 def mmoeasa_is_nondominated_by_any(population: List[MMOEASASolution], subject_solution: int) -> bool:
     for i, solution in enumerate(population):

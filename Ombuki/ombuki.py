@@ -8,12 +8,11 @@ from problemInstance import ProblemInstance
 from ombukiSolution import OmbukiSolution
 from vehicle import Vehicle
 from destination import Destination
-from Ombuki.auxiliaries import rand, is_nondominated, is_nondominated_by_any, mmoeasa_is_nondominated_by_any
+from Ombuki.auxiliaries import rand, is_nondominated, is_nondominated_by_any, mmoeasa_is_nondominated, mmoeasa_is_nondominated_by_any
 from numpy import arange, round, random
 from Ombuki.constants import TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY, GREEDY_PERCENT
 from constants import INT_MAX
 from MMOEASA.mmoeasa import MO_Metropolis
-from MMOEASA.auxiliaries import Child_dominates as mmoeasa_is_nondominated
 
 def generate_random_solution(instance: ProblemInstance) -> Union[OmbukiSolution, MMOEASASolution]:
     solution = OmbukiSolution(_id=0, vehicles=list()) if instance.acceptance_criterion == "Ombuki" else MMOEASASolution(_id=0, vehicles=list())
@@ -240,8 +239,8 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
             if child_dominated:
                 print(f"solution {i} dominated")
         pareto_rank(instance, population)
-        if not _ % (generation_span / 10) or _ == generation_span - 1:
-            print(f"iterations={_}, time={round(time.time() - start, 1)}s")
+        if not _ % (generation_span / 10) - 1:
+            print(f"iterations={_ + 1}, time={round(time.time() - start, 1)}s")
 
     # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
     nondominated_set = list()

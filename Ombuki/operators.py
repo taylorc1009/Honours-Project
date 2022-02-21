@@ -2,7 +2,7 @@ import copy
 from random import shuffle
 from typing import Dict, List, Union
 from Ombuki.constants import MUTATION_REVERSAL_LENGTH
-from Ombuki.auxiliaries import rand, is_nondominated
+from Ombuki.auxiliaries import rand, is_nondominated, mmoeasa_is_nondominated
 from ombukiSolution import OmbukiSolution
 from mmoeasaSolution import MMOEASASolution
 from threading import Thread, currentThread
@@ -10,7 +10,6 @@ from destination import Destination
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 from constants import INT_MAX
-from MMOEASA.mmoeasa import Child_dominates as mmoeasa_is_nondominated
 
 def crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], parent_vehicle: Vehicle, result: Dict[str, Union[OmbukiSolution, MMOEASASolution]]) -> None:
     crossover_solution = copy.deepcopy(solution)
