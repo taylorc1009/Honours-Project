@@ -45,10 +45,10 @@ def MMOEASA_write_solution_for_validation(solution: MMOEASASolution, max_capacit
 
 def write_area(area: float, algorithm: str, acceptance_criterion: str) -> None:
     if algorithm.upper() == acceptance_criterion.upper():
-        filename = algorithm.lower()
+        filename = f"{algorithm.lower()}.csv"
     else:
-        filename = f"{algorithm.lower()}-{acceptance_criterion.lower()[:1]}"
+        filename = f"{algorithm.lower()}-{acceptance_criterion.lower()[:1]}.csv"
 
-    relative_path = str(Path(__file__).parent.resolve()) + filename
+    relative_path = str(Path(__file__).parent.resolve()) + f"\\{filename}"
     with open(relative_path, 'a+') as csv:
-        csv.write(str(area))
+        csv.write(f"{str(area)}\n")
