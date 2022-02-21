@@ -72,4 +72,4 @@ if __name__ == '__main__':
             exc = ValueError(f"Algorithm \"{sys.argv[1]}\" was not recognised")
             raise exc
 
-        calculate_area(problem_instance, nondominated_set)
+        calculate_area(problem_instance, nondominated_set, sys.argv[1])
