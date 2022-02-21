@@ -17,6 +17,6 @@ def calculate_median_Hypervolumes(ND_solutions: List[OmbukiSolution], TWIH_Hyper
 
     for ND in sorted([solution for solution in ND_solutions], key=lambda x: x.total_distance):
         area += (prev_TD - ND.total_distance) * (ref_NV - ND.num_vehicles)
-        prev_TD, prev_DU, prev_CU = ND.total_distance, ND.distance_unbalance, ND.cargo_unbalance
+        prev_TD, prev_NV = ND.total_distance, ND.num_vehicles
 
     return area / (ref_TD * ref_NV)
