@@ -191,5 +191,9 @@ dkms.conf
 # PyCharm files
 /.idea
 
-# CSV output for external validation
+# CSV outputs
 solution.csv
+mmoeasa.csv
+ombuki.csv
+mmoeasa-o.csv
+ombuki-m.csv
