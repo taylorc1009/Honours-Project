@@ -47,7 +47,7 @@ def write_area(area: float, algorithm: str, acceptance_criterion: str) -> None:
     if algorithm.upper() == acceptance_criterion.upper():
         filename = f"{algorithm.lower()}.csv"
     else:
-        filename = f"{algorithm.lower()}-{acceptance_criterion.lower()[:1]}.csv"
+        filename = f"{algorithm.lower()}-{acceptance_criterion.lower()[0]}.csv"
 
     relative_path = str(Path(__file__).parent.resolve()) + f"\\{filename}"
     with open(relative_path, 'a+') as csv:
