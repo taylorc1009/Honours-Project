@@ -24,7 +24,7 @@ def TWIH_ref_point(instance: ProblemInstance) -> Tuple[float, float, float]:
     solution.distance_unbalance = maximum_distance - minimum_distance
     solution.cargo_unbalance = maximum_cargo - minimum_cargo
 
-    return solution.total_distance * 2, solution.distance_unbalance * 2, solution.cargo_unbalance * 2
+    return solution.total_distance * 10, solution.distance_unbalance * 10, solution.cargo_unbalance * 10
 
 def calculate_median_Hypervolumes(ND_solutions: List[MMOEASASolution], TWIH_Hypervolumes: Tuple[float, float, float]) -> float:
     prev_TD, prev_DU, prev_CU = ref_TD, ref_DU, ref_CU = TWIH_Hypervolumes[0], TWIH_Hypervolumes[1], TWIH_Hypervolumes[2]
