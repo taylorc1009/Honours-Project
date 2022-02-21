@@ -14,11 +14,11 @@ def execute_MMOEASA(problem_instance: ProblemInstance) -> List[Union[MMOEASASolu
     num_customers = len(problem_instance.nodes) - 1
     TC = 0 # termination condition = the number of iterations to perform
     if num_customers == 25:
-        TC = 100000
+        TC = 10000
     elif num_customers == 50:
-        TC = 50000
+        TC = 5000
     elif num_customers == 100:
-        TC = 2000
+        TC = 200
 
     nondominated_solutions = MMOEASA(problem_instance, POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0) # TODO: try changing the numerical parameters to command line arguments and experiment with them
 

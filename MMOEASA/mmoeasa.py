@@ -135,7 +135,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
 
     start = time.time()
     current_multi_start = 0
-    while current_multi_start < MS and not iterations >= TC:
+    while current_multi_start < MS:
         if instance.acceptance_criterion == "MMOEASA":
             for i in range(len(P)):
                 P[i].T = P[i].T_default
@@ -174,8 +174,9 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 else:
                     print(f"{iterations=}, time={round(time.time() - start, 1)}s")
 
-        if instance.acceptance_criterion == "MMOEASA":
-            current_multi_start += 1
-        if iterations < TC:
-            print("multi-start occurred")
+        #if instance.acceptance_criterion == "MMOEASA":
+        current_multi_start += 1
+        iterations = 0
+        #if iterations < TC:
+        print("multi-start occurred")
     return ND
