@@ -143,21 +143,21 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
 
         while (instance.acceptance_criterion == "MMOEASA" and P[0].T > T_stop and not iterations >= TC) or not iterations >= TC:
             for i, I in enumerate(P):
-                selection_tournament = rand(1, p * (2 if len(ND) else 1))
-                I_c = Crossover(instance, I, P if selection_tournament <= p else ND, P_crossover)
+                #selection_tournament = rand(1, p * (2 if len(ND) else 1))
+                I_c = Crossover(instance, I, P, P_crossover)#P if selection_tournament <= p else ND, P_crossover)
                 for _ in range(0, rand(1, MAX_SIMULTANEOUS_MUTATIONS)):
                     I_c = Mutation(instance, I_c, P_mutation, I_c is I)
 
                 child_dominated, dominated_any = False, False
                 if instance.acceptance_criterion == "Ombuki":
                     child_dominated = ombuki_is_nondominated(I, I_c)
-                    if child_dominated or (not len(ND) and I_c.feasible) or not P[i].feasible:
+                    if child_dominated or not P[i].feasible:
                         P[i] = I_c
-                        dominated_any = ombuki_is_nondominated_by_any(ND, P[i]) if len(ND) else I_c.feasible
+                        dominated_any = ombuki_is_nondominated_by_any(ND, P[i])
                 else:
                     P[i], child_dominated = MO_Metropolis(instance, I, I_c, I.T)
                     if child_dominated:
-                        dominated_any = is_nondominated_by_any(ND, P[i]) if len(ND) else I_c.feasible
+                        dominated_any = is_nondominated_by_any(ND, P[i])
 
                 if dominated_any or (child_dominated and len(ND) < p):
                     ND.append(copy.deepcopy(P[i]))
