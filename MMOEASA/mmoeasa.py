@@ -143,7 +143,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
 
         while (instance.acceptance_criterion == "MMOEASA" and P[0].T > T_stop and not iterations >= TC) or not iterations >= TC:
             for i, I in enumerate(P):
-                #selection_tournament = rand(1, p * (2 if len(ND) else 1))
+                #selection_tournament = rand(1, p * (2 if len(ND) > 1 else 1))
                 I_c = Crossover(instance, I, P, P_crossover)#P if selection_tournament <= p else ND, P_crossover)
                 for _ in range(0, rand(1, MAX_SIMULTANEOUS_MUTATIONS)):
                     I_c = Mutation(instance, I_c, P_mutation, I_c is I)
