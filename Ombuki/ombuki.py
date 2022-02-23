@@ -3,9 +3,9 @@ import random
 import time
 from typing import List, Union
 from Ombuki.operators import crossover, mutation
-from mmoeasaSolution import MMOEASASolution
+from MMOEASA.mmoeasaSolution import MMOEASASolution
 from problemInstance import ProblemInstance
-from ombukiSolution import OmbukiSolution
+from Ombuki.ombukiSolution import OmbukiSolution
 from vehicle import Vehicle
 from destination import Destination
 from Ombuki.auxiliaries import rand, is_nondominated, is_nondominated_by_any, mmoeasa_is_nondominated, mmoeasa_is_nondominated_by_any

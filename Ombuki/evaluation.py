@@ -1,4 +1,4 @@
-from ombukiSolution import OmbukiSolution
+from Ombuki.ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
 from MMOEASA.mmoeasa import TWIH
 from typing import Tuple, List

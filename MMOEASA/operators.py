@@ -1,7 +1,7 @@
 import copy
 from MMOEASA.constants import INFINITY
-from mmoeasaSolution import MMOEASASolution
-from ombukiSolution import OmbukiSolution
+from MMOEASA.mmoeasaSolution import MMOEASASolution
+from Ombuki.ombukiSolution import OmbukiSolution
 from MMOEASA.auxiliaries import insert_unvisited_node, rand
 from problemInstance import ProblemInstance
 from typing import List, Tuple, Set, Union

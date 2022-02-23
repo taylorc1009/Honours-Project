@@ -1,7 +1,7 @@
 from problemInstance import ProblemInstance
 from MMOEASA.mmoeasa import TWIH
 from MMOEASA.constants import INFINITY
-from mmoeasaSolution import MMOEASASolution
+from MMOEASA.mmoeasaSolution import MMOEASASolution
 from typing import Tuple, List
 
 def TWIH_ref_point(instance: ProblemInstance) -> Tuple[float, float, float]:

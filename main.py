@@ -1,8 +1,8 @@
 import sys
 import os
 from typing import List, Union
-from mmoeasaSolution import MMOEASASolution
-from ombukiSolution import OmbukiSolution
+from MMOEASA.mmoeasaSolution import MMOEASASolution
+from Ombuki.ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
 from data import open_problem_instance
 from MMOEASA.mmoeasa import MMOEASA

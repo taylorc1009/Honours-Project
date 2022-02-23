@@ -1,8 +1,8 @@
 from numpy import random
 from constants import INT_MAX
 from typing import Set, List, Union
-from mmoeasaSolution import MMOEASASolution
-from ombukiSolution import OmbukiSolution
+from MMOEASA.mmoeasaSolution import MMOEASASolution
+from Ombuki.ombukiSolution import OmbukiSolution
 
 def rand(start: int, end: int, exclude_values: Set[int]=None) -> int:
     # '+ 1' to make the random number generator inclusive of the "end" value

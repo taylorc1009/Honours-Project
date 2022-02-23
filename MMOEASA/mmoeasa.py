@@ -1,19 +1,18 @@
 import copy
-import random
 import time
 from MMOEASA.auxiliaries import rand, is_nondominated, is_nondominated_by_any, ombuki_is_nondominated_by_any
 from MMOEASA.operators import Mutation1, Mutation2, Mutation3, Mutation4, Mutation5, Mutation6, Mutation7, Mutation8, Mutation9, Mutation10, Crossover1
 from MMOEASA.constants import MAX_SIMULTANEOUS_MUTATIONS
 from Ombuki.auxiliaries import is_nondominated as ombuki_is_nondominated
-from mmoeasaSolution import MMOEASASolution
-from ombukiSolution import OmbukiSolution
+from MMOEASA.mmoeasaSolution import MMOEASASolution
+from Ombuki.ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
 from destination import Destination
 from vehicle import Vehicle
 from constants import INT_MAX
 from typing import List, Tuple, Union
 from numpy import sqrt, exp
-from data import MMOEASA_write_solution_for_validation
+
 
 def TWIH(instance: ProblemInstance) -> Union[MMOEASASolution, OmbukiSolution]:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)

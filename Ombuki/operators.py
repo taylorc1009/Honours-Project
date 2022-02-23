@@ -3,8 +3,8 @@ from random import shuffle
 from typing import Dict, List, Union
 from Ombuki.constants import MUTATION_REVERSAL_LENGTH
 from Ombuki.auxiliaries import rand, is_nondominated, mmoeasa_is_nondominated
-from ombukiSolution import OmbukiSolution
-from mmoeasaSolution import MMOEASASolution
+from Ombuki.ombukiSolution import OmbukiSolution
+from MMOEASA.mmoeasaSolution import MMOEASASolution
 from threading import Thread, currentThread
 from destination import Destination
 from problemInstance import ProblemInstance

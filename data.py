@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 from node import Node
 from problemInstance import ProblemInstance
-from mmoeasaSolution import MMOEASASolution
+from MMOEASA.mmoeasaSolution import MMOEASASolution
 
 def open_problem_instance(filename: str, acceptance_criterion: str) -> ProblemInstance:
     try:

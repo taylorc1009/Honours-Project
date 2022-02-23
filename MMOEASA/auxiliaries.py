@@ -1,8 +1,8 @@
 from typing import List, Union
 from numpy import random
 from constants import INT_MAX
-from mmoeasaSolution import MMOEASASolution
-from ombukiSolution import OmbukiSolution
+from MMOEASA.mmoeasaSolution import MMOEASASolution
+from Ombuki.ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 from destination import Destination
