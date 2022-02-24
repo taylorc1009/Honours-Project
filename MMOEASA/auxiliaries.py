@@ -50,29 +50,21 @@ def insert_unvisited_node(I: Union[MMOEASASolution, OmbukiSolution], instance: P
     infeasible_vehicle, lowest_delay = -1, float(INT_MAX)
 
     while vehicle < len(I.vehicles) and not inserted:
-        customers_on_route = I.vehicles[vehicle].get_num_of_customers_visited()
-        final_customer = I.vehicles[vehicle].destinations[customers_on_route].node.number
-        vehicle_backup = copy.deepcopy(I.vehicles[vehicle])
+        if I.vehicles[vehicle].current_capacity + instance.nodes[node].demand < instance.capacity_of_vehicles:
+            position = I.vehicles[vehicle].get_num_of_customers_visited() + 1
+            I.vehicles[vehicle].destinations.insert(position, Destination(instance.nodes[node]))
+            I.vehicles[vehicle].calculate_destination_time_window(instance, position - 1, position)
 
-        I.vehicles[vehicle].destinations[customers_on_route + 1].node = instance.nodes[node]
-        I.vehicles[vehicle].current_capacity += instance.nodes[node].demand
-
-        I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time = I.vehicles[vehicle].destinations[customers_on_route].departure_time + instance.get_distance(final_customer, node)
-        I.vehicles[vehicle].destinations[customers_on_route + 1].wait_time = 0.0
-        if I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time < instance.nodes[node].ready_time:
-            I.vehicles[vehicle].destinations[customers_on_route + 1].wait_time = instance.nodes[node].ready_time - I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time
-            I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time = instance.nodes[node].ready_time
-
-        if I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time <= instance.nodes[node].due_date and I.vehicles[vehicle].current_capacity <= instance.capacity_of_vehicles:
-            I.vehicles[vehicle].destinations[customers_on_route + 1].departure_time = instance.nodes[node].service_duration + I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time
-            I.calculate_length_of_routes(instance)
-            inserted = True
-        else:
-            arrival_delay = I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time - instance.nodes[node].due_date
-            if not len(I.vehicles) < instance.amount_of_vehicles and arrival_delay < lowest_delay and not I.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
+            if I.vehicles[vehicle].destinations[position].arrival_time <= instance.nodes[node].due_date:
+                inserted = True
+                break
+            elif not len(I.vehicles) < instance.amount_of_vehicles and I.vehicles[vehicle].destinations[position].wait_time < lowest_delay:
                 infeasible_vehicle = vehicle
-                lowest_delay = arrival_delay
-            I.vehicles[vehicle] = vehicle_backup
+                lowest_delay = I.vehicles[vehicle].destinations[position].wait_time
+
+            I.vehicles[vehicle].destinations.pop(position)
+            I.vehicles[vehicle].calculate_destination_time_window(instance, position - 1, position)
+        if not inserted:
             vehicle += 1
 
     if not inserted: # in this case, the unvisited node doesn't fit into any of the existing routes, so it needs a new vehicle
@@ -83,24 +75,9 @@ def insert_unvisited_node(I: Union[MMOEASASolution, OmbukiSolution], instance: P
             I.vehicles[infeasible_vehicle].destinations.insert(len(I.vehicles[infeasible_vehicle].destinations) - 1, Destination(node=instance.nodes[node]))
             vehicle = infeasible_vehicle
 
-        # these seem unnecessary as the crossover operator invokes all of these methods once it's finished inserting all of the unvisited nodes, but they're needed so that an other invocation of "insert_unvisited_nodes()" will have the correct time windows when determining where to insert an unvisited node
-        I.vehicles[vehicle].calculate_destinations_time_windows(instance)
-        I.vehicles[vehicle].calculate_vehicle_load(instance)
-        I.vehicles[vehicle].calculate_length_of_route(instance)
-    else:
-        I.vehicles[vehicle] = reinitialize_return_to_depot(I.vehicles[vehicle], instance)
+    # these seem unnecessary as the crossover operator invokes all of these methods once it's finished inserting all of the unvisited nodes, but they're needed so that an other invocation of "insert_unvisited_nodes()" will have the correct time windows when determining where to insert an unvisited node
+    I.vehicles[vehicle].calculate_destinations_time_windows(instance)
+    I.vehicles[vehicle].calculate_vehicle_load(instance)
+    I.vehicles[vehicle].calculate_length_of_route(instance)
 
     return I
-
-def reinitialize_return_to_depot(vehicle: Vehicle, instance: ProblemInstance) -> Vehicle:
-    if not vehicle.destinations[-1].node.number == 0:
-        vehicle.destinations.append(Destination(node=instance.nodes[0]))
-
-    customers_on_route = vehicle.get_num_of_customers_visited()
-    final_customer = vehicle.destinations[customers_on_route].node.number
-
-    vehicle.destinations[customers_on_route + 1].arrival_time = vehicle.destinations[customers_on_route + 1].departure_time + instance.get_distance(final_customer, 0)
-    vehicle.destinations[customers_on_route + 1].departure_time = vehicle.destinations[customers_on_route + 1].departure_time + instance.get_distance(final_customer, 0)
-    vehicle.destinations[customers_on_route + 1].wait_time = 0.0
-    
-    return vehicle
