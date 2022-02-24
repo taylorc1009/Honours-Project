@@ -63,15 +63,15 @@ def insert_unvisited_node(I: Union[MMOEASASolution, OmbukiSolution], instance: P
             I.vehicles[vehicle].destinations[customers_on_route + 1].wait_time = instance.nodes[node].ready_time - I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time
             I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time = instance.nodes[node].ready_time
 
-        if I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time <= instance.nodes[node].due_date:
+        if I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time <= instance.nodes[node].due_date and I.vehicles[vehicle].current_capacity <= instance.capacity_of_vehicles:
             I.vehicles[vehicle].destinations[customers_on_route + 1].departure_time = instance.nodes[node].service_duration + I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time
             I.calculate_length_of_routes(instance)
             inserted = True
-        elif I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time > instance.nodes[node].due_date or I.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
+        else:
             arrival_delay = I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time - instance.nodes[node].due_date
             if not len(I.vehicles) < instance.amount_of_vehicles and arrival_delay < lowest_delay and not I.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
                 infeasible_vehicle = vehicle
-                lowest_delay = I.vehicles[vehicle].destinations[customers_on_route + 1].arrival_time - instance.nodes[node].due_date
+                lowest_delay = arrival_delay
             I.vehicles[vehicle] = vehicle_backup
             vehicle += 1
 

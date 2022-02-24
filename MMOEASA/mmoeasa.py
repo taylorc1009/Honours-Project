@@ -13,7 +13,6 @@ from constants import INT_MAX
 from typing import List, Tuple, Union
 from numpy import sqrt, exp
 
-
 def TWIH(instance: ProblemInstance) -> Union[MMOEASASolution, OmbukiSolution]:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
 
