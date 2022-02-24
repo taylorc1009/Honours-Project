@@ -63,7 +63,6 @@ def insert_unvisited_node(I: Union[MMOEASASolution, OmbukiSolution], instance: P
                 lowest_delay = I.vehicles[vehicle].destinations[position].wait_time
 
             I.vehicles[vehicle].destinations.pop(position)
-            I.vehicles[vehicle].calculate_destination_time_window(instance, position - 1, position)
         if not inserted:
             vehicle += 1
 
@@ -75,9 +74,14 @@ def insert_unvisited_node(I: Union[MMOEASASolution, OmbukiSolution], instance: P
             I.vehicles[infeasible_vehicle].destinations.insert(len(I.vehicles[infeasible_vehicle].destinations) - 1, Destination(node=instance.nodes[node]))
             vehicle = infeasible_vehicle
 
-    # these seem unnecessary as the crossover operator invokes all of these methods once it's finished inserting all of the unvisited nodes, but they're needed so that an other invocation of "insert_unvisited_nodes()" will have the correct time windows when determining where to insert an unvisited node
-    I.vehicles[vehicle].calculate_destinations_time_windows(instance)
-    I.vehicles[vehicle].calculate_vehicle_load(instance)
-    I.vehicles[vehicle].calculate_length_of_route(instance)
+        # these seem unnecessary as the crossover operator invokes all of these methods once it's finished inserting all of the unvisited nodes, but they're needed so that an other invocation of "insert_unvisited_nodes()" will have the correct time windows when determining where to insert an unvisited node
+        I.vehicles[vehicle].calculate_destinations_time_windows(instance)
+        I.vehicles[vehicle].calculate_vehicle_load(instance)
+        I.vehicles[vehicle].calculate_length_of_route(instance)
+    else:
+        num_customers = I.vehicles[vehicle].get_num_of_customers_visited()
+        I.vehicles[vehicle].calculate_destination_time_window(instance, num_customers, num_customers + 1)
+        I.vehicles[vehicle].current_capacity += instance.nodes[node].demand
+        I.vehicles[vehicle].route_distance += instance.get_distance(node, 0)
 
     return I
