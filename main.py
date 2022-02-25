@@ -38,27 +38,30 @@ def execute_Ombuki(problem_instance: ProblemInstance) -> List[Union[OmbukiSoluti
 if __name__ == '__main__':
     if not len(sys.argv) in {2, 4} or (len(sys.argv) == 2 and sys.argv[1] not in {"--help", "-h"}):
         print("If you're unsure how to use the application, give the argument -h (--help) for information")
-    elif len(sys.argv) == 2 and sys.argv[1] in {"--help", "-h"}: # if the user gave one of these arguments on the command line then a help message is outputted
-        print(f"Format: main(.py) [ algorithm ] [ problem instance ] [ acceptance criteria ]{os.linesep}{os.linesep}"
-              f"The algorithms and acceptance criteria available to solve the problem are:{os.linesep}"
-              f" - MMOEASA{os.linesep}"
-              f" - Ombuki{os.linesep}{os.linesep}"
-              f"There's multiple types of problems in Solomon's instances, and here's what they are:{os.linesep}"
-              f" - Number of customers:{os.linesep}"
-              f"   - 25 - 25 customers{os.linesep}"
-              f"   - 50 - 50 customers{os.linesep}"
-              f"   - 100 - 100 customers{os.linesep}"
-              f" - Customers' location:{os.linesep}"
-              f"   - C - clustered customers{os.linesep}"
-              f"   - R - uniformly distributed customers{os.linesep}"
-              f"   - RC - a mix of R and C{os.linesep}"
-              f" - Width of deliveries' time windows:{os.linesep}"
-              f"   - 1 - destinations with narrow time windows{os.linesep}"
-              f"   - 2 - destinations with wide time windows{os.linesep}{os.linesep}"
-              f"To execute a problem set, please enter a problem's filename. The details required, and the argument format, are:{os.linesep}"
-              f" - solomon_[ number of customers ]/[ customers' location ][ width of time windows ]XX.txt{os.linesep}"
-              f" - Where XX is the instance number; see the folder \"solomon_[ number of customers ]\" for available instances{os.linesep}{os.linesep}"
-              f"An example command is: \"main.py MMOEASA solomon_100/C101.txt\"")
+    elif sys.argv[1] in {"--help", "-h"}: # if the user gave one of these arguments on the command line then a help message is outputted
+        if len(sys.argv) == 2:
+            print(f"Format: main(.py) [ algorithm ] [ problem instance ] [ acceptance criteria ]{os.linesep}{os.linesep}"
+                  f"The algorithms and acceptance criteria available to solve the problem are:{os.linesep}"
+                  f" - MMOEASA{os.linesep}"
+                  f" - Ombuki{os.linesep}{os.linesep}"
+                  f"There's multiple types of problems in Solomon's instances, and here's what they are:{os.linesep}"
+                  f" - Number of customers:{os.linesep}"
+                  f"   - 25 - 25 customers{os.linesep}"
+                  f"   - 50 - 50 customers{os.linesep}"
+                  f"   - 100 - 100 customers{os.linesep}"
+                  f" - Customers' location:{os.linesep}"
+                  f"   - C - clustered customers{os.linesep}"
+                  f"   - R - uniformly distributed customers{os.linesep}"
+                  f"   - RC - a mix of R and C{os.linesep}"
+                  f" - Width of deliveries' time windows:{os.linesep}"
+                  f"   - 1 - destinations with narrow time windows{os.linesep}"
+                  f"   - 2 - destinations with wide time windows{os.linesep}{os.linesep}"
+                  f"To execute a problem set, please enter a problem's filename. The details required, and the argument format, are:{os.linesep}"
+                  f" - solomon_[ number of customers ]/[ customers' location ][ width of time windows ]XX.txt{os.linesep}"
+                  f" - Where XX is the instance number; see the folder \"solomon_[ number of customers ]\" for available instances{os.linesep}{os.linesep}"
+                  f"An example command is: \"main.py MMOEASA solomon_100/C101.txt\"")
+        else:
+            print("Argument \"-h\"/\"--help\" does not take any arguments")
     else:
         if not sys.argv[3].upper() in {"MMOEASA", "OMBUKI"}:
             exc = ValueError(f"Acceptance criterion \"{sys.argv[1]}\" was not recognised")
