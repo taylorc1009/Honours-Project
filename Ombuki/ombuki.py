@@ -239,8 +239,8 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
             if child_dominated:
                 print(f"solution {i} dominated")
         pareto_rank(instance, population)
-        if not _ % (generation_span / 10) - 1:
-            print(f"iterations={_ + 1}, time={round(time.time() - start, 1)}s")
+        if not float(_) % float((generation_span / 10) - 1):
+            print(f"iterations={_}, time={round(time.time() - start, 1)}s")
 
     # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
     nondominated_set = list()
