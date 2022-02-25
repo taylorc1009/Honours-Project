@@ -36,9 +36,9 @@ def execute_Ombuki(problem_instance: ProblemInstance) -> List[Union[OmbukiSoluti
     return nondominated_solutions
 
 if __name__ == '__main__':
-    if not len(sys.argv) > 1:
+    if not len(sys.argv) in {2, 4} or (len(sys.argv) == 2 and sys.argv[1] not in {"--help", "-h"}):
         print("If you're unsure how to use the application, give the argument -h (--help) for information")
-    elif sys.argv[1] in {"--help", "-h"}: # if the user gave one of these arguments on the command line then a help message is ourputted
+    elif len(sys.argv) == 2 and sys.argv[1] in {"--help", "-h"}: # if the user gave one of these arguments on the command line then a help message is outputted
         print(f"Format: main(.py) [ algorithm ] [ problem instance ] [ acceptance criteria ]{os.linesep}{os.linesep}"
               f"The algorithms and acceptance criteria available to solve the problem are:{os.linesep}"
               f" - MMOEASA{os.linesep}"
@@ -59,7 +59,7 @@ if __name__ == '__main__':
               f" - solomon_[ number of customers ]/[ customers' location ][ width of time windows ]XX.txt{os.linesep}"
               f" - Where XX is the instance number; see the folder \"solomon_[ number of customers ]\" for available instances{os.linesep}{os.linesep}"
               f"An example command is: \"main.py MMOEASA solomon_100/C101.txt\"")
-    elif len(sys.argv) == 4:
+    else:
         if not sys.argv[3].upper() in {"MMOEASA", "OMBUKI"}:
             exc = ValueError(f"Acceptance criterion \"{sys.argv[1]}\" was not recognised")
             raise exc
