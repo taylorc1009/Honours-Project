@@ -15,7 +15,7 @@ class ProblemInstance:
         self.acceptance_criterion: str=str(acceptance_criterion)
 
     def __str__(self) -> str:
-        return f"{self.name}, {self.amount_of_vehicles}, {self.capacity_of_vehicles}, {[(key, str(value)) for key, value in self.nodes.items()]}"
+        return f"ProblemInstance(name={self.name}, amount_of_vehicles={self.amount_of_vehicles}, capacity_of_vehicles={self.capacity_of_vehicles}, {len(self.nodes)=}"#, {[(key, str(value)) for key, value in self.nodes.items()]})"
     
     def calculate_distances(self) -> None:
         n = len(self.nodes)

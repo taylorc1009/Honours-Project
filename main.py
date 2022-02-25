@@ -23,7 +23,7 @@ def execute_MMOEASA(problem_instance: ProblemInstance) -> List[Union[MMOEASASolu
     nondominated_solutions = MMOEASA(problem_instance, POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0) # TODO: try changing the numerical parameters to command line arguments and experiment with them
 
     for solution in nondominated_solutions:
-        print("\n", str(solution))
+        print(os.linesep, str(solution))
 
     return nondominated_solutions
 
@@ -31,7 +31,7 @@ def execute_Ombuki(problem_instance: ProblemInstance) -> List[Union[OmbukiSoluti
     nondominated_solutions = Ombuki(problem_instance, 300, 350, 80, 10)
 
     for solution in nondominated_solutions:
-        print("\n", str(solution))
+        print(os.linesep, str(solution))
 
     return nondominated_solutions
 
@@ -79,4 +79,5 @@ if __name__ == '__main__':
             exc = ValueError(f"Algorithm \"{sys.argv[1]}\" was not recognised")
             raise exc
 
+        print(os.linesep, str(problem_instance))
         calculate_area(problem_instance, nondominated_set, sys.argv[1], sys.argv[3])
