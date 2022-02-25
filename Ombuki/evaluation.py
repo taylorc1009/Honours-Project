@@ -19,4 +19,4 @@ def calculate_median_Hypervolumes(ND_solutions: List[OmbukiSolution], TWIH_Hyper
         area += (prev_TD - ND.total_distance) * (ref_NV - ND.num_vehicles)
         prev_TD, prev_NV = ND.total_distance, ND.num_vehicles
 
-    return area / (ref_TD * ref_NV)
+    return (area / (ref_TD * ref_NV)) * 100

@@ -34,4 +34,4 @@ def calculate_median_Hypervolumes(ND_solutions: List[MMOEASASolution], TWIH_Hype
         area += (prev_TD - ND.total_distance) * (ref_CU - ND.cargo_unbalance)
         prev_TD, prev_DU, prev_CU = ND.total_distance, ND.distance_unbalance, ND.cargo_unbalance
 
-    return area / (ref_TD * ref_CU)
+    return (area / (ref_TD * ref_CU)) * 100

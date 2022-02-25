@@ -14,5 +14,7 @@ def calculate_area(problem_instance: ProblemInstance, nondominated_set: List[Uni
         elif acceptance_criterion.upper() == "OMBUKI":
             area = Ombuki_median_hypervolumes(nondominated_set, Ombuki_ref_point(problem_instance))
 
-    print("Graph area occupied: ", area)
+        area = round(area, 2)
+
+    print("Graph area occupied:", area)
     write_area(area, algorithm, acceptance_criterion)
