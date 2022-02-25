@@ -3,12 +3,14 @@ import os
 from typing import List, Union
 from MMOEASA.mmoeasaSolution import MMOEASASolution
 from Ombuki.ombukiSolution import OmbukiSolution
+from Custom.customSolution import CustomSolution
 from problemInstance import ProblemInstance
 from data import open_problem_instance
 from MMOEASA.mmoeasa import MMOEASA
 from MMOEASA.constants import POPULATION_SIZE
 from Ombuki.ombuki import Ombuki
 from evaluation import calculate_area
+from Custom.custom import Custom
 
 def execute_MMOEASA(problem_instance: ProblemInstance) -> List[Union[MMOEASASolution, OmbukiSolution]]:
     num_customers = len(problem_instance.nodes) - 1
@@ -29,6 +31,14 @@ def execute_MMOEASA(problem_instance: ProblemInstance) -> List[Union[MMOEASASolu
 
 def execute_Ombuki(problem_instance: ProblemInstance) -> List[Union[OmbukiSolution, MMOEASASolution]]:
     nondominated_solutions = Ombuki(problem_instance, 300, 350, 80, 10)
+
+    for solution in nondominated_solutions:
+        print(os.linesep, str(solution))
+
+    return nondominated_solutions
+
+def execute_Custom(problem_instance: ProblemInstance) -> List[CustomSolution]:
+    nondominated_solutions = Custom(problem_instance, 300, 350, 80, 10)
 
     for solution in nondominated_solutions:
         print(os.linesep, str(solution))
@@ -75,6 +85,11 @@ if __name__ == '__main__':
             nondominated_set = execute_MMOEASA(problem_instance)
         elif sys.argv[1].upper() == "OMBUKI":
             nondominated_set = execute_Ombuki(problem_instance)
+        elif sys.argv[1].upper() == "CUSTOM":
+            if sys.argv[3].upper() != "OMBUKI":
+                print("Only Ombuki's acceptance criterion is implemented in the custom algorithm")
+            else:
+                nondominated_set = execute_Custom(problem_instance)
         else:
             exc = ValueError(f"Algorithm \"{sys.argv[1]}\" was not recognised")
             raise exc
