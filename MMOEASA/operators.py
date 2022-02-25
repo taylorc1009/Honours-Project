@@ -261,9 +261,12 @@ def Crossover1(instance: ProblemInstance, I_c: Union[MMOEASASolution, OmbukiSolu
     for node_number in unvisited_nodes:
         I_c = insert_unvisited_node(I_c, instance, node_number)
 
+    """ these commented-out calculations shouldn't be needed as "insert_unvisited_node" does them
+    even if "insert_unvisited_node" isn't used, they aren't needed as the for loop above will be inserting vehicles with these values already calculated
+    
     I_c.calculate_nodes_time_windows(instance)
     I_c.calculate_vehicles_loads(instance)
-    I_c.calculate_length_of_routes(instance)
+    I_c.calculate_length_of_routes(instance)"""
     I_c.objective_function(instance)
 
     return I_c
