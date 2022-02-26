@@ -1,12 +1,10 @@
 from typing import List, Union
-from numpy import random
-from constants import INT_MAX
+from common import INT_MAX
 from MMOEASA.mmoeasaSolution import MMOEASASolution
 from Ombuki.ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 from destination import Destination
-import copy
 
 def is_nondominated(Parent: MMOEASASolution, Child: MMOEASASolution) -> bool:
     return (Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance) or (Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance)
@@ -35,14 +33,6 @@ def ombuki_is_nondominated_by_any(nondominated_set: List[OmbukiSolution], subjec
         del nondominated_set[i:]
         return True
     return False
-
-def rand(start: int, end: int, exclude_values: List[int]=None) -> int:
-    # '+ 1' to make the random number generator inclusive of the "end" value
-    offset = 1 if end < INT_MAX else 0
-    random_val = random.randint(start, end + offset)
-    while exclude_values is not None and random_val in exclude_values:
-        random_val = random.randint(start, end + offset)
-    return random_val
 
 def insert_unvisited_node(I: Union[MMOEASASolution, OmbukiSolution], instance: ProblemInstance, node: int) -> Union[MMOEASASolution, OmbukiSolution]:
     inserted = False

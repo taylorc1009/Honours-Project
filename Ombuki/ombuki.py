@@ -11,7 +11,7 @@ from destination import Destination
 from Ombuki.auxiliaries import rand, is_nondominated, is_nondominated_by_any, mmoeasa_is_nondominated, mmoeasa_is_nondominated_by_any
 from numpy import arange, round, random
 from Ombuki.constants import TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY, GREEDY_PERCENT
-from constants import INT_MAX
+from common import INT_MAX
 from MMOEASA.mmoeasa import MO_Metropolis
 
 def generate_random_solution(instance: ProblemInstance) -> Union[OmbukiSolution, MMOEASASolution]:

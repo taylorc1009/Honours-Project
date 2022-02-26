@@ -1,7 +1,7 @@
 import copy
 from typing import List, Dict
 from MMOEASA.constants import INFINITY
-from constants import INT_MAX
+from common import INT_MAX
 from vehicle import Vehicle
 from problemInstance import ProblemInstance
 from solution import Solution

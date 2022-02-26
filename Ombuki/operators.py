@@ -9,7 +9,7 @@ from threading import Thread, currentThread
 from destination import Destination
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
-from constants import INT_MAX
+from common import INT_MAX
 
 def crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], parent_vehicle: Vehicle, result: Dict[str, Union[OmbukiSolution, MMOEASASolution]]) -> None:
     crossover_solution = copy.deepcopy(solution)

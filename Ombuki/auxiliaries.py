@@ -1,5 +1,5 @@
 from numpy import random
-from constants import INT_MAX
+from common import INT_MAX
 from typing import Set, List, Union
 from MMOEASA.mmoeasaSolution import MMOEASASolution
 from Ombuki.ombukiSolution import OmbukiSolution

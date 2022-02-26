@@ -1,7 +1,7 @@
 from typing import List
 from vehicle import Vehicle
 from problemInstance import ProblemInstance
-from constants import INT_MAX
+from common import INT_MAX
 
 class Solution:
     def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, total_distance: float=0.0, rank: int=INT_MAX) -> None:
