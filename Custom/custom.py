@@ -2,6 +2,7 @@ from typing import List
 from destination import Destination
 from problemInstance import ProblemInstance
 from Custom.customSolution import CustomSolution
+from Custom.operators import crossover
 from vehicle import Vehicle
 from numpy import ceil
 
@@ -37,5 +38,6 @@ def Custom(instance: ProblemInstance, population_size: int, termination_conditio
     nondominated_set: List[CustomSolution] = list()
 
     DTWIH_solution = DTWIH(instance)
+    crossover(instance, DTWIH_solution, DTWIH_solution)
 
     return nondominated_set
