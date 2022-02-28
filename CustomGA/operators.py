@@ -91,7 +91,7 @@ def mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGAS
     if not longest_waiting_vehicle:
         longest_waiting_vehicle = rand(0, len(mutated_solution.vehicles) - 1)
 
-    mutated_solution.vehicles[longest_waiting_vehicle].destinations = sorted(mutated_solution.vehicles[longest_waiting_vehicle].destinations, key=lambda d: d.node.ready_time)
+    mutated_solution.vehicles[longest_waiting_vehicle].destinations[1:-1] = sorted(mutated_solution.vehicles[longest_waiting_vehicle].get_customers_visited(), key=lambda d: d.node.ready_time)
 
     mutated_solution.vehicles[longest_waiting_vehicle].calculate_destinations_time_windows(instance)
     mutated_solution.vehicles[longest_waiting_vehicle].calculate_length_of_route(instance)
