@@ -15,13 +15,15 @@ class CrossoverPositionStats:
         self.distance_from_previous = float(distance_from_previous)
         self.distance_to_next = float(distance_to_next)
 
-def crossover_evaluation(instance: ProblemInstance, crossover_solution: CustomSolution, nodes_to_insert: Set[int], results: Dict[int, CrossoverPositionStats], iteration: int) -> CustomSolution:
+def crossover_evaluation(instance: ProblemInstance, crossover_solution: CustomSolution, nodes_to_insert: Set[int], stats_record: Dict[int, CrossoverPositionStats], best_stats_record: Dict[int, CrossoverPositionStats], iteration: int) -> CustomSolution:
     if not iteration:
+        for key, value in stats_record.items():
+            best_stats_record[key].update_record(value.distance_from_previous, value.distance_to_next)
         return crossover_solution
-    crossover_solution_copy = None
+    crossover_solution_final = None
 
     for node in list(nodes_to_insert):
-        shortest_from_previous, shortest_to_next = results[node].distance_from_previous, results[node].distance_to_next
+        shortest_from_previous, shortest_to_next = best_stats_record[node].distance_from_previous, best_stats_record[node].distance_to_next
 
         for v, vehicle in enumerate(crossover_solution.vehicles):
             if vehicle.current_capacity + node <= instance.capacity_of_vehicles:
@@ -29,23 +31,25 @@ def crossover_evaluation(instance: ProblemInstance, crossover_solution: CustomSo
                     distance_from_previous = instance.get_distance(vehicle.destinations[d - 1].node.number, node)
                     distance_to_next = instance.get_distance(node, destination.node.number)
 
-                    simulated_arrival_time = vehicle.destinations[d - 1].departure_time + distance_from_previous
-                    if not (simulated_arrival_time > instance.nodes[node].demand or simulated_arrival_time + distance_to_next > destination.node.due_date) \
-                        and ((distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next)
-                        or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next)):
+                    #simulated_arrival_time = vehicle.destinations[d - 1].departure_time + distance_from_previous
+                    #if not (simulated_arrival_time > instance.nodes[node].demand or simulated_arrival_time + distance_to_next > destination.node.due_date) \
+                    if vehicle.is_feasible_route(instance, additional_node=instance.nodes[node], position_of_additional=d) \
+                    and ((distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next)
+                    or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next)):
 
                         crossover_solution_copy = copy.deepcopy(crossover_solution)
                         crossover_solution_copy.vehicles[v].destinations.insert(d, Destination(node=instance.nodes[node]))
                         for d_aux in range(d, crossover_solution_copy.vehicles[v].get_num_of_customers_visited() + 1):
                             crossover_solution_copy.vehicles[v].calculate_destination_time_window(instance, d_aux - 1, d_aux)
                         crossover_solution_copy.vehicles[v].current_capacity += instance.nodes[node].demand
+                        stats_record[node].update_record(distance_from_previous, distance_to_next)
 
-                        crossover_solution_copy = crossover_evaluation(instance, crossover_solution_copy, nodes_to_insert.difference({node}), results, iteration - 1)
-                        if crossover_solution_copy:
+                        evaluation_result = crossover_evaluation(instance, crossover_solution_copy, nodes_to_insert.difference({node}), stats_record, best_stats_record, iteration - 1)
+                        if evaluation_result:
+                            crossover_solution_final = evaluation_result
                             shortest_from_previous, shortest_to_next = distance_from_previous, shortest_to_next
-                            results[node].update_record(distance_from_previous, distance_to_next)
 
-    return crossover_solution_copy
+    return crossover_solution_final
 
 def crossover(instance: ProblemInstance, parent_one: CustomSolution, parent_two: CustomSolution) -> CustomSolution:
     crossover_solution = copy.deepcopy(parent_one)
@@ -76,7 +80,7 @@ def crossover(instance: ProblemInstance, parent_one: CustomSolution, parent_two:
     crossover_solution.calculate_nodes_time_windows(instance)
     crossover_solution.calculate_vehicles_loads(instance)
 
-    results = {destination.node.number: CrossoverPositionStats() for destination in parent_two_destinations}
+    stats_record = {destination.node.number: CrossoverPositionStats() for destination in parent_two_destinations}
     """thread_pool = list()
     for i, destination in enumerate(parent_two_customers):
         thread_pool.append(Thread(name=str(destination.node.number), target=crossover_evaluation, args=(instance, copy.deepcopy(crossover_solution), parent_two_customers, i, results, len(parent_two_customers))))
@@ -85,7 +89,7 @@ def crossover(instance: ProblemInstance, parent_one: CustomSolution, parent_two:
         crossover_thread.join()"""
     start = time.time()
     crossover_solution_copy = copy.deepcopy(crossover_solution)
-    crossover_solution = crossover_evaluation(instance, crossover_solution_copy, nodes_to_insert, results, len(nodes_to_insert))
+    crossover_solution = crossover_evaluation(instance, crossover_solution_copy, nodes_to_insert, copy.deepcopy(stats_record), stats_record, len(nodes_to_insert))
     copy_is = crossover_solution_copy is crossover_solution
 
     """results = sorted(results, key=lambda r: r.order)

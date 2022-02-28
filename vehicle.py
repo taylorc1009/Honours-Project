@@ -52,6 +52,23 @@ class Vehicle:
             temporary_distance += instance.get_distance(previous_node, current_node)
         self.route_distance = temporary_distance
 
+    def is_feasible_route(self, instance: ProblemInstance, additional_node: Node=None, position_of_additional: int=-1) -> bool:
+        if self.current_capacity > instance.capacity_of_vehicles:
+            return False
+
+        feasible = True
+        if additional_node:
+            self.destinations.insert(position_of_additional, Destination(node=additional_node))
+
+        for destination in self.get_customers_visited():
+            if destination.arrival_time > instance.nodes[destination.node.number].due_date:
+                feasible = False
+                break
+
+        if additional_node:
+            self.destinations.pop(position_of_additional)
+        return feasible
+
     def __deepcopy__(self, memodict: Dict=None):
         return Vehicle(current_capacity=self.current_capacity, route_distance=self.route_distance, destinations=[copy.deepcopy(d) for d in self.destinations])
 
