@@ -1,6 +1,8 @@
 import copy
 from random import shuffle
 from typing import Dict, List, Union
+
+from Custom.customSolution import CustomSolution
 from Ombuki.constants import MUTATION_REVERSAL_LENGTH
 from Ombuki.auxiliaries import rand, is_nondominated, mmoeasa_is_nondominated
 from Ombuki.ombukiSolution import OmbukiSolution
@@ -11,10 +13,10 @@ from problemInstance import ProblemInstance
 from vehicle import Vehicle
 from common import INT_MAX
 
-def crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], parent_vehicle: Vehicle, result: Dict[str, Union[OmbukiSolution, MMOEASASolution]]) -> None:
-    crossover_solution = copy.deepcopy(solution)
-    
-    nodes_to_remove = set([d.node.number for d in parent_vehicle.get_customers_visited()])
+def set_up_crossover_child(instance: ProblemInstance, parent_one: Union[OmbukiSolution, MMOEASASolution], parent_two_vehicle: Vehicle) -> CustomSolution:
+    crossover_solution = copy.deepcopy(parent_one)
+
+    nodes_to_remove = set([d.node.number for d in parent_two_vehicle.get_customers_visited()])
     i = 0
     while i < len(crossover_solution.vehicles) and nodes_to_remove:
         increment = True
@@ -37,6 +39,11 @@ def crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, 
 
     crossover_solution.calculate_nodes_time_windows(instance)
     crossover_solution.calculate_vehicles_loads(instance)
+
+    return crossover_solution
+
+def crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], parent_vehicle: Vehicle, result: Dict[str, Union[OmbukiSolution, MMOEASASolution]]) -> None:
+    crossover_solution = set_up_crossover_child(instance, solution, parent_vehicle)
 
     randomized_destinations = list(range(1, len(parent_vehicle.destinations) - 1))
     shuffle(randomized_destinations)
