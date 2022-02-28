@@ -1,11 +1,11 @@
 import copy
 from random import shuffle
-from CustomGA.customSolution import CustomSolution
+from CustomGA.customGASolution import CustomGASolution
 from common import INT_MAX, rand
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 
-def set_up_crossover_child(instance: ProblemInstance, parent_one: CustomSolution, parent_two_vehicle: Vehicle) -> CustomSolution:
+def set_up_crossover_child(instance: ProblemInstance, parent_one: CustomGASolution, parent_two_vehicle: Vehicle) -> CustomGASolution:
     child_solution = copy.deepcopy(parent_one)
 
     nodes_to_remove = set([d.node.number for d in parent_two_vehicle.get_customers_visited()])
@@ -34,7 +34,7 @@ def set_up_crossover_child(instance: ProblemInstance, parent_one: CustomSolution
 
     return child_solution
 
-def crossover(instance: ProblemInstance, parent_one: CustomSolution, parent_two_vehicle: Vehicle) -> CustomSolution:
+def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_two_vehicle: Vehicle) -> CustomGASolution:
     crossover_solution = set_up_crossover_child(instance, parent_one, parent_two_vehicle)
 
     randomized_destinations = list(range(1, len(parent_two_vehicle.destinations) - 1))
@@ -76,7 +76,7 @@ def crossover(instance: ProblemInstance, parent_one: CustomSolution, parent_two_
 
     return crossover_solution
 
-def mutation(instance: ProblemInstance, solution: CustomSolution) -> CustomSolution:
+def mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution:
     mutated_solution = copy.deepcopy(solution)
 
     longest_waiting_vehicle = -1

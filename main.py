@@ -3,7 +3,7 @@ import os
 from typing import List, Union
 from MMOEASA.mmoeasaSolution import MMOEASASolution
 from Ombuki.ombukiSolution import OmbukiSolution
-from CustomGA.customSolution import CustomSolution
+from CustomGA.customGASolution import CustomGASolution
 from problemInstance import ProblemInstance
 from data import open_problem_instance
 from MMOEASA.mmoeasa import MMOEASA
@@ -37,7 +37,7 @@ def execute_Ombuki(problem_instance: ProblemInstance) -> List[Union[OmbukiSoluti
 
     return nondominated_solutions
 
-def execute_Custom(problem_instance: ProblemInstance) -> List[CustomSolution]:
+def execute_Custom(problem_instance: ProblemInstance) -> List[CustomGASolution]:
     nondominated_solutions = CustomGA(problem_instance, 300, 350, 80, 10)
 
     for solution in nondominated_solutions:

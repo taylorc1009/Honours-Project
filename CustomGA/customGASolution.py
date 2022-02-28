@@ -5,9 +5,9 @@ from vehicle import Vehicle
 from problemInstance import ProblemInstance
 from solution import Solution
 
-class CustomSolution(Solution):
+class CustomGASolution(Solution):
     def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, total_distance: float=0.0, num_vehicles: int=0, rank: int=INT_MAX) -> None:
-        super(CustomSolution, self).__init__(_id=_id, vehicles=vehicles, feasible=feasible, total_distance=total_distance, rank=rank)
+        super(CustomGASolution, self).__init__(_id=_id, vehicles=vehicles, feasible=feasible, total_distance=total_distance, rank=rank)
         self.num_vehicles: int=int(num_vehicles) # the reason this objective is a variable instead of just using "len(vehicles)" is because if the solution is invalid, it needs to be set to a very high number
 
     def __str__(self) -> str:
@@ -30,4 +30,4 @@ class CustomSolution(Solution):
             vehicle += 1
 
     def __deepcopy__(self, memodict: Dict=None):
-        return CustomSolution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, total_distance=self.total_distance, num_vehicles=self.num_vehicles, rank=self.rank)
+        return CustomGASolution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, total_distance=self.total_distance, num_vehicles=self.num_vehicles, rank=self.rank)

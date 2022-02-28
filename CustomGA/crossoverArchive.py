@@ -3,7 +3,7 @@ import time
 from threading import Lock
 from multiprocessing import Process
 from typing import Dict, Set
-from CustomGA.customSolution import CustomSolution
+from CustomGA.customGASolution import CustomGASolution
 from destination import Destination
 from problemInstance import ProblemInstance
 from common import rand, INT_MAX
@@ -17,7 +17,7 @@ class CrossoverPositionStats:
         self.distance_from_previous = float(distance_from_previous)
         self.distance_to_next = float(distance_to_next)
 
-def crossover_evaluation(instance: ProblemInstance, crossover_solution: CustomSolution, nodes_to_insert: Set[int], stats_record: Dict[int, CrossoverPositionStats], best_stats_record: Dict[int, CrossoverPositionStats], iteration: int) -> CustomSolution:
+def crossover_evaluation(instance: ProblemInstance, crossover_solution: CustomGASolution, nodes_to_insert: Set[int], stats_record: Dict[int, CrossoverPositionStats], best_stats_record: Dict[int, CrossoverPositionStats], iteration: int) -> CustomGASolution:
     if not iteration:
         for key, value in stats_record.items():
             best_stats_record[key].update_record(value.distance_from_previous, value.distance_to_next)
@@ -51,7 +51,7 @@ def crossover_evaluation(instance: ProblemInstance, crossover_solution: CustomSo
 
     return crossover_solution_final
 
-def crossover(instance: ProblemInstance, parent_one: CustomSolution, parent_two: CustomSolution) -> CustomSolution:
+def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_two: CustomGASolution) -> CustomGASolution:
     crossover_solution = copy.deepcopy(parent_one)
     parent_two_destinations = parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)].get_customers_visited()
     nodes_to_remove = set([d.node.number for d in parent_two_destinations])
@@ -97,7 +97,7 @@ def crossover(instance: ProblemInstance, parent_one: CustomSolution, parent_two:
 
 mutex = Lock()
 
-def crossover_evaluation_multithreaded(instance: ProblemInstance, crossover_solution: CustomSolution, nodes_to_insert: Set[int], stats_record: Dict[int, CrossoverPositionStats], best_stats_record: Dict[int, CrossoverPositionStats], iteration: int, result: Dict[int, CustomSolution]) -> None:
+def crossover_evaluation_multithreaded(instance: ProblemInstance, crossover_solution: CustomGASolution, nodes_to_insert: Set[int], stats_record: Dict[int, CrossoverPositionStats], best_stats_record: Dict[int, CrossoverPositionStats], iteration: int, result: Dict[int, CustomGASolution]) -> None:
     if not iteration:
         with mutex:
             for key, value in stats_record.items():
@@ -129,7 +129,7 @@ def crossover_evaluation_multithreaded(instance: ProblemInstance, crossover_solu
     for t in thread_pool:
         t.join()
 
-def crossover_multithreaded(instance: ProblemInstance, parent_one: CustomSolution, parent_two: CustomSolution) -> CustomSolution:
+def crossover_multithreaded(instance: ProblemInstance, parent_one: CustomGASolution, parent_two: CustomGASolution) -> CustomGASolution:
     crossover_solution = copy.deepcopy(parent_one)
     parent_two_destinations = parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)].get_customers_visited()
     nodes_to_remove = set([d.node.number for d in parent_two_destinations])
