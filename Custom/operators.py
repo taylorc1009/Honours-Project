@@ -1,7 +1,7 @@
 import copy
 from random import shuffle
 from Custom.customSolution import CustomSolution
-from common import INT_MAX
+from common import INT_MAX, rand
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 
@@ -75,3 +75,26 @@ def crossover(instance: ProblemInstance, parent_one: CustomSolution, parent_two_
         crossover_solution.objective_function(instance)
 
     return crossover_solution
+
+def mutation(instance: ProblemInstance, solution: CustomSolution) -> CustomSolution:
+    mutated_solution = copy.deepcopy(solution)
+
+    longest_waiting_vehicle = -1
+    longest_total_wait = 0.0
+    for v, vehicle in enumerate(mutated_solution.vehicles):
+        total_wait = 0.0
+        for destination in vehicle.get_customers_visited():
+            total_wait += destination.wait_time
+            if total_wait > longest_total_wait:
+                longest_waiting_vehicle = v
+                longest_total_wait = total_wait
+    if not longest_waiting_vehicle:
+        longest_waiting_vehicle = rand(0, len(mutated_solution.vehicles) - 1)
+
+    mutated_solution.vehicles[longest_waiting_vehicle].destinations = sorted(mutated_solution.vehicles[longest_waiting_vehicle].destinations, key=lambda d: d.node.ready_time)
+
+    mutated_solution.vehicles[longest_waiting_vehicle].calculate_destinations_time_windows(instance)
+    mutated_solution.vehicles[longest_waiting_vehicle].calculate_length_of_route(instance)
+    mutated_solution.objective_function(instance)
+
+    return mutated_solution
