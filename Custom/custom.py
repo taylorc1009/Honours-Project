@@ -1,8 +1,10 @@
+import copy
 from typing import List
+from common import rand
 from destination import Destination
 from problemInstance import ProblemInstance
 from Custom.customSolution import CustomSolution
-from Custom.operators import crossover
+from Custom.operators import crossover, mutation
 from vehicle import Vehicle
 from numpy import ceil
 
@@ -34,10 +36,27 @@ def DTWIH(instance: ProblemInstance) -> CustomSolution:
 
     return solution
 
+def try_crossover(instance, parent_one: CustomSolution, parent_two: CustomSolution, crossover_probability) -> CustomSolution:
+    if rand(1, 100) < crossover_probability:
+        return crossover(instance, parent_one, parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)])
+    return parent_one
+
+def try_mutation(instance, solution: CustomSolution, mutation_probability: int) -> CustomSolution:
+    if rand(1, 100) < mutation_probability:
+        return mutation(instance, solution)
+    return solution
+
 def Custom(instance: ProblemInstance, population_size: int, termination_condition: int, crossover_probability: int, mutation_probability: int) -> List[CustomSolution]:
-    nondominated_set: List[CustomSolution] = list()
+    population: List[CustomSolution] = list()
 
     DTWIH_solution = DTWIH(instance)
-    crossover(instance, DTWIH_solution, DTWIH_solution)
+    for i in range(0, population_size):
+        population.insert(i, copy.deepcopy(DTWIH_solution))
+        population[i].id = i
 
-    return nondominated_set
+    for i in range(termination_condition):
+        for solution in population:
+            child = try_crossover(instance, solution, None, crossover_probability)
+            child = try_mutation(instance, solution, mutation_probability)
+
+    return
