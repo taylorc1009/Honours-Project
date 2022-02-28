@@ -1,5 +1,8 @@
 import copy
 from random import shuffle
+from typing import List
+
+from CustomGA.constants import MUTATION_LONGEST_WAIT_PROBABILITY, MUTATION_LONGEST_ROUTE_PROBABILITY
 from CustomGA.customGASolution import CustomGASolution
 from common import INT_MAX, rand
 from problemInstance import ProblemInstance
@@ -76,25 +79,71 @@ def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_tw
 
     return crossover_solution
 
-def mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution:
-    mutated_solution = copy.deepcopy(solution)
-
+def select_route_with_longest_wait(solution: CustomGASolution) -> int:
     longest_waiting_vehicle = -1
     longest_total_wait = 0.0
-    for v, vehicle in enumerate(mutated_solution.vehicles):
-        total_wait = 0.0
-        for destination in vehicle.get_customers_visited():
-            total_wait += destination.wait_time
-            if total_wait > longest_total_wait:
-                longest_waiting_vehicle = v
-                longest_total_wait = total_wait
-    if not longest_waiting_vehicle:
-        longest_waiting_vehicle = rand(0, len(mutated_solution.vehicles) - 1)
+    if rand(1, 100) < MUTATION_LONGEST_WAIT_PROBABILITY:
+        for v, vehicle in enumerate(solution.vehicles):
+            if vehicle.get_num_of_customers_visited() > 1:
+                total_wait = 0.0
+                for destination in vehicle.get_customers_visited():
+                    total_wait += destination.wait_time
+                    if total_wait > longest_total_wait:
+                        longest_waiting_vehicle = v
+                        longest_total_wait = total_wait
+    exclude_values = set()
+    while not longest_waiting_vehicle >= 0:
+        longest_waiting_vehicle = rand(0, len(solution.vehicles) - 1, exclude_values=exclude_values)
+        if not solution.vehicles[longest_waiting_vehicle].get_num_of_customers_visited() > 2:
+            exclude_values.add(longest_waiting_vehicle)
+            longest_waiting_vehicle = -1
+    return longest_waiting_vehicle
 
-    mutated_solution.vehicles[longest_waiting_vehicle].destinations[1:-1] = sorted(mutated_solution.vehicles[longest_waiting_vehicle].get_customers_visited(), key=lambda d: d.node.ready_time)
+def TWBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: #	Time-Window-based Sorting Mutator
+    longest_waiting_vehicle = select_route_with_longest_wait(solution)
 
-    mutated_solution.vehicles[longest_waiting_vehicle].calculate_destinations_time_windows(instance)
-    mutated_solution.vehicles[longest_waiting_vehicle].calculate_length_of_route(instance)
-    mutated_solution.objective_function(instance)
+    solution.vehicles[longest_waiting_vehicle].destinations[1:-1] = sorted(solution.vehicles[longest_waiting_vehicle].get_customers_visited(), key=lambda d: d.node.ready_time)
 
-    return mutated_solution
+    solution.vehicles[longest_waiting_vehicle].calculate_destinations_time_windows(instance)
+    solution.vehicles[longest_waiting_vehicle].calculate_length_of_route(instance)
+    solution.objective_function(instance)
+
+    return solution
+
+def swap(l: List, index_one: int, index_two: int):
+    l[index_one], l[index_two] = l[index_two], l[index_one]
+
+def WTBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Wait-Time-based Swap Mutator
+    longest_waiting_vehicle = select_route_with_longest_wait(solution)
+
+    for d, destination in enumerate(solution.vehicles[longest_waiting_vehicle].get_customers_visited(), 1):
+        if destination.wait_time:
+            swap(solution.vehicles[longest_waiting_vehicle].destinations, d, d + 1)
+            solution.vehicles[longest_waiting_vehicle].calculate_destination_time_window(instance, d - 1, d)
+
+    d = len(solution.vehicles[longest_waiting_vehicle].destinations) - 1
+    solution.vehicles[longest_waiting_vehicle].calculate_destination_time_window(instance, d - 1, d)
+    solution.vehicles[longest_waiting_vehicle].calculate_length_of_route(instance)
+    solution.objective_function(instance)
+
+    return solution
+
+def DBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Distance-based Swap Mutator
+    shortest_route_length = float(INT_MAX)
+    furthest_travelling_vehicle = -1
+    if rand(1, 100) < MUTATION_LONGEST_ROUTE_PROBABILITY:
+        for v, vehicle in enumerate(solution.vehicles):
+            if vehicle.route_distance > shortest_route_length and vehicle.get_num_of_customers_visited() > 2:
+                furthest_travelling_vehicle = v
+                shortest_route_length = vehicle.route_distance
+    exclude_values = set()
+    while not furthest_travelling_vehicle >= 0:
+        furthest_travelling_vehicle = rand(0, len(solution.vehicles) - 1, exclude_values=exclude_values)
+        if not solution.vehicles[furthest_travelling_vehicle].get_num_of_customers_visited() > 2:
+            exclude_values.add(furthest_travelling_vehicle)
+            furthest_travelling_vehicle = -1
+
+    for d in range(1, solution.vehicles[furthest_travelling_vehicle].get_num_of_customers_visited() - 2):
+        if solution.vehicles[furthest_travelling_vehicle].destinations[d + 1].node.number \
+        and instance.get_distance(solution.vehicles[furthest_travelling_vehicle].destinations[d].node.number, solution.vehicles[furthest_travelling_vehicle].destinations[d + 1].node.number) > instance.get_distance(solution.vehicles[furthest_travelling_vehicle].destinations[d].node.number, solution.vehicles[furthest_travelling_vehicle].destinations[d + 2].node.number):
+            swap(solution.vehicles[furthest_travelling_vehicle].destinations, d + 1, d + 2)

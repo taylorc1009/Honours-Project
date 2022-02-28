@@ -6,7 +6,7 @@ from common import rand
 from destination import Destination
 from problemInstance import ProblemInstance
 from CustomGA.customGASolution import CustomGASolution
-from CustomGA.operators import crossover, mutation
+from CustomGA.operators import crossover, TWS_mutation
 from CustomGA.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_BEST
 from vehicle import Vehicle
 from numpy import ceil, random
@@ -91,7 +91,7 @@ def try_crossover(instance, parent_one: CustomGASolution, parent_two: CustomGASo
 
 def try_mutation(instance, solution: CustomGASolution, mutation_probability: int) -> CustomGASolution:
     if rand(1, 100) < mutation_probability:
-        mutated_solution = mutation(instance, solution)
+        mutated_solution = TWS_mutation(instance, copy.deepcopy(solution))
         return mutated_solution if is_nondominated(solution, mutated_solution) else solution
     return solution
 

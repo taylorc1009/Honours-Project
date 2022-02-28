@@ -1,9 +1,9 @@
-from typing import Final, List
+from typing import Final, Set
 from numpy import random
 
 INT_MAX: Final[int]=2147483647
 
-def rand(start: int, end: int, exclude_values: List[int]=None) -> int:
+def rand(start: int, end: int, exclude_values: Set[int]=None) -> int:
     # '+ 1' to make the random number generator inclusive of the "end" value
     offset = 1 if end < INT_MAX else 0
     random_val = random.randint(start, end + offset)
