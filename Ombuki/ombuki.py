@@ -9,7 +9,7 @@ from vehicle import Vehicle
 from destination import Destination
 from Ombuki.auxiliaries import rand, is_nondominated, is_nondominated_by_any, mmoeasa_is_nondominated, mmoeasa_is_nondominated_by_any
 from numpy import arange, round, random
-from Ombuki.constants import TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY, GREEDY_PERCENT
+from Ombuki.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_BEST, GREEDY_PERCENT
 from common import INT_MAX
 from MMOEASA.mmoeasa import MO_Metropolis
 
@@ -165,11 +165,11 @@ def selection_tournament(instance: ProblemInstance, population: List[Union[Ombuk
         best_solutions = list(filter(lambda s: s.feasible, population))
 
     if best_solutions:
-        tournament_set = random.choice(best_solutions, TOURNAMENT_SIZE)
+        tournament_set = random.choice(best_solutions, TOURNAMENT_SET_SIZE)
     else:
-        tournament_set = random.choice(population, TOURNAMENT_SIZE)
+        tournament_set = random.choice(population, TOURNAMENT_SET_SIZE)
 
-    if rand(1, 100) < TOURNAMENT_PROBABILITY:
+    if rand(1, 100) < TOURNAMENT_PROBABILITY_SELECT_BEST:
         best_solution = population[tournament_set[0].id]
         for solution in tournament_set:
             if instance.acceptance_criterion == "MMOEASA":
@@ -179,7 +179,7 @@ def selection_tournament(instance: ProblemInstance, population: List[Union[Ombuk
                 best_solution = population[solution.id]
         return best_solution.id
     else:
-        return tournament_set[rand(0, TOURNAMENT_SIZE - 1)].id
+        return tournament_set[rand(0, TOURNAMENT_SET_SIZE - 1)].id
 
 def crossover_probability(instance: ProblemInstance, iterator_parent: Union[OmbukiSolution, MMOEASASolution], tournament_parent: Union[OmbukiSolution, MMOEASASolution], probability: int) -> Union[OmbukiSolution, MMOEASASolution]:
     return crossover(instance, iterator_parent, tournament_parent) if rand(1, 100) < probability else iterator_parent

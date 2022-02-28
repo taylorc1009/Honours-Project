@@ -7,7 +7,7 @@ from destination import Destination
 from problemInstance import ProblemInstance
 from CustomGA.customGASolution import CustomGASolution
 from CustomGA.operators import crossover, mutation
-from CustomGA.constants import TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY
+from CustomGA.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_BEST
 from vehicle import Vehicle
 from numpy import ceil, random
 
@@ -71,18 +71,18 @@ def selection_tournament(population: List[CustomGASolution]) -> int:
         best_solutions = list(filter(lambda s: s.feasible, population))
 
     if best_solutions:
-        tournament_set = random.choice(best_solutions, TOURNAMENT_SIZE)
+        tournament_set = random.choice(best_solutions, TOURNAMENT_SET_SIZE)
     else:
-        tournament_set = random.choice(population, TOURNAMENT_SIZE)
+        tournament_set = random.choice(population, TOURNAMENT_SET_SIZE)
 
-    if rand(1, 100) < TOURNAMENT_PROBABILITY:
+    if rand(1, 100) < TOURNAMENT_PROBABILITY_SELECT_BEST:
         best_solution = population[tournament_set[0].id]
         for solution in tournament_set:
             if is_nondominated(best_solution, population[solution.id]):
                 best_solution = population[solution.id]
         return best_solution.id
     else:
-        return tournament_set[rand(0, TOURNAMENT_SIZE - 1)].id
+        return tournament_set[rand(0, TOURNAMENT_SET_SIZE - 1)].id
 
 def try_crossover(instance, parent_one: CustomGASolution, parent_two: CustomGASolution, crossover_probability) -> CustomGASolution:
     if rand(1, 100) < crossover_probability:

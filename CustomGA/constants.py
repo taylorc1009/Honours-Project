@@ -1,4 +1,4 @@
 from typing import Final
 
-TOURNAMENT_SIZE: Final[int]=4
-TOURNAMENT_PROBABILITY: Final[int]=80
+TOURNAMENT_SET_SIZE: Final[int]=4
+TOURNAMENT_PROBABILITY_SELECT_BEST: Final[int]=80
