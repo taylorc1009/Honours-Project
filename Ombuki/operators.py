@@ -1,8 +1,6 @@
 import copy
 from random import shuffle
 from typing import Dict, List, Union
-
-from CustomGA.customSolution import CustomSolution
 from Ombuki.constants import MUTATION_REVERSAL_LENGTH
 from Ombuki.auxiliaries import rand, is_nondominated, mmoeasa_is_nondominated
 from Ombuki.ombukiSolution import OmbukiSolution
@@ -13,7 +11,7 @@ from problemInstance import ProblemInstance
 from vehicle import Vehicle
 from common import INT_MAX
 
-def set_up_crossover_child(instance: ProblemInstance, parent_one: Union[OmbukiSolution, MMOEASASolution], parent_two_vehicle: Vehicle) -> CustomSolution:
+def set_up_crossover_child(instance: ProblemInstance, parent_one: Union[OmbukiSolution, MMOEASASolution], parent_two_vehicle: Vehicle) -> OmbukiSolution:
     crossover_solution = copy.deepcopy(parent_one)
 
     nodes_to_remove = set([d.node.number for d in parent_two_vehicle.get_customers_visited()])
