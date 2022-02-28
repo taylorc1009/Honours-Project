@@ -123,7 +123,7 @@ def crossover_evaluation_multithreaded(instance: ProblemInstance, crossover_solu
                         crossover_solution_copy.vehicles[v].current_capacity += instance.nodes[node].demand
                         stats_record[node].update_record(instance.get_distance(vehicle.destinations[d - 1].node.number, node), instance.get_distance(node, destination.node.number))
 
-                        t = Process(target=crossover_evaluation, args=(instance, crossover_solution_copy, nodes_to_insert.difference({node}), stats_record, best_stats_record, iteration - 1, result))
+                        t = Process(target=crossover_evaluation_multithreaded, args=(instance, crossover_solution_copy, nodes_to_insert.difference({node}), stats_record, best_stats_record, iteration - 1, result))
                         t.start()
                         thread_pool.append(t)
     for t in thread_pool:
@@ -162,7 +162,7 @@ def crossover_multithreaded(instance: ProblemInstance, parent_one: CustomGASolut
     start = time.time()
     crossover_solution_copy = copy.deepcopy(crossover_solution)
     result = {0: None}
-    crossover_solution = crossover_evaluation(instance, crossover_solution_copy, nodes_to_insert, copy.deepcopy(stats_record), stats_record, len(nodes_to_insert), result)
+    crossover_solution = crossover_evaluation_multithreaded(instance, crossover_solution_copy, nodes_to_insert, copy.deepcopy(stats_record), stats_record, len(nodes_to_insert), result)
     copy_is = crossover_solution_copy is crossover_solution
 
     print(f"{round(time.time() - start, 1)}s", copy_is)
