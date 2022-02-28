@@ -6,7 +6,7 @@ from common import rand
 from destination import Destination
 from problemInstance import ProblemInstance
 from CustomGA.customGASolution import CustomGASolution
-from CustomGA.operators import crossover, TWS_mutation
+from CustomGA.operators import crossover, TWBS_mutation, WTBS_mutation, DBS_mutation, TWBPB_mutation, XYBR_mutation
 from CustomGA.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_BEST
 from vehicle import Vehicle
 from numpy import ceil, random
@@ -91,7 +91,20 @@ def try_crossover(instance, parent_one: CustomGASolution, parent_two: CustomGASo
 
 def try_mutation(instance, solution: CustomGASolution, mutation_probability: int) -> CustomGASolution:
     if rand(1, 100) < mutation_probability:
-        mutated_solution = TWS_mutation(instance, copy.deepcopy(solution))
+        mutated_solution = copy.deepcopy(solution)
+        probability = rand(1, 100)
+
+        if 1 <= probability <= 20:
+            mutated_solution = TWBS_mutation(instance, mutated_solution)
+        elif 21 <= probability <= 40:
+            mutated_solution = WTBS_mutation(instance, mutated_solution)
+        elif 41 <= probability <= 60:
+            mutated_solution = DBS_mutation(instance, mutated_solution)
+        elif 61 <= probability <= 80:
+            mutated_solution = TWBPB_mutation(instance, mutated_solution)
+        elif 81 <= probability <= 100:
+            mutated_solution = XYBR_mutation(instance, mutated_solution)
+
         return mutated_solution if is_nondominated(solution, mutated_solution) else solution
     return solution
 
