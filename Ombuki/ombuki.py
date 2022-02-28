@@ -1,5 +1,4 @@
 import copy
-import random
 import time
 from typing import List, Union
 from Ombuki.operators import crossover, mutation
