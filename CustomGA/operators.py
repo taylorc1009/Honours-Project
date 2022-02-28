@@ -1,6 +1,6 @@
 import copy
 from random import shuffle
-from Custom.customSolution import CustomSolution
+from CustomGA.customSolution import CustomSolution
 from common import INT_MAX, rand
 from problemInstance import ProblemInstance
 from vehicle import Vehicle

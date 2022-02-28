@@ -2,7 +2,7 @@ import copy
 from random import shuffle
 from typing import Dict, List, Union
 
-from Custom.customSolution import CustomSolution
+from CustomGA.customSolution import CustomSolution
 from Ombuki.constants import MUTATION_REVERSAL_LENGTH
 from Ombuki.auxiliaries import rand, is_nondominated, mmoeasa_is_nondominated
 from Ombuki.ombukiSolution import OmbukiSolution

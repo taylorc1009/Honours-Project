@@ -3,7 +3,7 @@ import time
 from threading import Lock
 from multiprocessing import Process
 from typing import Dict, Set
-from Custom.customSolution import CustomSolution
+from CustomGA.customSolution import CustomSolution
 from destination import Destination
 from problemInstance import ProblemInstance
 from common import rand, INT_MAX

@@ -3,8 +3,8 @@ from typing import List
 from common import rand
 from destination import Destination
 from problemInstance import ProblemInstance
-from Custom.customSolution import CustomSolution
-from Custom.operators import crossover, mutation
+from CustomGA.customSolution import CustomSolution
+from CustomGA.operators import crossover, mutation
 from vehicle import Vehicle
 from numpy import ceil
 
@@ -46,7 +46,7 @@ def try_mutation(instance, solution: CustomSolution, mutation_probability: int) 
         return mutation(instance, solution)
     return solution
 
-def Custom(instance: ProblemInstance, population_size: int, termination_condition: int, crossover_probability: int, mutation_probability: int) -> List[CustomSolution]:
+def CustomGA(instance: ProblemInstance, population_size: int, termination_condition: int, crossover_probability: int, mutation_probability: int) -> List[CustomSolution]:
     population: List[CustomSolution] = list()
 
     DTWIH_solution = DTWIH(instance)
