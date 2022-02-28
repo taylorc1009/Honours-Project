@@ -17,6 +17,8 @@ class CrossoverPositionStats:
         self.distance_from_previous = float(distance_from_previous)
         self.distance_to_next = float(distance_to_next)
 
+""" VVV Serial Decision-tree-based Crossover Operator START VVV """
+
 def crossover_evaluation(instance: ProblemInstance, crossover_solution: CustomGASolution, nodes_to_insert: Set[int], stats_record: Dict[int, CrossoverPositionStats], best_stats_record: Dict[int, CrossoverPositionStats], iteration: int) -> CustomGASolution:
     if not iteration:
         for key, value in stats_record.items():
@@ -94,6 +96,9 @@ def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_tw
 
     return crossover_solution
 
+""" ^^^ Serial Decision-tree-based Crossover Operator END ^^^ """
+
+""" VVV Parallel Decision-tree-based Crossover Operator START VVV """
 
 mutex = Lock()
 
@@ -172,3 +177,5 @@ def crossover_multithreaded(instance: ProblemInstance, parent_one: CustomGASolut
     crossover_solution.objective_function(instance)
 
     return crossover_solution
+
+""" ^^^ Serial Decision-tree-based Crossover Operator END ^^^ """

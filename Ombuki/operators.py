@@ -137,6 +137,8 @@ def mutation(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASAS
 
     first_destination = (first_reversal_node - num_destinations_tracker) + 1
 
+    # the reason that the get and set functions are called recursively is because the mutation operator specified by Ombuki can swap customers across vehicles
+    # therefore, the first call of the recursive functions can get/set the first one/two customers from one vehicle, then any remaining customers in the next vehcile
     reversed_destinations = get_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap)
     reversed_destinations = list(reversed(reversed_destinations))
     set_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap, reversed_destinations)
