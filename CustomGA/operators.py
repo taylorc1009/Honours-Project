@@ -79,6 +79,16 @@ def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_tw
 
     return crossover_solution
 
+def select_random_vehicle(solution: CustomGASolution, customers_required: int=2) -> int:
+    random_vehicle = -1
+    exclude_values = set()
+    while not random_vehicle >= 0:
+        random_vehicle = rand(0, len(solution.vehicles) - 1, exclude_values=exclude_values)
+        if not solution.vehicles[random_vehicle].get_num_of_customers_visited() >= customers_required:
+            exclude_values.add(random_vehicle)
+            random_vehicle = -1
+    return random_vehicle
+
 def select_route_with_longest_wait(solution: CustomGASolution) -> int:
     longest_waiting_vehicle = -1
     longest_total_wait = 0.0
@@ -91,12 +101,8 @@ def select_route_with_longest_wait(solution: CustomGASolution) -> int:
                     if total_wait > longest_total_wait:
                         longest_waiting_vehicle = v
                         longest_total_wait = total_wait
-    exclude_values = set()
-    while not longest_waiting_vehicle >= 0:
-        longest_waiting_vehicle = rand(0, len(solution.vehicles) - 1, exclude_values=exclude_values)
-        if not solution.vehicles[longest_waiting_vehicle].get_num_of_customers_visited() > 2:
-            exclude_values.add(longest_waiting_vehicle)
-            longest_waiting_vehicle = -1
+    if not longest_waiting_vehicle >= 0:
+        longest_waiting_vehicle = select_random_vehicle(solution)
     return longest_waiting_vehicle
 
 def TWBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: #	Time-Window-based Sorting Mutator
@@ -127,16 +133,6 @@ def WTBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Cust
     solution.objective_function(instance)
 
     return solution
-
-def select_random_vehicle(solution: CustomGASolution, customers_required: int=2) -> int:
-    random_vehicle = -1
-    exclude_values = set()
-    while not random_vehicle >= 0:
-        random_vehicle = rand(0, len(solution.vehicles) - 1, exclude_values=exclude_values)
-        if not solution.vehicles[random_vehicle].get_num_of_customers_visited() >= customers_required:
-            exclude_values.add(random_vehicle)
-            random_vehicle = -1
-    return random_vehicle
 
 def DBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Distance-based Swap Mutator
     shortest_route_length = float(INT_MAX)
@@ -174,7 +170,7 @@ def TWBPB_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Cus
 
     return solution
 
-def XYBR_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: #	X/Y-based Reorder Mutator
+def XYBR_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # X/Y-based Reorder Mutator
     random_vehicle = select_random_vehicle(solution)
     sorted_by_x = [d.node.number for d in sorted(solution.vehicles[random_vehicle].destinations, key=lambda d: d.node.x)]
     sorted_by_y = [d.node.number for d in sorted(solution.vehicles[random_vehicle].destinations, key=lambda d: d.node.y)]
