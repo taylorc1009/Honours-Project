@@ -147,3 +147,29 @@ def DBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Custo
         if solution.vehicles[furthest_travelling_vehicle].destinations[d + 1].node.number \
         and instance.get_distance(solution.vehicles[furthest_travelling_vehicle].destinations[d].node.number, solution.vehicles[furthest_travelling_vehicle].destinations[d + 1].node.number) > instance.get_distance(solution.vehicles[furthest_travelling_vehicle].destinations[d].node.number, solution.vehicles[furthest_travelling_vehicle].destinations[d + 2].node.number):
             swap(solution.vehicles[furthest_travelling_vehicle].destinations, d + 1, d + 2)
+
+    solution.vehicles[furthest_travelling_vehicle].calculate_length_of_route(instance)
+    solution.vehicles[furthest_travelling_vehicle].calculate_destinations_time_windows(instance)
+    solution.objective_function(instance)
+
+    return solution
+
+def TWBPB_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Time-Window-based Push-back Mutator
+    random_vehicle = -1
+    exclude_values = set()
+    while not random_vehicle >= 0:
+        random_vehicle = rand(0, len(solution.vehicles) - 1, exclude_values=exclude_values)
+        if not solution.vehicles[random_vehicle].get_num_of_customers_visited() > 1:
+            exclude_values.add(random_vehicle)
+            random_vehicle = -1
+
+    sorted_destinations = sorted(solution.vehicles[random_vehicle].get_customers_visited(), key=lambda d: d.node.ready_time)
+    for d, destination in reversed(list(enumerate(solution.vehicles[random_vehicle].destinations))):
+        if destination.node.number != sorted_destinations[d].node.number:
+            solution.vehicles[random_vehicle].destinations.insert(len(solution.vehicles[random_vehicle].destinations) - 1, solution.vehicles[random_vehicle].destinations.pop(d))
+
+    solution.vehicles[random_vehicle].calculate_destinations_time_windows(instance)
+    solution.vehicles[random_vehicle].calculate_length_of_route(instance)
+    solution.objective_function(instance)
+
+    return solution
