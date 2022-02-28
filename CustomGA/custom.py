@@ -1,17 +1,20 @@
 import copy
+import time
+import random
 from typing import List
 from common import rand
 from destination import Destination
 from problemInstance import ProblemInstance
-from CustomGA.customSolution import CustomSolution
+from CustomGA.customGASolution import CustomGASolution
 from CustomGA.operators import crossover, mutation
+from CustomGA.constants import TOURNAMENT_SIZE, TOURNAMENT_PROBABILITY
 from vehicle import Vehicle
-from numpy import ceil
+from numpy import ceil, random
 
-def DTWIH(instance: ProblemInstance) -> CustomSolution:
+def DTWIH(instance: ProblemInstance) -> CustomGASolution:
     sorted_nodes = sorted([node for _, node in instance.nodes.items() if node.number], key=lambda n: n.ready_time)
     num_routes = int(ceil(instance.amount_of_vehicles / 2))
-    solution = CustomSolution(_id=0, vehicles=[Vehicle.create_route(instance) for _ in range(0, num_routes)])
+    solution = CustomGASolution(_id=0, vehicles=[Vehicle.create_route(instance) for _ in range(0, num_routes)])
     additional_vehicles = 0
 
     for offset in range(0, num_routes):
@@ -36,27 +39,92 @@ def DTWIH(instance: ProblemInstance) -> CustomSolution:
 
     return solution
 
-def try_crossover(instance, parent_one: CustomSolution, parent_two: CustomSolution, crossover_probability) -> CustomSolution:
+def is_nondominated(old_solution: CustomGASolution, new_solution: CustomGASolution) -> bool:
+    return (new_solution.total_distance < old_solution.total_distance and new_solution.num_vehicles <= old_solution.num_vehicles) or (new_solution.total_distance <= old_solution.total_distance and new_solution.num_vehicles < old_solution.num_vehicles)
+
+def is_nondominated_by_any(population: List[CustomGASolution], subject_solution: int) -> bool:
+    for s, solution in enumerate(population):
+        if s != subject_solution and not is_nondominated(population[subject_solution], solution):
+            return False
+    return True
+
+def pareto_rank(population: List[CustomGASolution]) -> None:
+    curr_rank = 1
+    unranked_solutions = list(range(0, len(population)))
+
+    while unranked_solutions:
+        could_assign_rank = False
+        for i in unranked_solutions:
+            if is_nondominated_by_any(population, i):
+                population[i].rank = curr_rank
+                unranked_solutions.remove(population[i].id)
+                could_assign_rank = True
+        if not could_assign_rank:
+            for i in unranked_solutions:
+                population[i].rank = curr_rank
+            break
+        curr_rank += 1
+
+def selection_tournament(population: List[CustomGASolution]) -> int:
+    best_solutions = list(filter(lambda s: s.rank == 1, population))
+    if not best_solutions:  # in this instance, the initialising population has been given and no solutions have been ranked yet, so work with any feasible solutions
+        best_solutions = list(filter(lambda s: s.feasible, population))
+
+    if best_solutions:
+        tournament_set = random.choice(best_solutions, TOURNAMENT_SIZE)
+    else:
+        tournament_set = random.choice(population, TOURNAMENT_SIZE)
+
+    if rand(1, 100) < TOURNAMENT_PROBABILITY:
+        best_solution = population[tournament_set[0].id]
+        for solution in tournament_set:
+            if is_nondominated(best_solution, population[solution.id]):
+                best_solution = population[solution.id]
+        return best_solution.id
+    else:
+        return tournament_set[rand(0, TOURNAMENT_SIZE - 1)].id
+
+def try_crossover(instance, parent_one: CustomGASolution, parent_two: CustomGASolution, crossover_probability) -> CustomGASolution:
     if rand(1, 100) < crossover_probability:
         return crossover(instance, parent_one, parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)])
     return parent_one
 
-def try_mutation(instance, solution: CustomSolution, mutation_probability: int) -> CustomSolution:
+def try_mutation(instance, solution: CustomGASolution, mutation_probability: int) -> CustomGASolution:
     if rand(1, 100) < mutation_probability:
-        return mutation(instance, solution)
+        mutated_solution = mutation(instance, solution)
+        return mutated_solution if is_nondominated(solution, mutated_solution) else solution
     return solution
 
-def CustomGA(instance: ProblemInstance, population_size: int, termination_condition: int, crossover_probability: int, mutation_probability: int) -> List[CustomSolution]:
-    population: List[CustomSolution] = list()
+def CustomGA(instance: ProblemInstance, population_size: int, termination_condition: int, crossover_probability: int, mutation_probability: int) -> List[CustomGASolution]:
+    population: List[CustomGASolution] = list()
 
     DTWIH_solution = DTWIH(instance)
     for i in range(0, population_size):
         population.insert(i, copy.deepcopy(DTWIH_solution))
         population[i].id = i
+    del DTWIH_solution
 
+    start = time.time()
     for i in range(termination_condition):
-        for solution in population:
-            child = try_crossover(instance, solution, None, crossover_probability)
-            child = try_mutation(instance, solution, mutation_probability)
+        crossover_parent_two = selection_tournament(population)
+        for s, solution in enumerate(population):
+            child = try_crossover(instance, solution, population[crossover_parent_two], crossover_probability)
+            child = try_mutation(instance, child, mutation_probability)
 
-    return
+            dominates_parent = is_nondominated(population[s], child)
+            if not solution.feasible or dominates_parent:
+                population[s] = child
+                if dominates_parent:
+                    print(f"solution {s} dominated")
+        pareto_rank(population)
+        if not i % (termination_condition / 10):
+            print(f"iterations={i}, time={round(time.time() - start, 1)}s")
+
+    # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
+    nondominated_set = list()
+    for solution in population:
+        if solution.rank == 1:
+            nondominated_set.append(solution)
+            if len(nondominated_set) == 20:
+                break
+    return nondominated_set
