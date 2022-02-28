@@ -128,6 +128,16 @@ def WTBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Cust
 
     return solution
 
+def select_random_vehicle(solution: CustomGASolution, customers_required: int=2) -> int:
+    random_vehicle = -1
+    exclude_values = set()
+    while not random_vehicle >= 0:
+        random_vehicle = rand(0, len(solution.vehicles) - 1, exclude_values=exclude_values)
+        if not solution.vehicles[random_vehicle].get_num_of_customers_visited() >= customers_required:
+            exclude_values.add(random_vehicle)
+            random_vehicle = -1
+    return random_vehicle
+
 def DBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Distance-based Swap Mutator
     shortest_route_length = float(INT_MAX)
     furthest_travelling_vehicle = -1
@@ -136,12 +146,8 @@ def DBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Custo
             if vehicle.route_distance > shortest_route_length and vehicle.get_num_of_customers_visited() > 2:
                 furthest_travelling_vehicle = v
                 shortest_route_length = vehicle.route_distance
-    exclude_values = set()
-    while not furthest_travelling_vehicle >= 0:
-        furthest_travelling_vehicle = rand(0, len(solution.vehicles) - 1, exclude_values=exclude_values)
-        if not solution.vehicles[furthest_travelling_vehicle].get_num_of_customers_visited() > 2:
-            exclude_values.add(furthest_travelling_vehicle)
-            furthest_travelling_vehicle = -1
+    if not furthest_travelling_vehicle >= 0:
+        furthest_travelling_vehicle = select_random_vehicle(solution, customers_required=3)
 
     for d in range(1, solution.vehicles[furthest_travelling_vehicle].get_num_of_customers_visited() - 2):
         if solution.vehicles[furthest_travelling_vehicle].destinations[d + 1].node.number \
@@ -155,18 +161,34 @@ def DBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Custo
     return solution
 
 def TWBPB_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Time-Window-based Push-back Mutator
-    random_vehicle = -1
-    exclude_values = set()
-    while not random_vehicle >= 0:
-        random_vehicle = rand(0, len(solution.vehicles) - 1, exclude_values=exclude_values)
-        if not solution.vehicles[random_vehicle].get_num_of_customers_visited() > 1:
-            exclude_values.add(random_vehicle)
-            random_vehicle = -1
+    random_vehicle = select_random_vehicle(solution)
 
     sorted_destinations = sorted(solution.vehicles[random_vehicle].get_customers_visited(), key=lambda d: d.node.ready_time)
     for d, destination in reversed(list(enumerate(solution.vehicles[random_vehicle].destinations))):
         if destination.node.number != sorted_destinations[d].node.number:
             solution.vehicles[random_vehicle].destinations.insert(len(solution.vehicles[random_vehicle].destinations) - 1, solution.vehicles[random_vehicle].destinations.pop(d))
+
+    solution.vehicles[random_vehicle].calculate_destinations_time_windows(instance)
+    solution.vehicles[random_vehicle].calculate_length_of_route(instance)
+    solution.objective_function(instance)
+
+    return solution
+
+def XYBR_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: #	X/Y-based Reorder Mutator
+    random_vehicle = select_random_vehicle(solution)
+    sorted_by_x = [d.node.number for d in sorted(solution.vehicles[random_vehicle].destinations, key=lambda d: d.node.x)]
+    sorted_by_y = [d.node.number for d in sorted(solution.vehicles[random_vehicle].destinations, key=lambda d: d.node.y)]
+
+    for d, destination in enumerate(solution.vehicles[random_vehicle].get_customers_visited()):
+        index_in_x = sorted_by_x.index(destination.node.number)
+        index_in_y = sorted_by_y.index(destination.node.number)
+        # TODO: this won't work if the nearest node is before destination d in the list
+        if solution.vehicles[random_vehicle].destinations[sorted_by_x[index_in_x + 1]] < solution.vehicles[random_vehicle].destinations[sorted_by_y[index_in_y + 1]]:
+            solution.vehicles[random_vehicle].destinations = list(filter(lambda d: d.node.number != sorted_by_x[index_in_x + 1], solution.vehicles[random_vehicle].destinations))
+        else:
+            solution.vehicles[random_vehicle].destinations = list(filter(lambda d: d.node.number != sorted_by_y[index_in_y + 1], solution.vehicles[random_vehicle].destinations))
+        sorted_by_x.pop(index_in_x)
+        sorted_by_y.pop(index_in_y)
 
     solution.vehicles[random_vehicle].calculate_destinations_time_windows(instance)
     solution.vehicles[random_vehicle].calculate_length_of_route(instance)
