@@ -26,7 +26,7 @@ def crossover_evaluation(instance: ProblemInstance, crossover_solution: CustomSo
         shortest_from_previous, shortest_to_next = best_stats_record[node].distance_from_previous, best_stats_record[node].distance_to_next
 
         for v, vehicle in enumerate(crossover_solution.vehicles):
-            if vehicle.current_capacity + node <= instance.capacity_of_vehicles:
+            if vehicle.current_capacity + instance.nodes[node].demand <= instance.capacity_of_vehicles:
                 for d, destination in enumerate(vehicle.destinations[1:], 1):
                     distance_from_previous = instance.get_distance(vehicle.destinations[d - 1].node.number, node)
                     distance_to_next = instance.get_distance(node, destination.node.number)
