@@ -165,8 +165,8 @@ def TWBPB_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Cus
     random_vehicle = select_random_vehicle(solution)
 
     sorted_destinations = sorted(solution.vehicles[random_vehicle].get_customers_visited(), key=lambda d: d.node.ready_time)
-    for d, destination in reversed(list(enumerate(solution.vehicles[random_vehicle].destinations))):
-        if destination.node.number != sorted_destinations[d].node.number:
+    for d, destination in reversed(list(enumerate(solution.vehicles[random_vehicle].get_customers_visited(), 1))):
+        if destination.node.number != sorted_destinations[d - 1].node.number:
             solution.vehicles[random_vehicle].destinations.insert(len(solution.vehicles[random_vehicle].destinations) - 1, solution.vehicles[random_vehicle].destinations.pop(d))
 
     solution.vehicles[random_vehicle].calculate_destinations_time_windows(instance)
