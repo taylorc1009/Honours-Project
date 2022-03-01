@@ -1,6 +1,7 @@
 import sys
 import os
-from typing import List, Union
+import re
+from typing import List, Union, Tuple, Dict
 from MMOEASA.mmoeasaSolution import MMOEASASolution
 from Ombuki.ombukiSolution import OmbukiSolution
 from CustomGA.customGASolution import CustomGASolution
@@ -12,7 +13,7 @@ from Ombuki.ombuki import Ombuki
 from evaluation import calculate_area
 from CustomGA.custom import CustomGA
 
-def execute_MMOEASA(problem_instance: ProblemInstance) -> List[Union[MMOEASASolution, OmbukiSolution]]:
+def execute_MMOEASA(problem_instance: ProblemInstance) -> Tuple[List[Union[MMOEASASolution, OmbukiSolution]], Dict[str, int]]:
     num_customers = len(problem_instance.nodes) - 1
     TC = 0 # termination condition = the number of iterations to perform
     if num_customers == 25:
@@ -22,28 +23,13 @@ def execute_MMOEASA(problem_instance: ProblemInstance) -> List[Union[MMOEASASolu
     elif num_customers == 100:
         TC = 200
 
-    nondominated_solutions = MMOEASA(problem_instance, POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0) # TODO: try changing the numerical parameters to command line arguments and experiment with them
+    return MMOEASA(problem_instance, POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0)
 
-    for solution in nondominated_solutions:
-        print(os.linesep, str(solution))
+def execute_Ombuki(problem_instance: ProblemInstance) -> Tuple[List[Union[OmbukiSolution, MMOEASASolution]], Dict[str, int]]:
+    return Ombuki(problem_instance, 300, 350, 80, 10)
 
-    return nondominated_solutions
-
-def execute_Ombuki(problem_instance: ProblemInstance) -> List[Union[OmbukiSolution, MMOEASASolution]]:
-    nondominated_solutions = Ombuki(problem_instance, 300, 350, 80, 10)
-
-    for solution in nondominated_solutions:
-        print(os.linesep, str(solution))
-
-    return nondominated_solutions
-
-def execute_Custom(problem_instance: ProblemInstance) -> List[CustomGASolution]:
-    nondominated_solutions = CustomGA(problem_instance, 300, 350, 80, 10)
-
-    for solution in nondominated_solutions:
-        print(os.linesep, str(solution))
-
-    return nondominated_solutions
+def execute_Custom(problem_instance: ProblemInstance) -> Tuple[List[CustomGASolution], Dict[str, int]]:
+    return CustomGA(problem_instance, 300, 350, 80, 10)
 
 if __name__ == '__main__':
     if not len(sys.argv) in {2, 4} or (len(sys.argv) == 2 and sys.argv[1] not in {"--help", "-h"}):
@@ -80,19 +66,22 @@ if __name__ == '__main__':
 
         problem_instance.calculate_distances()
 
-        nondominated_set = None
+        nondominated_set, statistics = None, None
         if sys.argv[1].upper() == "MMOEASA":
-            nondominated_set = execute_MMOEASA(problem_instance)
+            nondominated_set, statistics = execute_MMOEASA(problem_instance)
         elif sys.argv[1].upper() == "OMBUKI":
-            nondominated_set = execute_Ombuki(problem_instance)
+            nondominated_set, statistics = execute_Ombuki(problem_instance)
         elif sys.argv[1].upper() == "CUSTOM":
             if sys.argv[3].upper() != "OMBUKI":
                 print("Only Ombuki's acceptance criterion is implemented in the custom algorithm")
             else:
-                nondominated_set = execute_Custom(problem_instance)
+                nondominated_set, statistics = execute_Custom(problem_instance)
         else:
             exc = ValueError(f"Algorithm \"{sys.argv[1]}\" was not recognised")
             raise exc
 
+        for solution in nondominated_set:
+            print(os.linesep, str(solution))
+        print(re.sub("[{}]", "", str(statistics)))
         print(os.linesep, str(problem_instance))
         calculate_area(problem_instance, nondominated_set, sys.argv[1], sys.argv[3])
