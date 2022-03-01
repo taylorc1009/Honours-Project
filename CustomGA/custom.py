@@ -92,7 +92,7 @@ def try_crossover(instance, parent_one: CustomGASolution, parent_two: CustomGASo
 def try_mutation(instance, solution: CustomGASolution, mutation_probability: int) -> CustomGASolution:
     if rand(1, 100) < mutation_probability:
         mutated_solution = copy.deepcopy(solution)
-        probability = rand(1, 7)
+        probability = rand(1, 8)
 
         if probability == 1:
             mutated_solution = TWBS_mutation(instance, mutated_solution) # Time-Window-based Sort Mutator
