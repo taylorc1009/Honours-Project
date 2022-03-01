@@ -81,7 +81,9 @@ if __name__ == '__main__':
             raise exc
 
         for solution in nondominated_set:
-            print(os.linesep, str(solution))
-        print(re.sub("[{}]", "", str(statistics)))
-        print(os.linesep, str(problem_instance))
+            print(f"{os.linesep + str(solution)}")
+        print(f"{os.linesep}Algorithm {sys.argv[3]}'s statistics:")
+        for statistic, value in statistics.items():
+            print(f" - {statistic}: {value}")
+        print(f"{os.linesep + str(problem_instance)}")
         calculate_area(problem_instance, nondominated_set, sys.argv[1], sys.argv[3])
