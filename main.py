@@ -1,6 +1,5 @@
 import sys
 import os
-import re
 from typing import List, Union, Tuple, Dict
 from MMOEASA.mmoeasaSolution import MMOEASASolution
 from Ombuki.ombukiSolution import OmbukiSolution
