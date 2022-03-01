@@ -1,7 +1,7 @@
 import copy
 import time
 import random
-from typing import List
+from typing import List, Dict, Tuple
 from common import rand
 from destination import Destination
 from problemInstance import ProblemInstance
@@ -10,6 +10,13 @@ from CustomGA.operators import crossover, TWBS_mutation, TWBSw_mutation, WTBS_mu
 from CustomGA.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_BEST
 from vehicle import Vehicle
 from numpy import ceil, random
+
+initialiser_execution_time = 0
+feasible_initialisations = 0
+crossover_invocations = 0
+crossover_successes = 0
+mutation_invocations = 0
+mutation_successes = 0
 
 def DTWIH(instance: ProblemInstance) -> CustomGASolution:
     sorted_nodes = sorted([node for _, node in instance.nodes.items() if node.number], key=lambda n: n.ready_time)
@@ -86,11 +93,21 @@ def selection_tournament(population: List[CustomGASolution]) -> int:
 
 def try_crossover(instance, parent_one: CustomGASolution, parent_two: CustomGASolution, crossover_probability) -> CustomGASolution:
     if rand(1, 100) < crossover_probability:
-        return crossover(instance, parent_one, parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)])
+        global crossover_invocations, crossover_successes
+        crossover_invocations += 1
+
+        crossover_solution = crossover(instance, parent_one, parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)])
+
+        if is_nondominated(parent_one, crossover_solution):
+            crossover_successes += 1
+        return crossover_solution
     return parent_one
 
 def try_mutation(instance, solution: CustomGASolution, mutation_probability: int) -> CustomGASolution:
     if rand(1, 100) < mutation_probability:
+        global mutation_invocations, mutation_successes
+        mutation_invocations += 1
+
         mutated_solution = copy.deepcopy(solution)
         probability = rand(1, 8)
 
@@ -111,16 +128,25 @@ def try_mutation(instance, solution: CustomGASolution, mutation_probability: int
         elif probability == 8:
             mutated_solution = TWBPB_mutation(instance, mutated_solution) # Time-Window-based Push-back Mutator
 
-        return mutated_solution if is_nondominated(solution, mutated_solution) else solution
+        if is_nondominated(solution, mutated_solution):
+            mutation_successes += 1
+            return mutated_solution
+        else:
+            return solution
     return solution
 
-def CustomGA(instance: ProblemInstance, population_size: int, termination_condition: int, crossover_probability: int, mutation_probability: int) -> List[CustomGASolution]:
+def CustomGA(instance: ProblemInstance, population_size: int, termination_condition: int, crossover_probability: int, mutation_probability: int) -> Tuple[List[CustomGASolution], Dict[str, int]]:
     population: List[CustomGASolution] = list()
 
+    global initialiser_execution_time, feasible_initialisations
+    initialiser_execution_time = time.time()
     DTWIH_solution = DTWIH(instance)
+    if DTWIH_solution.feasible:
+        feasible_initialisations += 1
     for i in range(0, population_size):
         population.insert(i, copy.deepcopy(DTWIH_solution))
         population[i].id = i
+    initialiser_execution_time = round(time.time() - initialiser_execution_time, 2)
     del DTWIH_solution
 
     start = time.time()
@@ -146,4 +172,14 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
             nondominated_set.append(solution)
             if len(nondominated_set) == 20:
                 break
-    return nondominated_set
+
+    global crossover_invocations, crossover_successes, mutation_invocations, mutation_successes
+    statistics = {
+        "feasible_initialisations": feasible_initialisations,
+        "crossover_invocations": crossover_invocations,
+        "crossover_successes": crossover_successes,
+        "mutation_invocations": mutation_invocations,
+        "mutation_successes": mutation_successes
+    }
+
+    return nondominated_set, statistics
