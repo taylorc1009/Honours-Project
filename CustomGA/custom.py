@@ -3,6 +3,7 @@ import time
 import random
 from typing import List, Dict, Tuple
 from common import rand
+from random import shuffle
 from destination import Destination
 from problemInstance import ProblemInstance
 from CustomGA.customGASolution import CustomGASolution
@@ -26,19 +27,21 @@ def DTWIH(instance: ProblemInstance) -> CustomGASolution:
 
     for offset in range(0, num_routes):
         range_of_sorted_nodes = num_routes if num_routes < len(sorted_nodes) else len(sorted_nodes)
+        nodes_to_insert = sorted_nodes[:range_of_sorted_nodes]
+        shuffle(nodes_to_insert)
         for i in range(0, range_of_sorted_nodes):
-            if solution.vehicles[i].current_capacity + sorted_nodes[i].demand <= instance.capacity_of_vehicles:
-                solution.vehicles[i].destinations.insert(offset + 1, Destination(node=sorted_nodes[i]))
-                solution.vehicles[i].current_capacity += sorted_nodes[i].demand
+            if solution.vehicles[i].current_capacity + nodes_to_insert[i].demand <= instance.capacity_of_vehicles:
+                solution.vehicles[i].destinations.insert(offset + 1, Destination(node=nodes_to_insert[i]))
+                solution.vehicles[i].current_capacity += nodes_to_insert[i].demand
             else:
                 # TODO: try picking the best location in an existing vehicle?
                 index = (num_routes - 1) + additional_vehicles
-                if solution.vehicles[index].current_capacity + sorted_nodes[i].demand > instance.capacity_of_vehicles:
-                    solution.vehicles.append(Vehicle.create_route(instance, sorted_nodes[i]))
+                if solution.vehicles[index].current_capacity + nodes_to_insert[i].demand > instance.capacity_of_vehicles:
+                    solution.vehicles.append(Vehicle.create_route(instance, nodes_to_insert[i]))
                     additional_vehicles += 1
                 else:
-                    solution.vehicles[index].destinations.insert(len(solution.vehicles[index].destinations), Destination(node=sorted_nodes[i]))
-        del sorted_nodes[:num_routes]
+                    solution.vehicles[index].destinations.insert(len(solution.vehicles[index].destinations), Destination(node=nodes_to_insert[i]))
+        del sorted_nodes[:range_of_sorted_nodes]
 
     solution.calculate_nodes_time_windows(instance)
     solution.calculate_length_of_routes(instance)
@@ -140,13 +143,11 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
 
     global initialiser_execution_time, feasible_initialisations
     initialiser_execution_time = time.time()
-    DTWIH_solution = DTWIH(instance)
-    if DTWIH_solution.feasible:
-        feasible_initialisations += 1
     for i in range(0, population_size):
-        population.insert(i, copy.deepcopy(DTWIH_solution))
+        population.insert(i, DTWIH(instance))
         population[i].id = i
-    del DTWIH_solution
+        if population[i].feasible:
+            feasible_initialisations += 1
     initialiser_execution_time = round(time.time() - initialiser_execution_time, 2)
 
     start = time.time()
