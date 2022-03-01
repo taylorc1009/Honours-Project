@@ -6,7 +6,7 @@ from common import rand
 from destination import Destination
 from problemInstance import ProblemInstance
 from CustomGA.customGASolution import CustomGASolution
-from CustomGA.operators import crossover, TWBS_mutation, WTBS_mutation, DBS_mutation, TWBPB_mutation, XYBR_mutation
+from CustomGA.operators import crossover, TWBS_mutation, TWBSw_mutation, WTBS_mutation, SWTBS_mutation, DBS_mutation, SDBS_mutation, TWBPB_mutation, TWBMF_mutation
 from CustomGA.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_BEST
 from vehicle import Vehicle
 from numpy import ceil, random
@@ -92,18 +92,24 @@ def try_crossover(instance, parent_one: CustomGASolution, parent_two: CustomGASo
 def try_mutation(instance, solution: CustomGASolution, mutation_probability: int) -> CustomGASolution:
     if rand(1, 100) < mutation_probability:
         mutated_solution = copy.deepcopy(solution)
-        probability = rand(1, 100)
+        probability = rand(1, 7)
 
-        if 1 <= probability <= 20:
-            mutated_solution = TWBS_mutation(instance, mutated_solution)
-        elif 21 <= probability <= 40:
-            mutated_solution = WTBS_mutation(instance, mutated_solution)
-        elif 41 <= probability <= 60:
-            mutated_solution = DBS_mutation(instance, mutated_solution)
-        elif 61 <= probability <= 80:
-            mutated_solution = TWBPB_mutation(instance, mutated_solution)
-        elif 81 <= probability <= 100:
-            mutated_solution = XYBR_mutation(instance, mutated_solution)
+        if probability == 1:
+            mutated_solution = TWBS_mutation(instance, mutated_solution) # Time-Window-based Sort Mutator
+        elif probability == 2:
+            mutated_solution = TWBSw_mutation(instance, mutated_solution) # Time-Window-based Swap Mutator
+        elif probability == 3:
+            mutated_solution = WTBS_mutation(instance, mutated_solution) # Wait-Time-based Swap Mutator
+        elif probability == 4:
+            mutated_solution = SWTBS_mutation(instance, mutated_solution) # Single Wait-Time-based Swap Mutator
+        elif probability == 5:
+            mutated_solution = DBS_mutation(instance, mutated_solution) # Distance-based Swap Mutator
+        elif probability == 6:
+            mutated_solution = SDBS_mutation(instance, mutated_solution) # Single Distance-based Swap Mutator
+        elif probability == 7:
+            mutated_solution = TWBMF_mutation(instance, mutated_solution) # Time-Window-based Move Forward Mutator
+        elif probability == 8:
+            mutated_solution = TWBPB_mutation(instance, mutated_solution) # Time-Window-based Push-back Mutator
 
         return mutated_solution if is_nondominated(solution, mutated_solution) else solution
     return solution
