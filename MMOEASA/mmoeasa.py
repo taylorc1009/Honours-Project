@@ -13,6 +13,13 @@ from common import INT_MAX, rand
 from typing import List, Tuple, Union
 from numpy import sqrt, exp
 
+initialiser_execution_time = 0
+feasible_initialisations = 0
+crossover_invocations = 0
+crossover_successes = 0
+mutation_invocations = 0
+mutation_successes = 0
+
 def TWIH(instance: ProblemInstance) -> Union[MMOEASASolution, OmbukiSolution]:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
 
@@ -70,34 +77,42 @@ def Calculate_cooling(i: int, T_max: float, T_min: float, T_stop: float, p: int,
     return T_cooling
 
 def Crossover(instance: ProblemInstance, I: Union[MMOEASASolution, OmbukiSolution], P: List[Union[MMOEASASolution, OmbukiSolution]], P_crossover: int) -> Union[MMOEASASolution, OmbukiSolution]:
-    return Crossover1(instance, copy.deepcopy(I), P) if rand(1, 100) <= P_crossover else I
+    if rand(1, 100) <= P_crossover:
+        global crossover_invocations
+        crossover_invocations += 1
 
-def Mutation(instance: ProblemInstance, I: Union[MMOEASASolution, OmbukiSolution], P_mutation: int, pending_copy: bool) -> Union[MMOEASASolution, OmbukiSolution]:
+        return Crossover1(instance, copy.deepcopy(I), P)
+    return I
+
+def Mutation(instance: ProblemInstance, I: Union[MMOEASASolution, OmbukiSolution], P_mutation: int, pending_copy: bool) -> Tuple[Union[MMOEASASolution, OmbukiSolution], bool]:
     if rand(1, 100) <= P_mutation:
+        global mutation_invocations
+        mutation_invocations += 1
+
         I_c = copy.deepcopy(I) if pending_copy else I
         probability = rand(1, 100)
 
         if 1 <= probability <= 10:
-            return Mutation1(instance, I_c)
+            return Mutation1(instance, I_c), True
         elif 11 <= probability <= 20:
-            return Mutation2(instance, I_c)
+            return Mutation2(instance, I_c), True
         elif 21 <= probability <= 30:
-            return Mutation3(instance, I_c)
+            return Mutation3(instance, I_c), True
         elif 31 <= probability <= 40:
-            return Mutation4(instance, I_c)
+            return Mutation4(instance, I_c), True
         elif 41 <= probability <= 50:
-            return Mutation5(instance, I_c)
+            return Mutation5(instance, I_c), True
         elif 51 <= probability <= 60:
-            return Mutation6(instance, I_c)
+            return Mutation6(instance, I_c), True
         elif 61 <= probability <= 70:
-            return Mutation7(instance, I_c)
+            return Mutation7(instance, I_c), True
         elif 71 <= probability <= 80:
-            return Mutation8(instance, I_c)
+            return Mutation8(instance, I_c), True
         elif 81 <= probability <= 90:
-            return Mutation9(instance, I_c)
+            return Mutation9(instance, I_c), True
         elif 91 <= probability <= 100:
-            return Mutation10(instance, I_c)
-    return I
+            return Mutation10(instance, I_c), True
+    return I, False
 
 def Euclidean_distance_dispersion(instance: ProblemInstance, x1: float, y1: float, x2: float, y2: float) -> float:
     return sqrt(((x2 - x1) / 2 * instance.Hypervolume_total_distance) ** 2 + ((y2 - y1) / 2 * instance.Hypervolume_cargo_unbalance) ** 2)
@@ -118,12 +133,16 @@ def MO_Metropolis(instance: ProblemInstance, Parent: MMOEASASolution, Child: MMO
         else:
             return Parent, False
 
-def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float) -> List[Union[MMOEASASolution, OmbukiSolution]]:
+def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float) -> Tuple[List[Union[OmbukiSolution, MMOEASASolution]], Dict[str, int]]:
     P: List[Union[MMOEASASolution, OmbukiSolution]] = list()
     ND: List[Union[MMOEASASolution, OmbukiSolution]] = list()
     iterations = 0
 
+    global initialiser_execution_time, feasible_initialisations, crossover_successes, mutation_successes
+    initialiser_execution_time = time.time()
     TWIH_solution = TWIH_initialiser(instance)
+    if TWIH_solution.feasible:
+        feasible_initialisations += 1
     for i in range(p):
         P.insert(i, copy.deepcopy(TWIH_solution))
         P[i].id = i
@@ -131,6 +150,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
             P[i].T_default = T_max - float(i) * ((T_max - T_min) / float(p - 1))
             P[i].T_cooling = Calculate_cooling(i, T_max, T_min, T_stop, p, TC)
     del TWIH_solution
+    initialiser_execution_time = round(time.time() - initialiser_execution_time, 2)
 
     start = time.time()
     current_multi_start = 0
@@ -143,18 +163,30 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
             for i, I in enumerate(P):
                 #selection_tournament = rand(1, p * (2 if len(ND) > 1 else 1))
                 I_c = Crossover(instance, I, P, P_crossover)#P if selection_tournament <= p else ND, P_crossover)
+                crossover_occurred = I_c is not I
+                mutations = 0
                 for _ in range(0, rand(1, MAX_SIMULTANEOUS_MUTATIONS)):
-                    I_c = Mutation(instance, I_c, P_mutation, I_c is I)
+                    I_c, mutation_occurred = Mutation(instance, I_c, P_mutation, I_c is I)
+                    if mutation_occurred:
+                        mutations += 1
 
                 child_dominated, dominated_any = False, False
                 if instance.acceptance_criterion == "Ombuki":
                     child_dominated = ombuki_is_nondominated(I, I_c)
                     if child_dominated or not P[i].feasible:
+                        if crossover_occurred:
+                            crossover_successes += 1
+                        if mutations > 0:
+                            mutation_successes += mutations
                         P[i] = I_c
                         dominated_any = ombuki_is_nondominated_by_any(ND, P[i])
                 else:
                     P[i], child_dominated = MO_Metropolis(instance, I, I_c, I.T)
                     if child_dominated:
+                        if crossover_occurred:
+                            crossover_successes += 1
+                        if mutations > 0:
+                            mutation_successes += mutations
                         dominated_any = is_nondominated_by_any(ND, P[i])
 
                 if dominated_any or (child_dominated and len(ND) < p):
@@ -179,4 +211,15 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
         iterations = 0
         #if iterations < TC:
         print("multi-start occurred")
-    return ND
+
+    global crossover_invocations, crossover_successes, mutation_invocations, mutation_successes
+    statistics = {
+        "initialiser_execution_time": f"{initialiser_execution_time}s",
+        "feasible_initialisations": feasible_initialisations,
+        "crossover_invocations": crossover_invocations,
+        "crossover_successes": crossover_successes,
+        "mutation_invocations": mutation_invocations,
+        "mutation_successes": mutation_successes
+    }
+
+    return ND, statistics
