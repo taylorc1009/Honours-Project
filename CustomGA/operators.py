@@ -10,7 +10,7 @@ from vehicle import Vehicle
 def set_up_crossover_child(instance: ProblemInstance, parent_one: CustomGASolution, parent_two_vehicle: Vehicle) -> CustomGASolution:
     child_solution = copy.deepcopy(parent_one)
 
-    nodes_to_remove = set([d.node.number for d in parent_two_vehicle.get_customers_visited()])
+    nodes_to_remove = {d.node.number for d in parent_two_vehicle.get_customers_visited()}
     i = 0
     while i < len(child_solution.vehicles) and nodes_to_remove:
         increment = True
