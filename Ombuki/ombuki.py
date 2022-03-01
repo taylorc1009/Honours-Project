@@ -1,6 +1,6 @@
 import copy
 import time
-from typing import List, Union
+from typing import List, Union, Dict, Tuple
 from Ombuki.operators import crossover, mutation
 from MMOEASA.mmoeasaSolution import MMOEASASolution
 from problemInstance import ProblemInstance
@@ -12,6 +12,13 @@ from numpy import arange, round, random
 from Ombuki.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_BEST, GREEDY_PERCENT
 from common import INT_MAX
 from MMOEASA.mmoeasa import MO_Metropolis
+
+initialiser_execution_time = 0
+feasible_initialisations = 0
+crossover_invocations = 0
+crossover_successes = 0
+mutation_invocations = 0
+mutation_successes = 0
 
 def generate_random_solution(instance: ProblemInstance) -> Union[OmbukiSolution, MMOEASASolution]:
     solution = OmbukiSolution(_id=0, vehicles=list()) if instance.acceptance_criterion == "Ombuki" else MMOEASASolution(_id=0, vehicles=list())
@@ -182,19 +189,38 @@ def selection_tournament(instance: ProblemInstance, population: List[Union[Ombuk
         return tournament_set[rand(0, TOURNAMENT_SET_SIZE - 1)].id
 
 def crossover_probability(instance: ProblemInstance, iterator_parent: Union[OmbukiSolution, MMOEASASolution], tournament_parent: Union[OmbukiSolution, MMOEASASolution], probability: int) -> Union[OmbukiSolution, MMOEASASolution]:
-    return crossover(instance, iterator_parent, tournament_parent) if rand(1, 100) < probability else iterator_parent
+    if rand(1, 100) < probability:
+        global crossover_invocations, crossover_successes
+        crossover_invocations += 1
+
+        crossover_solution = crossover(instance, iterator_parent, tournament_parent)
+
+        if is_nondominated(iterator_parent, crossover_solution):
+            crossover_successes += 1
+        return crossover_solution
+    return iterator_parent
 
 def mutation_probability(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], probability: int, pending_copy: bool) -> Union[OmbukiSolution, MMOEASASolution]:
     if rand(1, 100) < probability:
+        global mutation_invocations, mutation_successes
+        mutation_invocations += 1
+
         mutated_solution = mutation(instance, copy.deepcopy(solution) if pending_copy else solution)
+
         if instance.acceptance_criterion == "MMOEASA":
-            return mutated_solution if mmoeasa_is_nondominated(solution, mutated_solution) else solution
-        return mutated_solution if is_nondominated(solution, mutated_solution) else solution
+            if mmoeasa_is_nondominated(solution, mutated_solution):
+                mutation_successes += 1
+                return mutated_solution
+        elif is_nondominated(solution, mutated_solution):
+            mutation_successes += 1
+            return mutated_solution
     return solution
 
-def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: int, mutation: int) -> List[Union[OmbukiSolution, MMOEASASolution]]:
+def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: int, mutation: int) -> Tuple[List[Union[OmbukiSolution, MMOEASASolution]], Dict[str, int]]:
     population: List[Union[OmbukiSolution, MMOEASASolution]] = list()
 
+    global initialiser_execution_time, feasible_initialisations
+    initialiser_execution_time = time.time()
     num_greedy_solutions = int(round(float(population_size * GREEDY_PERCENT)))
     for i in range(0, num_greedy_solutions):
         greedy_solution = generate_greedy_solution(instance)
@@ -203,6 +229,8 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         greedy_solution.calculate_length_of_routes(instance)
         greedy_solution.calculate_nodes_time_windows(instance)
         greedy_solution.objective_function(instance)
+        if greedy_solution.feasible:
+            feasible_initialisations += 1
         population.insert(i, greedy_solution)
     for i in range(num_greedy_solutions, population_size):
         random_solution = generate_random_solution(instance)
@@ -211,7 +239,10 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         random_solution.calculate_length_of_routes(instance)
         random_solution.calculate_nodes_time_windows(instance)
         random_solution.objective_function(instance)
+        if random_solution.feasible:
+            feasible_initialisations += 1
         population.insert(i, random_solution)
+    initialiser_execution_time = round(time.time() - initialiser_execution_time, 2)
 
     start = time.time()
     for _ in range(0, generation_span):
@@ -248,4 +279,15 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
             nondominated_set.append(solution)
             if len(nondominated_set) == 20:
                 break
-    return nondominated_set
+
+    global crossover_invocations, crossover_successes, mutation_invocations, mutation_successes
+    statistics = {
+        "initialiser_execution_time": f"{initialiser_execution_time}s",
+        "feasible_initialisations": feasible_initialisations,
+        "crossover_invocations": crossover_invocations,
+        "crossover_successes": crossover_successes,
+        "mutation_invocations": mutation_invocations,
+        "mutation_successes": mutation_successes
+    }
+
+    return nondominated_set, statistics
