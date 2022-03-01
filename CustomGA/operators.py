@@ -121,10 +121,15 @@ def swap(l: List, index_one: int, index_two: int):
 def WTBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Wait-Time-based Swap Mutator
     longest_waiting_vehicle = select_route_with_longest_wait(solution)
 
-    for d, destination in enumerate(solution.vehicles[longest_waiting_vehicle].get_customers_visited(), 1):
-        if destination.wait_time:
-            swap(solution.vehicles[longest_waiting_vehicle].destinations, d, d + 1)
-            solution.vehicles[longest_waiting_vehicle].calculate_destination_time_window(instance, d - 1, d)
+    destination = 1
+    while destination <= solution.vehicles[longest_waiting_vehicle].get_num_of_customers_visited():
+        if solution.vehicles[longest_waiting_vehicle].destinations[destination].wait_time:
+            swap(solution.vehicles[longest_waiting_vehicle].destinations, destination, destination + 1)
+            for _ in range(2):
+                solution.vehicles[longest_waiting_vehicle].calculate_destination_time_window(instance, destination - 1, destination)
+                destination += 1
+        else:
+            destination += 1
 
     d = len(solution.vehicles[longest_waiting_vehicle].destinations) - 1
     solution.vehicles[longest_waiting_vehicle].calculate_destination_time_window(instance, d - 1, d)
