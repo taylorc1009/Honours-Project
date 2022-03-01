@@ -1,3 +1,4 @@
+import os
 from MMOEASA.evaluation import TWIH_ref_point as MMOEASA_ref_point, calculate_median_Hypervolumes as MMOEASA_median_hypervolumes
 from Ombuki.evaluation import TWIH_ref_point as Ombuki_ref_point, calculate_median_Hypervolumes as Ombuki_median_hypervolumes
 from Ombuki.ombukiSolution import OmbukiSolution
@@ -16,5 +17,5 @@ def calculate_area(problem_instance: ProblemInstance, nondominated_set: List[Uni
 
         area = round(area, 2)
 
-    print(f"Graph area occupied: {area}%")
+    print(f"{os.linesep}Graph area occupied: {area}%")
     write_area(area, algorithm, acceptance_criterion)
