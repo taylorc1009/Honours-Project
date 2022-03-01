@@ -168,6 +168,7 @@ def TWBPB_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Cus
     for d, destination in reversed(list(enumerate(solution.vehicles[random_vehicle].get_customers_visited(), 1))):
         if destination.node.number != sorted_destinations[d - 1].node.number:
             solution.vehicles[random_vehicle].destinations.insert(len(solution.vehicles[random_vehicle].destinations) - 1, solution.vehicles[random_vehicle].destinations.pop(d))
+            break
 
     solution.vehicles[random_vehicle].calculate_destinations_time_windows(instance)
     solution.vehicles[random_vehicle].calculate_length_of_route(instance)
