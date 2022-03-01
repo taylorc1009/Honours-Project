@@ -2,7 +2,7 @@ import copy
 import time
 from threading import Lock
 from multiprocessing import Process
-from typing import Dict, Set
+from typing import Dict, Set, Tuple
 from CustomGA.customGASolution import CustomGASolution
 from destination import Destination
 from problemInstance import ProblemInstance
@@ -16,6 +16,37 @@ class CrossoverPositionStats:
     def update_record(self, distance_from_previous: float, distance_to_next: float):
         self.distance_from_previous = float(distance_from_previous)
         self.distance_to_next = float(distance_to_next)
+
+def initialise_decision_tree_prerequisites(instance: ProblemInstance, parent_one: CustomGASolution, parent_two: CustomGASolution) -> Tuple[CustomGASolution, Set, List[Destination]]:
+    crossover_solution = copy.deepcopy(parent_one)
+    parent_two_destinations = parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)].get_customers_visited()
+    nodes_to_remove = set([d.node.number for d in parent_two_destinations])
+    nodes_to_insert = copy.deepcopy(nodes_to_remove)
+
+    i = 0
+    while i < len(crossover_solution.vehicles) and nodes_to_remove:
+        increment = True
+        j = 1
+        while j <= crossover_solution.vehicles[i].get_num_of_customers_visited() and nodes_to_remove:
+            destination = crossover_solution.vehicles[i].destinations[j]
+            if destination.node.number in nodes_to_remove:
+                nodes_to_remove.remove(destination.node.number)
+                crossover_solution.vehicles[i].current_capacity -= destination.node.demand
+                if crossover_solution.vehicles[i].get_num_of_customers_visited() - 1 > 0:
+                    del crossover_solution.vehicles[i].destinations[j]
+                else:
+                    increment = False
+                    del crossover_solution.vehicles[i]
+                    break  # break, otherwise the while loop will start searching the next vehicle with "j" as the same value; without incrementing "i" and starting "j" at 0
+            else:
+                j += 1
+        if increment:
+            i += 1
+
+    crossover_solution.calculate_nodes_time_windows(instance)
+    crossover_solution.calculate_vehicles_loads(instance)
+
+    return crossover_solution, nodes_to_insert, parent_two_destinations
 
 """ VVV Serial Decision-tree-based Crossover Operator START VVV """
 
@@ -54,33 +85,7 @@ def crossover_evaluation(instance: ProblemInstance, crossover_solution: CustomGA
     return crossover_solution_final
 
 def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_two: CustomGASolution) -> CustomGASolution:
-    crossover_solution = copy.deepcopy(parent_one)
-    parent_two_destinations = parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)].get_customers_visited()
-    nodes_to_remove = set([d.node.number for d in parent_two_destinations])
-    nodes_to_insert = copy.deepcopy(nodes_to_remove)
-
-    i = 0
-    while i < len(crossover_solution.vehicles) and nodes_to_remove:
-        increment = True
-        j = 1
-        while j <= crossover_solution.vehicles[i].get_num_of_customers_visited() and nodes_to_remove:
-            destination = crossover_solution.vehicles[i].destinations[j]
-            if destination.node.number in nodes_to_remove:
-                nodes_to_remove.remove(destination.node.number)
-                crossover_solution.vehicles[i].current_capacity -= destination.node.demand
-                if crossover_solution.vehicles[i].get_num_of_customers_visited() - 1 > 0:
-                    del crossover_solution.vehicles[i].destinations[j]
-                else:
-                    increment = False
-                    del crossover_solution.vehicles[i]
-                    break # break, otherwise the while loop will start searching the next vehicle with "j" as the same value; without incrementing "i" and starting "j" at 0
-            else:
-                j += 1
-        if increment:
-            i += 1
-
-    crossover_solution.calculate_nodes_time_windows(instance)
-    crossover_solution.calculate_vehicles_loads(instance)
+    crossover_solution, nodes_to_insert, parent_two_destinations = initialise_decision_tree_prerequisites(instance, parent_one, parent_two)
 
     stats_record = {destination.node.number: CrossoverPositionStats() for destination in parent_two_destinations}
     start = time.time()
@@ -135,42 +140,16 @@ def crossover_evaluation_multithreaded(instance: ProblemInstance, crossover_solu
         t.join()
 
 def crossover_multithreaded(instance: ProblemInstance, parent_one: CustomGASolution, parent_two: CustomGASolution) -> CustomGASolution:
-    crossover_solution = copy.deepcopy(parent_one)
-    parent_two_destinations = parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)].get_customers_visited()
-    nodes_to_remove = set([d.node.number for d in parent_two_destinations])
-    nodes_to_insert = copy.deepcopy(nodes_to_remove)
-
-    i = 0
-    while i < len(crossover_solution.vehicles) and nodes_to_remove:
-        increment = True
-        j = 1
-        while j <= crossover_solution.vehicles[i].get_num_of_customers_visited() and nodes_to_remove:
-            destination = crossover_solution.vehicles[i].destinations[j]
-            if destination.node.number in nodes_to_remove:
-                nodes_to_remove.remove(destination.node.number)
-                crossover_solution.vehicles[i].current_capacity -= destination.node.demand
-                if crossover_solution.vehicles[i].get_num_of_customers_visited() - 1 > 0:
-                    del crossover_solution.vehicles[i].destinations[j]
-                else:
-                    increment = False
-                    del crossover_solution.vehicles[i]
-                    break # break, otherwise the while loop will start searching the next vehicle with "j" as the same value; without incrementing "i" and starting "j" at 0
-            else:
-                j += 1
-        if increment:
-            i += 1
-
-    crossover_solution.calculate_nodes_time_windows(instance)
-    crossover_solution.calculate_vehicles_loads(instance)
+    crossover_solution, nodes_to_insert, parent_two_destinations = initialise_decision_tree_prerequisites(instance, parent_one, parent_two)
 
     stats_record = {destination.node.number: CrossoverPositionStats() for destination in parent_two_destinations}
     start = time.time()
     crossover_solution_copy = copy.deepcopy(crossover_solution)
     result = {0: None}
     crossover_solution = crossover_evaluation_multithreaded(instance, crossover_solution_copy, nodes_to_insert, copy.deepcopy(stats_record), stats_record, len(nodes_to_insert), result)
-    copy_is = crossover_solution_copy is crossover_solution
 
-    print(f"{round(time.time() - start, 1)}s", copy_is)
+    print(f"{round(time.time() - start, 1)}s", crossover_solution_copy is crossover_solution)
+
     crossover_solution.calculate_length_of_routes(instance)
     crossover_solution.calculate_nodes_time_windows(instance)
     crossover_solution.calculate_vehicles_loads(instance)

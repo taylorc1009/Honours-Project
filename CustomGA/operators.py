@@ -1,7 +1,6 @@
 import copy
 from random import shuffle
 from typing import List
-
 from CustomGA.constants import MUTATION_LONGEST_WAIT_PROBABILITY, MUTATION_LONGEST_ROUTE_PROBABILITY
 from CustomGA.customGASolution import CustomGASolution
 from common import INT_MAX, rand
