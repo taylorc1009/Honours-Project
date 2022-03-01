@@ -6,7 +6,7 @@ from common import rand
 from destination import Destination
 from problemInstance import ProblemInstance
 from CustomGA.customGASolution import CustomGASolution
-from CustomGA.operators import crossover, TWBS_mutation, TWBSw_mutation, WTBS_mutation, SWTBS_mutation, DBS_mutation, SDBS_mutation, TWBPB_mutation, TWBMF_mutation
+from CustomGA.operators import crossover, TWBS_mutation, TWBSw_mutation, WTBS_mutation, SWTBS_mutation, DBS_mutation, SDBS_mutation, TWBMF_mutation, TWBPB_mutation
 from CustomGA.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_BEST
 from vehicle import Vehicle
 from numpy import ceil, random
