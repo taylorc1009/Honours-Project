@@ -139,20 +139,21 @@ def WTBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Cust
     return solution
 
 def DBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Distance-based Swap Mutator
-    shortest_route_length = float(INT_MAX)
+    longest_route_length = 0
     furthest_travelling_vehicle = -1
     if rand(1, 100) < MUTATION_LONGEST_ROUTE_PROBABILITY:
         for v, vehicle in enumerate(solution.vehicles):
-            if vehicle.route_distance > shortest_route_length and vehicle.get_num_of_customers_visited() > 2:
+            if vehicle.route_distance > longest_route_length and vehicle.get_num_of_customers_visited() > 2:
                 furthest_travelling_vehicle = v
-                shortest_route_length = vehicle.route_distance
+                longest_route_length = vehicle.route_distance
     if not furthest_travelling_vehicle >= 0:
         furthest_travelling_vehicle = select_random_vehicle(solution, customers_required=3)
 
-    for d in range(1, solution.vehicles[furthest_travelling_vehicle].get_num_of_customers_visited() - 2):
-        if solution.vehicles[furthest_travelling_vehicle].destinations[d + 1].node.number \
-        and instance.get_distance(solution.vehicles[furthest_travelling_vehicle].destinations[d].node.number, solution.vehicles[furthest_travelling_vehicle].destinations[d + 1].node.number) > instance.get_distance(solution.vehicles[furthest_travelling_vehicle].destinations[d].node.number, solution.vehicles[furthest_travelling_vehicle].destinations[d + 2].node.number):
-            swap(solution.vehicles[furthest_travelling_vehicle].destinations, d + 1, d + 2)
+    destination = 1
+    while destination <= solution.vehicles[furthest_travelling_vehicle].get_num_of_customers_visited() - 2:
+        if instance.get_distance(solution.vehicles[furthest_travelling_vehicle].destinations[destination].node.number, solution.vehicles[furthest_travelling_vehicle].destinations[destination + 1].node.number) > instance.get_distance(solution.vehicles[furthest_travelling_vehicle].destinations[destination].node.number, solution.vehicles[furthest_travelling_vehicle].destinations[destination + 2].node.number):
+            swap(solution.vehicles[furthest_travelling_vehicle].destinations, destination + 1, destination + 2)
+        destination += 1
 
     solution.vehicles[furthest_travelling_vehicle].calculate_length_of_route(instance)
     solution.vehicles[furthest_travelling_vehicle].calculate_destinations_time_windows(instance)
