@@ -4,6 +4,7 @@ from typing import List
 from CustomGA.constants import MUTATION_LONGEST_WAIT_PROBABILITY, MUTATION_LONGEST_ROUTE_PROBABILITY
 from CustomGA.customGASolution import CustomGASolution
 from common import INT_MAX, rand
+from destination import Destination
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 
@@ -178,19 +179,21 @@ def TWBPB_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Cus
 
 def XYBR_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # X/Y-based Reorder Mutator
     random_vehicle = select_random_vehicle(solution)
-    sorted_by_x = [d.node.number for d in sorted(solution.vehicles[random_vehicle].destinations, key=lambda d: d.node.x)]
-    sorted_by_y = [d.node.number for d in sorted(solution.vehicles[random_vehicle].destinations, key=lambda d: d.node.y)]
+    sorted_by_x = [d.node.number for d in sorted(solution.vehicles[random_vehicle].get_customers_visited(), key=lambda d: d.node.x)]
+    sorted_by_y = [d.node.number for d in sorted(solution.vehicles[random_vehicle].get_customers_visited(), key=lambda d: d.node.y)]
+    reordered_destinations = list()
 
-    for d, destination in enumerate(solution.vehicles[random_vehicle].get_customers_visited()):
-        index_in_x = sorted_by_x.index(destination.node.number)
-        index_in_y = sorted_by_y.index(destination.node.number)
-        # TODO: this won't work if the nearest node is before destination d in the list
-        if solution.vehicles[random_vehicle].destinations[sorted_by_x[index_in_x + 1]] < solution.vehicles[random_vehicle].destinations[sorted_by_y[index_in_y + 1]]:
-            solution.vehicles[random_vehicle].destinations = list(filter(lambda d: d.node.number != sorted_by_x[index_in_x + 1], solution.vehicles[random_vehicle].destinations))
+    while sorted_by_x and sorted_by_y:
+        if instance.nodes[sorted_by_x[0]].x < instance.nodes[sorted_by_y[0]].y:
+            node = sorted_by_x.pop(0)
+            reordered_destinations.append(Destination(node=instance.nodes[node]))
+            sorted_by_y.remove(node)
         else:
-            solution.vehicles[random_vehicle].destinations = list(filter(lambda d: d.node.number != sorted_by_y[index_in_y + 1], solution.vehicles[random_vehicle].destinations))
-        sorted_by_x.pop(index_in_x)
-        sorted_by_y.pop(index_in_y)
+            node = sorted_by_y.pop(0)
+            reordered_destinations.append(Destination(node=instance.nodes[node]))
+            sorted_by_x.remove(node)
+
+    solution.vehicles[random_vehicle].destinations = reordered_destinations
 
     solution.vehicles[random_vehicle].calculate_destinations_time_windows(instance)
     solution.vehicles[random_vehicle].calculate_length_of_route(instance)
