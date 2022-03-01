@@ -146,8 +146,8 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
     for i in range(0, population_size):
         population.insert(i, copy.deepcopy(DTWIH_solution))
         population[i].id = i
-    initialiser_execution_time = round(time.time() - initialiser_execution_time, 2)
     del DTWIH_solution
+    initialiser_execution_time = round(time.time() - initialiser_execution_time, 2)
 
     start = time.time()
     for i in range(termination_condition):
@@ -175,6 +175,7 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
 
     global crossover_invocations, crossover_successes, mutation_invocations, mutation_successes
     statistics = {
+        "initialiser_execution_time": f"{initialiser_execution_time}s",
         "feasible_initialisations": feasible_initialisations,
         "crossover_invocations": crossover_invocations,
         "crossover_successes": crossover_successes,
