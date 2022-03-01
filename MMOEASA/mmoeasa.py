@@ -10,15 +10,15 @@ from problemInstance import ProblemInstance
 from destination import Destination
 from vehicle import Vehicle
 from common import INT_MAX, rand
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Dict
 from numpy import sqrt, exp
 
-initialiser_execution_time = 0
-feasible_initialisations = 0
-crossover_invocations = 0
-crossover_successes = 0
-mutation_invocations = 0
-mutation_successes = 0
+initialiser_execution_time: int=0
+feasible_initialisations: int=0
+crossover_invocations: int=0
+crossover_successes: int=0
+mutation_invocations: int=0
+mutation_successes: int=0
 
 def TWIH(instance: ProblemInstance) -> Union[MMOEASASolution, OmbukiSolution]:
     sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
@@ -212,7 +212,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
         #if iterations < TC:
         print("multi-start occurred")
 
-    global crossover_invocations, crossover_successes, mutation_invocations, mutation_successes
+    global crossover_invocations, mutation_invocations
     statistics = {
         "initialiser_execution_time": f"{initialiser_execution_time}s",
         "feasible_initialisations": feasible_initialisations,

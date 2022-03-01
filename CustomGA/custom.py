@@ -11,12 +11,12 @@ from CustomGA.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELEC
 from vehicle import Vehicle
 from numpy import ceil, random
 
-initialiser_execution_time = 0
-feasible_initialisations = 0
-crossover_invocations = 0
-crossover_successes = 0
-mutation_invocations = 0
-mutation_successes = 0
+initialiser_execution_time: int=0
+feasible_initialisations: int=0
+crossover_invocations: int=0
+crossover_successes: int=0
+mutation_invocations: int=0
+mutation_successes: int=0
 
 def DTWIH(instance: ProblemInstance) -> CustomGASolution:
     sorted_nodes = sorted([node for _, node in instance.nodes.items() if node.number], key=lambda n: n.ready_time)

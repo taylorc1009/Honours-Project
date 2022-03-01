@@ -13,12 +13,12 @@ from Ombuki.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_
 from common import INT_MAX
 from MMOEASA.mmoeasa import MO_Metropolis
 
-initialiser_execution_time = 0
-feasible_initialisations = 0
-crossover_invocations = 0
-crossover_successes = 0
-mutation_invocations = 0
-mutation_successes = 0
+initialiser_execution_time: int=0
+feasible_initialisations: int=0
+crossover_invocations: int=0
+crossover_successes: int=0
+mutation_invocations: int=0
+mutation_successes: int=0
 
 def generate_random_solution(instance: ProblemInstance) -> Union[OmbukiSolution, MMOEASASolution]:
     solution = OmbukiSolution(_id=0, vehicles=list()) if instance.acceptance_criterion == "Ombuki" else MMOEASASolution(_id=0, vehicles=list())
