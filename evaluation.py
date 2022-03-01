@@ -16,5 +16,5 @@ def calculate_area(problem_instance: ProblemInstance, nondominated_set: List[Uni
 
         area = round(area, 2)
 
-    print("Graph area occupied:", area)
+    print(f"Graph area occupied: {area}%")
     write_area(area, algorithm, acceptance_criterion)
