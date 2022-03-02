@@ -148,7 +148,7 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
         population[i].id = i
         if population[i].feasible:
             feasible_initialisations += 1
-    initialiser_execution_time = round(time.time() - initialiser_execution_time, 2)
+    initialiser_execution_time = round((time.time() - initialiser_execution_time) * 1000, 3)
 
     start = time.time()
     for i in range(termination_condition):
@@ -176,7 +176,7 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
 
     global crossover_invocations, crossover_successes, mutation_invocations, mutation_successes
     statistics = {
-        "initialiser_execution_time": f"{initialiser_execution_time}s",
+        "initialiser_execution_time": f"{initialiser_execution_time} milliseconds",
         "feasible_initialisations": feasible_initialisations,
         "crossover_invocations": crossover_invocations,
         "crossover_successes": crossover_successes,

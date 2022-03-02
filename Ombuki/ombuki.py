@@ -242,7 +242,7 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
         if random_solution.feasible:
             feasible_initialisations += 1
         population.insert(i, random_solution)
-    initialiser_execution_time = round(time.time() - initialiser_execution_time, 2)
+    initialiser_execution_time = round((time.time() - initialiser_execution_time) * 1000, 3)
 
     start = time.time()
     for _ in range(0, generation_span):
@@ -282,7 +282,7 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
 
     global crossover_invocations, crossover_successes, mutation_invocations, mutation_successes
     statistics = {
-        "initialiser_execution_time": f"{initialiser_execution_time}s",
+        "initialiser_execution_time": f"{initialiser_execution_time} milliseconds",
         "feasible_initialisations": feasible_initialisations,
         "crossover_invocations": crossover_invocations,
         "crossover_successes": crossover_successes,

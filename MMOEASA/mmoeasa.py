@@ -150,7 +150,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
             P[i].T_default = T_max - float(i) * ((T_max - T_min) / float(p - 1))
             P[i].T_cooling = Calculate_cooling(i, T_max, T_min, T_stop, p, TC)
     del TWIH_solution
-    initialiser_execution_time = round(time.time() - initialiser_execution_time, 2)
+    initialiser_execution_time = round((time.time() - initialiser_execution_time) * 1000, 3)
 
     start = time.time()
     current_multi_start = 0
@@ -214,7 +214,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
 
     global crossover_invocations, mutation_invocations
     statistics = {
-        "initialiser_execution_time": f"{initialiser_execution_time}s",
+        "initialiser_execution_time": f"{initialiser_execution_time} milliseconds",
         "feasible_initialisations": feasible_initialisations,
         "crossover_invocations": crossover_invocations,
         "crossover_successes": crossover_successes,
