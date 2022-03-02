@@ -43,13 +43,3 @@ def MMOEASA_write_solution_for_validation(solution: MMOEASASolution, max_capacit
                 csv.write(f"{destination.arrival_time},{destination.departure_time},{destination.wait_time}\n")
                 node = destination.node
                 csv.write(f"{node.number},{node.x},{node.y},{node.demand},{node.ready_time},{node.due_date},{node.service_duration}\n")
-
-def write_area(area: float, algorithm: str, acceptance_criterion: str) -> None:
-    if algorithm.upper() == acceptance_criterion.upper():
-        filename = f"{algorithm.lower()}.csv"
-    else:
-        filename = f"{algorithm.lower()}-{acceptance_criterion.lower()[0]}.csv"
-
-    relative_path = str(Path(__file__).parent.resolve()) + f"\\{filename}"
-    with open(relative_path, 'a+') as csv:
-        csv.write(f"{str(area)}\n")

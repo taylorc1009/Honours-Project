@@ -5,7 +5,6 @@ from Ombuki.ombukiSolution import OmbukiSolution
 from MMOEASA.mmoeasaSolution import MMOEASASolution
 from typing import List, Union
 from problemInstance import ProblemInstance
-from data import write_area
 
 def calculate_area(problem_instance: ProblemInstance, nondominated_set: List[Union[MMOEASASolution, OmbukiSolution]], algorithm: str, acceptance_criterion: str):
     area = 0.0
@@ -18,4 +17,3 @@ def calculate_area(problem_instance: ProblemInstance, nondominated_set: List[Uni
         area = round(area, 2)
 
     print(f"{os.linesep}Graph area occupied: {area}%")
-    write_area(area, algorithm, acceptance_criterion)
