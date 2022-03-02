@@ -31,10 +31,11 @@ def execute_Custom(problem_instance: ProblemInstance) -> Tuple[List[CustomGASolu
     return CustomGA(problem_instance, 300, 350, 80, 10)
 
 if __name__ == '__main__':
-    if not len(sys.argv) in {2, 4} or (len(sys.argv) == 2 and sys.argv[1] not in {"--help", "-h"}):
+    argc = len(sys.argv)
+    if not 2 <= argc <= 4 or (argc == 2 and sys.argv[1] not in {"--help", "-h"}):
         print("If you're unsure how to use the application, give the argument -h (--help) for information")
     elif sys.argv[1] in {"--help", "-h"}: # if the user gave one of these arguments on the command line then a help message is outputted
-        if len(sys.argv) == 2:
+        if argc == 2:
             print(f"Format: main(.py) [ algorithm ] [ problem instance ] [ acceptance criteria ]{os.linesep}{os.linesep}"
                   f"The algorithms and acceptance criteria available to solve the problem are:{os.linesep}"
                   f" - MMOEASA{os.linesep}"
@@ -58,12 +59,17 @@ if __name__ == '__main__':
         else:
             print("Argument \"-h\"/\"--help\" does not take any arguments")
     else:
+        if sys.argv[1].upper() == "CUSTOM":
+            if argc == 3:
+                sys.argv.append("Ombuki")
+            else:
+                exc = ValueError("Custom algorithm should not be given a pre-determined acceptance criterion; it only has one")
+                raise exc
+
         if not sys.argv[3].upper() in {"MMOEASA", "OMBUKI"}:
-            exc = ValueError(f"Acceptance criterion \"{sys.argv[1]}\" was not recognised")
+            exc = ValueError(f"Acceptance criterion \"{sys.argv[3]}\" was not recognised")
             raise exc
         problem_instance = open_problem_instance(sys.argv[2], sys.argv[3])
-
-        problem_instance.calculate_distances()
 
         nondominated_set, statistics = None, None
         if sys.argv[1].upper() == "MMOEASA":
@@ -71,10 +77,7 @@ if __name__ == '__main__':
         elif sys.argv[1].upper() == "OMBUKI":
             nondominated_set, statistics = execute_Ombuki(problem_instance)
         elif sys.argv[1].upper() == "CUSTOM":
-            if sys.argv[3].upper() != "OMBUKI":
-                print("Only Ombuki's acceptance criterion is implemented in the custom algorithm")
-            else:
-                nondominated_set, statistics = execute_Custom(problem_instance)
+            nondominated_set, statistics = execute_Custom(problem_instance)
         else:
             exc = ValueError(f"Algorithm \"{sys.argv[1]}\" was not recognised")
             raise exc

@@ -25,9 +25,10 @@ def open_problem_instance(filename: str, acceptance_criterion: str) -> ProblemIn
                 with open(f"solomon_{len(problem_instance.nodes) - 1}/hypervolumes.json") as json_file:
                     problem_instance.update_Hypervolumes(*json.load(json_file)[problem_instance.name])
 
+        problem_instance.calculate_distances()
         return problem_instance
-    except BaseException as e:
-        exc = BaseException(f"Couldn't open file \"{filename}\"\nCause: {e}")
+    except FileNotFoundError as e:
+        exc = FileNotFoundError(f"Couldn't open file \"{filename}\"\nCause: {e}")
         raise exc from None
 
 def MMOEASA_write_solution_for_validation(solution: MMOEASASolution, max_capacity: int) -> None:
