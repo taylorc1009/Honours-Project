@@ -5,7 +5,7 @@ from MMOEASA.mmoeasaSolution import MMOEASASolution
 from typing import Tuple, List
 
 def TWIH_ref_point(instance: ProblemInstance) -> Tuple[float, float, float]:
-    solution = TWIH(instance)
+    """solution = TWIH(instance)
     minimum_distance, maximum_distance, minimum_cargo, maximum_cargo = INFINITY, 0, INFINITY, 0
 
     solution.calculate_length_of_routes(instance)
@@ -24,7 +24,8 @@ def TWIH_ref_point(instance: ProblemInstance) -> Tuple[float, float, float]:
     solution.distance_unbalance = maximum_distance - minimum_distance
     solution.cargo_unbalance = maximum_cargo - minimum_cargo
 
-    return solution.total_distance * 10, solution.distance_unbalance * 10, solution.cargo_unbalance * 10
+    return solution.total_distance * 10, solution.distance_unbalance * 10, solution.cargo_unbalance * 10"""
+    return 10000.0, 2000.0, instance.capacity_of_vehicles
 
 def calculate_median_Hypervolumes(ND_solutions: List[MMOEASASolution], TWIH_Hypervolumes: Tuple[float, float, float]) -> float:
     prev_TD, prev_DU, prev_CU = ref_TD, ref_DU, ref_CU = TWIH_Hypervolumes[0], TWIH_Hypervolumes[1], TWIH_Hypervolumes[2]
