@@ -1,3 +1,4 @@
+import time
 from typing import Final, Set
 from numpy import random
 
@@ -10,3 +11,9 @@ def rand(start: int, end: int, exclude_values: Set[int]=None) -> int:
     while exclude_values is not None and random_val in exclude_values:
         random_val = random.randint(start, end + offset)
     return random_val
+
+def check_seconds_termination_condition(start: float, TC: int):
+    return (time.time() - start) > TC
+
+def check_iterations_termination_condition(iterations: int, TC: int):
+    return iterations > TC

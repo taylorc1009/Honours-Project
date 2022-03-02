@@ -2,7 +2,7 @@ import copy
 import time
 import random
 from typing import List, Dict, Tuple
-from common import rand
+from common import rand, check_iterations_termination_condition, check_seconds_termination_condition
 from random import shuffle
 from destination import Destination
 from problemInstance import ProblemInstance
@@ -138,7 +138,7 @@ def try_mutation(instance, solution: CustomGASolution, mutation_probability: int
             return solution
     return solution
 
-def CustomGA(instance: ProblemInstance, population_size: int, termination_condition: int, crossover_probability: int, mutation_probability: int) -> Tuple[List[CustomGASolution], Dict[str, int]]:
+def CustomGA(instance: ProblemInstance, population_size: int, termination_condition: int, termination_type: str, crossover_probability: int, mutation_probability: int) -> Tuple[List[CustomGASolution], Dict[str, int]]:
     population: List[CustomGASolution] = list()
 
     global initialiser_execution_time, feasible_initialisations
@@ -151,7 +151,9 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
     initialiser_execution_time = round((time.time() - initialiser_execution_time) * 1000, 3)
 
     start = time.time()
-    for i in range(termination_condition):
+    terminate = False
+    iterations = 0
+    while not terminate:
         crossover_parent_two = selection_tournament(population)
         for s, solution in enumerate(population):
             child = try_crossover(instance, solution, population[crossover_parent_two], crossover_probability)
@@ -163,8 +165,13 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
                 if dominates_parent:
                     print(f"solution {s} dominated")
         pareto_rank(population)
-        if not i % (termination_condition / 10):
-            print(f"iterations={i}, time={round(time.time() - start, 1)}s")
+        #if not i % (termination_condition / 10):
+        #    print(f"iterations={i}, time={round(time.time() - start, 1)}s")
+        iterations += 1
+        if termination_type == "iterations":
+            terminate = check_iterations_termination_condition(iterations, termination_condition)
+        elif termination_type == "seconds":
+            terminate = check_seconds_termination_condition(start, termination_condition)
 
     # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
     nondominated_set = list()

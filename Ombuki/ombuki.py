@@ -10,7 +10,7 @@ from destination import Destination
 from Ombuki.auxiliaries import rand, is_nondominated, is_nondominated_by_any, mmoeasa_is_nondominated, mmoeasa_is_nondominated_by_any
 from numpy import arange, round, random
 from Ombuki.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_BEST, GREEDY_PERCENT
-from common import INT_MAX
+from common import INT_MAX, check_iterations_termination_condition, check_seconds_termination_condition
 from MMOEASA.mmoeasa import MO_Metropolis
 
 initialiser_execution_time: int=0
@@ -216,7 +216,7 @@ def mutation_probability(instance: ProblemInstance, solution: Union[OmbukiSoluti
             return mutated_solution
     return solution
 
-def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int, crossover: int, mutation: int) -> Tuple[List[Union[OmbukiSolution, MMOEASASolution]], Dict[str, int]]:
+def Ombuki(instance: ProblemInstance, population_size: int, termination_condition: int, tc_type: str, crossover: int, mutation: int) -> Tuple[List[Union[OmbukiSolution, MMOEASASolution]], Dict[str, int]]:
     population: List[Union[OmbukiSolution, MMOEASASolution]] = list()
 
     global initialiser_execution_time, feasible_initialisations
@@ -245,7 +245,9 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
     initialiser_execution_time = round((time.time() - initialiser_execution_time) * 1000, 3)
 
     start = time.time()
-    for _ in range(0, generation_span):
+    terminate = False
+    iterations = 0
+    while not terminate:
         winning_parent = selection_tournament(instance, population)
         for i, solution in enumerate(population):
             if not population[i].feasible:
@@ -269,8 +271,13 @@ def Ombuki(instance: ProblemInstance, population_size: int, generation_span: int
             if child_dominated:
                 print(f"solution {i} dominated")
         pareto_rank(instance, population)
-        if not float(_) % float((generation_span / 10) - 1):
-            print(f"iterations={_}, time={round(time.time() - start, 1)}s")
+        #if not float(_) % float((generation_span / 10) - 1):
+        #print(f"iterations={_}, time={round(time.time() - start, 1)}s")
+        iterations += 1
+        if tc_type == "iterations":
+            terminate = check_iterations_termination_condition(iterations, termination_condition)
+        elif tc_type == "seconds":
+            terminate = check_seconds_termination_condition(start, termination_condition)
 
     # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
     nondominated_set = list()

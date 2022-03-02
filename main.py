@@ -15,20 +15,21 @@ from CustomGA.custom import CustomGA
 def execute_MMOEASA(problem_instance: ProblemInstance) -> Tuple[List[Union[MMOEASASolution, OmbukiSolution]], Dict[str, int]]:
     num_customers = len(problem_instance.nodes) - 1
     TC = 0 # termination condition = the number of iterations to perform
-    if num_customers == 25:
+    """if num_customers == 25:
         TC = 10000
     elif num_customers == 50:
         TC = 5000
-    elif num_customers == 100:
-        TC = 200
+    el"""
+    if num_customers == 100:
+        TC = 600#200
 
-    return MMOEASA(problem_instance, POPULATION_SIZE, 10, TC, 25, 25, 100.0, 50.0, 30.0)
+    return MMOEASA(problem_instance, POPULATION_SIZE, 10, TC, "seconds", 25, 25, 100.0, 50.0, 30.0)
 
 def execute_Ombuki(problem_instance: ProblemInstance) -> Tuple[List[Union[OmbukiSolution, MMOEASASolution]], Dict[str, int]]:
-    return Ombuki(problem_instance, 300, 350, 80, 10)
+    return Ombuki(problem_instance, 300, 600, "seconds", 80, 10)
 
 def execute_Custom(problem_instance: ProblemInstance) -> Tuple[List[CustomGASolution], Dict[str, int]]:
-    return CustomGA(problem_instance, 300, 350, 80, 10)
+    return CustomGA(problem_instance, 300, 600, "seconds", 80, 10)
 
 if __name__ == '__main__':
     argc = len(sys.argv)

@@ -9,7 +9,7 @@ from Ombuki.ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
 from destination import Destination
 from vehicle import Vehicle
-from common import INT_MAX, rand
+from common import INT_MAX, rand, check_iterations_termination_condition, check_seconds_termination_condition
 from typing import List, Tuple, Union, Dict
 from numpy import sqrt, exp
 
@@ -133,10 +133,9 @@ def MO_Metropolis(instance: ProblemInstance, Parent: MMOEASASolution, Child: MMO
         else:
             return Parent, False
 
-def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float) -> Tuple[List[Union[OmbukiSolution, MMOEASASolution]], Dict[str, int]]:
+def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, TC_type: str, P_crossover: int, P_mutation: int, T_max: float, T_min: float, T_stop: float) -> Tuple[List[Union[OmbukiSolution, MMOEASASolution]], Dict[str, int]]:
     P: List[Union[MMOEASASolution, OmbukiSolution]] = list()
     ND: List[Union[MMOEASASolution, OmbukiSolution]] = list()
-    iterations = 0
 
     global initialiser_execution_time, feasible_initialisations, crossover_successes, mutation_successes
     initialiser_execution_time = time.time()
@@ -153,13 +152,15 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
     initialiser_execution_time = round((time.time() - initialiser_execution_time) * 1000, 3)
 
     start = time.time()
-    current_multi_start = 0
-    while current_multi_start < MS:
+    terminate = False
+    iterations = 0
+    #current_multi_start = 0
+    while not terminate:#current_multi_start < MS:
         if instance.acceptance_criterion == "MMOEASA":
             for i in range(len(P)):
                 P[i].T = P[i].T_default
 
-        while (instance.acceptance_criterion == "MMOEASA" and P[0].T > T_stop and not iterations >= TC) or not iterations >= TC:
+        while (instance.acceptance_criterion == "MMOEASA" and P[0].T > T_stop and not terminate) or not terminate:
             for i, I in enumerate(P):
                 #selection_tournament = rand(1, p * (2 if len(ND) > 1 else 1))
                 I_c = Crossover(instance, I, P, P_crossover)#P if selection_tournament <= p else ND, P_crossover)
@@ -200,16 +201,21 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, P_crossover: in
                 if instance.acceptance_criterion == "MMOEASA":
                     P[i].T *= P[i].T_cooling
             iterations += 1
-            if not iterations % (TC / 10):
+            """if not iterations % (TC / 10):
                 if instance.acceptance_criterion == "MMOEASA":
                     print(f"{iterations=}, {P[0].T=}, time={round(time.time() - start, 1)}s")
                 else:
-                    print(f"{iterations=}, time={round(time.time() - start, 1)}s")
+                    print(f"{iterations=}, time={round(time.time() - start, 1)}s")"""
 
-        #if instance.acceptance_criterion == "MMOEASA":
-        current_multi_start += 1
-        iterations = 0
-        #if iterations < TC:
+            if TC_type == "iterations":
+                terminate = check_iterations_termination_condition(iterations, TC)
+            elif TC_type == "seconds":
+                terminate = check_seconds_termination_condition(start, TC)
+
+        ##if instance.acceptance_criterion == "MMOEASA":
+        #current_multi_start += 1
+        #iterations = 0
+        ##if iterations < TC:
         print("multi-start occurred")
 
     global crossover_invocations, mutation_invocations
