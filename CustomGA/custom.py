@@ -2,7 +2,7 @@ import copy
 import time
 import random
 from typing import List, Dict, Tuple
-from common import rand, check_iterations_termination_condition, check_seconds_termination_condition, INT_MAX
+from common import rand, check_iterations_termination_condition, check_seconds_termination_condition
 from random import shuffle
 from destination import Destination
 from problemInstance import ProblemInstance
@@ -18,6 +18,7 @@ crossover_invocations: int=0
 crossover_successes: int=0
 mutation_invocations: int=0
 mutation_successes: int=0
+nd = set()
 
 def DTWIH(instance: ProblemInstance) -> CustomGASolution:
     sorted_nodes = sorted([node for _, node in instance.nodes.items() if node.number], key=lambda n: n.ready_time)
@@ -77,6 +78,8 @@ def pareto_rank(population: List[CustomGASolution]) -> int:
         if not could_assign_rank:
             for i in unranked_solutions:
                 population[i].rank = curr_rank
+            if curr_rank == 1:
+                num_rank_ones += len(unranked_solutions)
             break
         curr_rank += 1
 
@@ -168,6 +171,8 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
 
             dominates_parent = is_nondominated(solution, child)
             if not solution.feasible or dominates_parent:
+                if not child.feasible and s in nd:
+                    print("feasible solution overwritten with infeasible solution")
                 population[s] = child
         num_rank_ones = pareto_rank(population)
         iterations += 1
