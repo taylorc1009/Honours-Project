@@ -13,7 +13,6 @@ class CustomGASolution(Solution):
     def __str__(self) -> str:
         return f"id={self.id}, feasible={self.feasible}, total_distance={self.total_distance}, num_vehicles={self.num_vehicles}, {[(i, str(v)) for i, v in enumerate(self.vehicles)]}"
 
-
     def objective_function(self, instance: ProblemInstance):
         vehicle = 0
         self.total_distance = 0.0
@@ -21,12 +20,14 @@ class CustomGASolution(Solution):
         self.feasible = True  # set the solution as feasible temporarily
 
         while vehicle < len(self.vehicles) and self.feasible:
-            if not self.vehicles[vehicle].is_feasible_route(instance):
-                self.feasible = False
-                self.total_distance = INT_MAX
-                self.num_vehicles = INT_MAX
-                break
             self.total_distance += self.vehicles[vehicle].route_distance
+
+            for destination in self.vehicles[vehicle].get_customers_visited():
+                if destination.arrival_time > instance.nodes[destination.node.number].due_date or self.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
+                    self.feasible = False
+                    self.total_distance = INT_MAX
+                    self.num_vehicles = INT_MAX
+                    break
             vehicle += 1
 
     def __deepcopy__(self, memodict: Dict=None):

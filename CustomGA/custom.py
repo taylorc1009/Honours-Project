@@ -56,13 +56,13 @@ def is_nondominated(old_solution: CustomGASolution, new_solution: CustomGASoluti
 
 def is_nondominated_by_any(population: List[CustomGASolution], subject_solution: int) -> bool:
     for s, solution in enumerate(population):
-        if s != subject_solution and not is_nondominated(population[subject_solution], solution):
+        if s != subject_solution and not is_nondominated(solution, population[subject_solution]):
             return False
     return True
 
 def pareto_rank(population: List[CustomGASolution]) -> int:
     curr_rank = 1
-    unranked_solutions = list(range(0, len(population)))
+    unranked_solutions = list(range(len(population)))
     num_rank_ones = 0
 
     while unranked_solutions:
@@ -77,8 +77,6 @@ def pareto_rank(population: List[CustomGASolution]) -> int:
         if not could_assign_rank:
             for i in unranked_solutions:
                 population[i].rank = curr_rank
-            if curr_rank == 1:
-                num_rank_ones += len(unranked_solutions)
             break
         curr_rank += 1
 
