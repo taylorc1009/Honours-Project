@@ -72,11 +72,11 @@ def pareto_rank(population: List[CustomGASolution]) -> int:
                 population[i].rank = curr_rank
                 if curr_rank == 1:
                     num_rank_ones += 1
-                unranked_solutions.remove(population[i].id)
+                unranked_solutions.remove(i)
                 could_assign_rank = True
         if not could_assign_rank:
             for i in unranked_solutions:
-                population[i].rank = INT_MAX
+                population[i].rank = curr_rank
             break
         curr_rank += 1
 
