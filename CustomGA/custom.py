@@ -68,7 +68,6 @@ def pareto_rank(population: List[CustomGASolution]) -> int:
     while unranked_solutions:
         could_assign_rank = False
         for i in unranked_solutions:
-
             if is_nondominated_by_any(population, i):
                 population[i].rank = curr_rank
                 if curr_rank == 1:
