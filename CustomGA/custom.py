@@ -2,7 +2,7 @@ import copy
 import time
 import random
 from typing import List, Dict, Tuple
-from common import rand, check_iterations_termination_condition, check_seconds_termination_condition
+from common import rand, check_iterations_termination_condition, check_seconds_termination_condition, INT_MAX
 from random import shuffle
 from destination import Destination
 from problemInstance import ProblemInstance
@@ -76,9 +76,12 @@ def pareto_rank(population: List[CustomGASolution]) -> int:
                 could_assign_rank = True
         if not could_assign_rank:
             for i in unranked_solutions:
-                population[i].rank = curr_rank
-            if curr_rank == 1:
-                num_rank_ones += len(unranked_solutions)
+                if population[i].feasible:
+                    population[i].rank = curr_rank
+                    if curr_rank == 1:
+                        num_rank_ones += 1
+                else:
+                    population[i].rank = INT_MAX
             break
         curr_rank += 1
 
