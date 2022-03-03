@@ -50,7 +50,7 @@ def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_tw
         for i, vehicle in enumerate(crossover_solution.vehicles):
             if not vehicle.current_capacity + parent_destination.node.demand > instance.capacity_of_vehicles:
                 for j in range(1, len(crossover_solution.vehicles[i].destinations)):
-                    crossover_solution.vehicles[i].destinations.insert(j, parent_destination)
+                    crossover_solution.vehicles[i].destinations.insert(j, copy.deepcopy(parent_destination))
                     crossover_solution.vehicles[i].calculate_destination_time_window(instance, j - 1, j)
 
                     distance_from_previous = instance.get_distance(vehicle.destinations[j - 1].node.number, vehicle.destinations[j].node.number)
@@ -67,7 +67,7 @@ def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_tw
 
         if not found_feasible_location and len(crossover_solution.vehicles) < instance.amount_of_vehicles:
             best_vehicle = len(crossover_solution.vehicles)
-            crossover_solution.vehicles.append(Vehicle.create_route(instance, copy.deepcopy(parent_destination.node)))
+            crossover_solution.vehicles.append(Vehicle.create_route(instance, parent_destination.node))
         else:
             crossover_solution.vehicles[best_vehicle].destinations.insert(best_position, copy.deepcopy(parent_destination))
 

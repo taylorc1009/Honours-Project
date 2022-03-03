@@ -2,7 +2,7 @@ import copy
 import time
 import random
 from typing import List, Dict, Tuple
-from common import rand, check_iterations_termination_condition, check_seconds_termination_condition
+from common import rand, check_iterations_termination_condition, check_seconds_termination_condition, INT_MAX
 from random import shuffle
 from destination import Destination
 from problemInstance import ProblemInstance
@@ -30,19 +30,19 @@ def DTWIH(instance: ProblemInstance) -> CustomGASolution:
         nodes_to_insert = sorted_nodes[:range_of_sorted_nodes]
         shuffle(nodes_to_insert)
         for i in range(range_of_sorted_nodes):
-            if solution.vehicles[i].current_capacity + nodes_to_insert[i].demand <= instance.capacity_of_vehicles:
-                solution.vehicles[i].destinations.insert(len(solution.vehicles[i].destinations) - 1, Destination(node=nodes_to_insert[i]))
-                solution.vehicles[i].current_capacity += nodes_to_insert[i].demand
+            index = i
+            if solution.vehicles[index].current_capacity + nodes_to_insert[i].demand <= instance.capacity_of_vehicles:
+                solution.vehicles[index].destinations.insert(len(solution.vehicles[index].destinations) - 1, Destination(node=nodes_to_insert[i]))
             else:
                 # TODO: try picking the best location in an existing vehicle?
                 index = (num_routes - 1) + additional_vehicles
                 if solution.vehicles[index].current_capacity + nodes_to_insert[i].demand > instance.capacity_of_vehicles:
                     solution.vehicles.append(Vehicle.create_route(instance, nodes_to_insert[i]))
                     additional_vehicles += 1
-                    solution.vehicles[index + 1].current_capacity += nodes_to_insert[i].demand
+                    index += 1
                 else:
                     solution.vehicles[index].destinations.insert(len(solution.vehicles[index].destinations) - 1, Destination(node=nodes_to_insert[i]))
-                    solution.vehicles[index].current_capacity += nodes_to_insert[i].demand
+            solution.vehicles[index].current_capacity += nodes_to_insert[i].demand
         del sorted_nodes[:range_of_sorted_nodes]
 
     solution.calculate_nodes_time_windows(instance)
@@ -68,6 +68,7 @@ def pareto_rank(population: List[CustomGASolution]) -> int:
     while unranked_solutions:
         could_assign_rank = False
         for i in unranked_solutions:
+
             if is_nondominated_by_any(population, i):
                 population[i].rank = curr_rank
                 if curr_rank == 1:
@@ -76,7 +77,7 @@ def pareto_rank(population: List[CustomGASolution]) -> int:
                 could_assign_rank = True
         if not could_assign_rank:
             for i in unranked_solutions:
-                population[i].rank = curr_rank
+                population[i].rank = INT_MAX
             break
         curr_rank += 1
 
@@ -166,7 +167,7 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
             child = try_crossover(instance, solution, population[crossover_parent_two], crossover_probability)
             child = try_mutation(instance, child, mutation_probability)
 
-            dominates_parent = is_nondominated(population[s], child)
+            dominates_parent = is_nondominated(solution, child)
             if not solution.feasible or dominates_parent:
                 population[s] = child
         num_rank_ones = pareto_rank(population)
