@@ -25,13 +25,13 @@ def DTWIH(instance: ProblemInstance) -> CustomGASolution:
     solution = CustomGASolution(_id=0, vehicles=[Vehicle.create_route(instance) for _ in range(0, num_routes)])
     additional_vehicles = 0
 
-    for offset in range(0, num_routes):
+    while sorted_nodes:
         range_of_sorted_nodes = num_routes if num_routes < len(sorted_nodes) else len(sorted_nodes)
         nodes_to_insert = sorted_nodes[:range_of_sorted_nodes]
         shuffle(nodes_to_insert)
-        for i in range(0, range_of_sorted_nodes):
+        for i in range(range_of_sorted_nodes):
             if solution.vehicles[i].current_capacity + nodes_to_insert[i].demand <= instance.capacity_of_vehicles:
-                solution.vehicles[i].destinations.insert(offset + 1, Destination(node=nodes_to_insert[i]))
+                solution.vehicles[i].destinations.insert(len(solution.vehicles[i].destinations) - 1, Destination(node=nodes_to_insert[i]))
                 solution.vehicles[i].current_capacity += nodes_to_insert[i].demand
             else:
                 # TODO: try picking the best location in an existing vehicle?
@@ -39,8 +39,10 @@ def DTWIH(instance: ProblemInstance) -> CustomGASolution:
                 if solution.vehicles[index].current_capacity + nodes_to_insert[i].demand > instance.capacity_of_vehicles:
                     solution.vehicles.append(Vehicle.create_route(instance, nodes_to_insert[i]))
                     additional_vehicles += 1
+                    solution.vehicles[index + 1].current_capacity += nodes_to_insert[i].demand
                 else:
-                    solution.vehicles[index].destinations.insert(len(solution.vehicles[index].destinations), Destination(node=nodes_to_insert[i]))
+                    solution.vehicles[index].destinations.insert(len(solution.vehicles[index].destinations) - 1, Destination(node=nodes_to_insert[i]))
+                    solution.vehicles[index].current_capacity += nodes_to_insert[i].demand
         del sorted_nodes[:range_of_sorted_nodes]
 
     solution.calculate_nodes_time_windows(instance)
