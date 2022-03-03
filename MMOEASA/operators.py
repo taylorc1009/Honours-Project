@@ -31,7 +31,7 @@ def move_destination(instance: ProblemInstance, I: Union[MMOEASASolution, Ombuki
 
     return I
 
-def get_random_vehicle(I: Union[MMOEASASolution, OmbukiSolution], exclude_values: List[int]=None, vehicles_required: int=1) -> int:
+def get_random_vehicle(I: Union[MMOEASASolution, OmbukiSolution], exclude_values: Set[int]=None, vehicles_required: int=1) -> int:
     random_vehicle = rand(0, len(I.vehicles) - 1, exclude_values=exclude_values)
     while I.vehicles[random_vehicle].get_num_of_customers_visited() < vehicles_required:
         random_vehicle = rand(0, len(I.vehicles) - 1, exclude_values=exclude_values)
@@ -41,7 +41,7 @@ def Mutation1(instance: ProblemInstance, I_c: Union[MMOEASASolution, OmbukiSolut
     random_vehicle = get_random_vehicle(I_c, vehicles_required=2)
     num_customers = I_c.vehicles[random_vehicle].get_num_of_customers_visited()
     origin_position = rand(1, num_customers)
-    destination_position = rand(1, num_customers, exclude_values=[origin_position])
+    destination_position = rand(1, num_customers, exclude_values={origin_position})
 
     I_c = move_destination(instance, I_c, random_vehicle, origin_position, random_vehicle, destination_position)
 
@@ -71,7 +71,7 @@ def Mutation3(instance: ProblemInstance, I_c: Union[MMOEASASolution, OmbukiSolut
     random_origin_vehicle = get_random_vehicle(I_c)
     origin_position = rand(1, I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited())
 
-    random_destination_vehicle = get_random_vehicle(I_c, exclude_values=[random_origin_vehicle])
+    random_destination_vehicle = get_random_vehicle(I_c, exclude_values={random_origin_vehicle})
     destination_position = rand(1, I_c.vehicles[random_destination_vehicle].get_num_of_customers_visited())
 
     I_c = move_destination(instance, I_c, random_origin_vehicle, origin_position, random_destination_vehicle, destination_position)
@@ -85,7 +85,7 @@ def Mutation4(instance: ProblemInstance, I_c: Union[MMOEASASolution, OmbukiSolut
     random_origin_vehicle = get_random_vehicle(I_c)
     origin_position = rand(1, I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited())
 
-    random_destination_vehicle = get_random_vehicle(I_c, exclude_values=[random_origin_vehicle])
+    random_destination_vehicle = get_random_vehicle(I_c, exclude_values={random_origin_vehicle})
 
     best_location, fitness_of_best_location = -1, INFINITY
     for i in range(1, I_c.vehicles[random_destination_vehicle].get_num_of_customers_visited() + 1):
@@ -107,7 +107,7 @@ def Mutation5(instance: ProblemInstance, I_c: Union[MMOEASASolution, OmbukiSolut
     random_origin_vehicle = get_random_vehicle(I_c)
     origin_position = rand(1, I_c.vehicles[random_origin_vehicle].get_num_of_customers_visited())
 
-    random_destination_vehicle = get_random_vehicle(I_c, exclude_values=[random_origin_vehicle])
+    random_destination_vehicle = get_random_vehicle(I_c, exclude_values={random_origin_vehicle})
     destination_position = rand(1, I_c.vehicles[random_destination_vehicle].get_num_of_customers_visited())
 
     I_c = move_destination(instance, I_c, random_origin_vehicle, origin_position, random_destination_vehicle, destination_position)
@@ -244,7 +244,7 @@ def vehicle_insertion_possible(unvisited_nodes: Set[int], new_vehicle: Vehicle) 
 def Crossover1(instance: ProblemInstance, I_c: Union[MMOEASASolution, OmbukiSolution], P: List[Union[MMOEASASolution, OmbukiSolution]]) -> Union[MMOEASASolution, OmbukiSolution]:
     I_c.vehicles = [v for v in I_c.vehicles if rand(1, 100) < 50]
     
-    random_solution = rand(0, len(P) - 1, exclude_values=[I_c.id])
+    random_solution = rand(0, len(P) - 1, exclude_values={I_c.id})
 
     unvisited_nodes = set(range(1, len(instance.nodes))).difference([d.node.number for v in I_c.vehicles for d in v.get_customers_visited()])
 
