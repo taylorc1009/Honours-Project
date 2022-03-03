@@ -5,12 +5,12 @@ from typing import Tuple, List
 def TWIH_ref_point(instance: ProblemInstance) -> Tuple[float, float]:
     return 10000.0, instance.amount_of_vehicles
 
-def calculate_median_Hypervolumes(ND_solutions: List[OmbukiSolution], TWIH_Hypervolumes: Tuple[float, float]) -> float:
-    prev_TD, prev_NV = ref_TD, ref_NV = TWIH_Hypervolumes[0], TWIH_Hypervolumes[0]
+def calculate_median_Hypervolumes(nondominated_set: List[OmbukiSolution], ref_Hypervolumes: Tuple[float, float]) -> float:
+    prev_TD, prev_NV = ref_TD, ref_NV = ref_Hypervolumes[0], ref_Hypervolumes[0]
     area = 0.0
 
-    for ND in sorted([solution for solution in ND_solutions], key=lambda x: x.total_distance, reverse=True):
-        area += (prev_TD - ND.total_distance) * (ref_NV - ND.num_vehicles)
-        prev_TD, prev_NV = ND.total_distance, ND.num_vehicles
+    for solution in sorted([s for s in nondominated_set], key=lambda x: x.total_distance, reverse=True):
+        area += (prev_TD - solution.total_distance) * (ref_NV - solution.num_vehicles)
+        prev_TD, prev_NV = solution.total_distance, solution.num_vehicles
 
     return (area / (ref_TD * ref_NV)) * 100
