@@ -192,7 +192,6 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, TC_type: str, P
 
                 if dominated_any or (child_dominated and len(ND) < p):
                     ND.append(copy.deepcopy(P[i]))
-                    print(f"{len(ND)=}, {iterations=}, time={round(time.time() - start, 1)}s")
 
                     """should_write = False # use the debugger to edit the value in "should_write" if you'd like a solution to be written to a CSV
                     if should_write:
@@ -201,22 +200,11 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, TC_type: str, P
                 if instance.acceptance_criterion == "MMOEASA":
                     P[i].T *= P[i].T_cooling
             iterations += 1
-            """if not iterations % (TC / 10):
-                if instance.acceptance_criterion == "MMOEASA":
-                    print(f"{iterations=}, {P[0].T=}, time={round(time.time() - start, 1)}s")
-                else:
-                    print(f"{iterations=}, time={round(time.time() - start, 1)}s")"""
 
             if TC_type == "iterations":
-                terminate = check_iterations_termination_condition(iterations, TC * MS)
+                terminate = check_iterations_termination_condition(iterations, TC * MS, len(ND))
             elif TC_type == "seconds":
-                terminate = check_seconds_termination_condition(start, TC)
-
-        ##if instance.acceptance_criterion == "MMOEASA":
-        #current_multi_start += 1
-        #iterations = 0
-        ##if iterations < TC:
-        print("multi-start occurred")
+                terminate = check_seconds_termination_condition(start, TC, len(ND))
 
     global crossover_invocations, mutation_invocations
     statistics = {

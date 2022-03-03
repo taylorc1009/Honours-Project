@@ -58,22 +58,29 @@ def is_nondominated_by_any(population: List[CustomGASolution], subject_solution:
             return False
     return True
 
-def pareto_rank(population: List[CustomGASolution]) -> None:
+def pareto_rank(population: List[CustomGASolution]) -> int:
     curr_rank = 1
     unranked_solutions = list(range(0, len(population)))
+    num_rank_ones = 0
 
     while unranked_solutions:
         could_assign_rank = False
         for i in unranked_solutions:
             if is_nondominated_by_any(population, i):
                 population[i].rank = curr_rank
+                if curr_rank == 1:
+                    num_rank_ones += 1
                 unranked_solutions.remove(population[i].id)
                 could_assign_rank = True
         if not could_assign_rank:
             for i in unranked_solutions:
                 population[i].rank = curr_rank
+            if curr_rank == 1:
+                num_rank_ones += len(unranked_solutions)
             break
         curr_rank += 1
+
+    return num_rank_ones
 
 def selection_tournament(population: List[CustomGASolution]) -> int:
     best_solutions = list(filter(lambda s: s.rank == 1, population))
@@ -162,16 +169,13 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
             dominates_parent = is_nondominated(population[s], child)
             if not solution.feasible or dominates_parent:
                 population[s] = child
-                if dominates_parent:
-                    print(f"solution {s} dominated")
-        pareto_rank(population)
-        #if not i % (termination_condition / 10):
-        #    print(f"iterations={i}, time={round(time.time() - start, 1)}s")
+        num_rank_ones = pareto_rank(population)
         iterations += 1
+
         if termination_type == "iterations":
-            terminate = check_iterations_termination_condition(iterations, termination_condition)
+            terminate = check_iterations_termination_condition(iterations, termination_condition, num_rank_ones)
         elif termination_type == "seconds":
-            terminate = check_seconds_termination_condition(start, termination_condition)
+            terminate = check_seconds_termination_condition(start, termination_condition, num_rank_ones)
 
     # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
     nondominated_set = list()

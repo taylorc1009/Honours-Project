@@ -73,9 +73,10 @@ def generate_greedy_solution(instance: ProblemInstance) -> Union[OmbukiSolution,
 
     return solution
 
-def pareto_rank(instance: ProblemInstance, population: List[Union[OmbukiSolution, MMOEASASolution]]) -> None:
+def pareto_rank(instance: ProblemInstance, population: List[Union[OmbukiSolution, MMOEASASolution]]) -> int:
     curr_rank = 1
     unranked_solutions = list(range(0, len(population)))
+    num_rank_ones = 0
 
     while unranked_solutions:
         could_assign_rank = False
@@ -83,17 +84,25 @@ def pareto_rank(instance: ProblemInstance, population: List[Union[OmbukiSolution
             if instance.acceptance_criterion == "MMOEASA":
                 if mmoeasa_is_nondominated_by_any(population, i):
                     population[i].rank = curr_rank
+                    if curr_rank == 1:
+                        num_rank_ones += 1
                     unranked_solutions.remove(population[i].id)
                     could_assign_rank = True
             elif is_nondominated_by_any(population, i):
                 population[i].rank = curr_rank
+                if curr_rank == 1:
+                    num_rank_ones += 1
                 unranked_solutions.remove(population[i].id)
                 could_assign_rank = True
         if not could_assign_rank:
             for i in unranked_solutions:
                 population[i].rank = curr_rank
+            if curr_rank == 1:
+                num_rank_ones += len(unranked_solutions)
             break
         curr_rank += 1
+
+    return num_rank_ones
 
 def attempt_feasible_network_transformation(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
     vehicles = [Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)]
@@ -251,33 +260,25 @@ def Ombuki(instance: ProblemInstance, population_size: int, termination_conditio
         winning_parent = selection_tournament(instance, population)
         for i, solution in enumerate(population):
             if not population[i].feasible:
-                was_feasible = population[i].feasible
                 population[i] = routing_scheme(instance, solution)
-                if not was_feasible and population[i].feasible:
-                    print(f"{i} made feasible by routing scheme")
 
             result = crossover_probability(instance, solution, population[winning_parent], crossover)
             result = mutation_probability(instance, result, mutation, result is solution)
 
-            child_dominated = False
             if not population[i].feasible:
                 population[i] = result
             elif result.feasible:
                 if instance.acceptance_criterion == "MMOEASA":
-                    population[i], child_dominated = MO_Metropolis(instance, solution, result, 100.0)
+                    population[i], _ = MO_Metropolis(instance, solution, result, 100.0)
                 elif is_nondominated(population[i], result):
-                    population[i], child_dominated = result, True
-
-            if child_dominated:
-                print(f"solution {i} dominated")
-        pareto_rank(instance, population)
-        #if not float(_) % float((generation_span / 10) - 1):
-        #print(f"iterations={_}, time={round(time.time() - start, 1)}s")
+                    population[i] = result
+        num_rank_ones = pareto_rank(instance, population)
         iterations += 1
+
         if tc_type == "iterations":
-            terminate = check_iterations_termination_condition(iterations, termination_condition)
+            terminate = check_iterations_termination_condition(iterations, termination_condition, num_rank_ones)
         elif tc_type == "seconds":
-            terminate = check_seconds_termination_condition(start, termination_condition)
+            terminate = check_seconds_termination_condition(start, termination_condition, num_rank_ones)
 
     # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
     nondominated_set = list()
