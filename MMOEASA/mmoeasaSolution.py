@@ -7,16 +7,16 @@ from problemInstance import ProblemInstance
 from solution import Solution
 
 class MMOEASASolution(Solution):
-    def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, T_default: float=0.0, T: float=0.0, T_cooling: float=0.0, total_distance: float=0.0, distance_unbalance: float=0.0, cargo_unbalance: float=0.0, rank: int=INT_MAX) -> None:
+    def __init__(self, _id: int=None, vehicles: List[Vehicle]=None, feasible: bool=True, default_temperature: float=0.0, temperature: float=0.0, cooling_rate: float=0.0, total_distance: float=0.0, distance_unbalance: float=0.0, cargo_unbalance: float=0.0, rank: int=INT_MAX) -> None:
         super(MMOEASASolution, self).__init__(_id=_id, vehicles=vehicles, feasible=feasible, total_distance=total_distance, rank=rank)
         self.distance_unbalance: float=float(distance_unbalance)
         self.cargo_unbalance: float=float(cargo_unbalance)
-        self.T_default: float=float(T_default)
-        self.T: float=float(T)
-        self.T_cooling: float=float(T_cooling)
+        self.default_temperature: float=float(default_temperature)
+        self.temperature: float=float(temperature)
+        self.cooling_rate: float=float(cooling_rate)
 
     def __str__(self) -> str:
-        return f"id={self.id}, feasible={self.feasible}, T_default={self.T_default}, T={self.T}, T_cooling={self.T_cooling}, total_distance={self.total_distance}, distance_unbalance={self.distance_unbalance}, cargo_unbalance={self.cargo_unbalance}, {len(self.vehicles)=}, {[(i, str(v)) for i, v in enumerate(self.vehicles)]}"
+        return f"id={self.id}, feasible={self.feasible}, default_temperature={self.default_temperature}, temperature={self.temperature}, cooling_rate={self.cooling_rate}, total_distance={self.total_distance}, distance_unbalance={self.distance_unbalance}, cargo_unbalance={self.cargo_unbalance}, {len(self.vehicles)=}, {[(i, str(v)) for i, v in enumerate(self.vehicles)]}"
 
     def objective_function(self, instance: ProblemInstance) -> None:
         vehicle = 0
@@ -55,4 +55,4 @@ class MMOEASASolution(Solution):
             self.cargo_unbalance = maximum_cargo - minimum_cargo
 
     def __deepcopy__(self, memodict: Dict=None):
-        return MMOEASASolution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, T_default=self.T_default, T=self.T, T_cooling=self.T_cooling, total_distance=self.total_distance, distance_unbalance=self.distance_unbalance, cargo_unbalance=self.cargo_unbalance, rank=self.rank)
+        return MMOEASASolution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, default_temperature=self.default_temperature, temperature=self.temperature, cooling_rate=self.cooling_rate, total_distance=self.total_distance, distance_unbalance=self.distance_unbalance, cargo_unbalance=self.cargo_unbalance, rank=self.rank)

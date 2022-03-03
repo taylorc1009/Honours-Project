@@ -6,8 +6,8 @@ from problemInstance import ProblemInstance
 from vehicle import Vehicle
 from destination import Destination
 
-def is_nondominated(Parent: MMOEASASolution, Child: MMOEASASolution) -> bool:
-    return (Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance) or (Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance)
+def is_nondominated(parent: MMOEASASolution, child: MMOEASASolution) -> bool:
+    return (child.total_distance < parent.total_distance and child.cargo_unbalance <= parent.cargo_unbalance) or (child.total_distance <= parent.total_distance and child.cargo_unbalance < parent.cargo_unbalance)
 
 def is_nondominated_by_any(nondominated_set: List[MMOEASASolution], subject_solution: MMOEASASolution) -> bool:
     i = 0
@@ -34,44 +34,44 @@ def ombuki_is_nondominated_by_any(nondominated_set: List[OmbukiSolution], subjec
         return True
     return False
 
-def insert_unvisited_node(I: Union[MMOEASASolution, OmbukiSolution], instance: ProblemInstance, node: int) -> Union[MMOEASASolution, OmbukiSolution]:
+def insert_unvisited_node(solution: Union[MMOEASASolution, OmbukiSolution], instance: ProblemInstance, node: int) -> Union[MMOEASASolution, OmbukiSolution]:
     inserted = False
     vehicle = 0
     infeasible_vehicle, lowest_delay = -1, float(INT_MAX)
 
-    while vehicle < len(I.vehicles) and not inserted:
-        if I.vehicles[vehicle].current_capacity + instance.nodes[node].demand < instance.capacity_of_vehicles:
-            position = I.vehicles[vehicle].get_num_of_customers_visited() + 1
-            I.vehicles[vehicle].destinations.insert(position, Destination(instance.nodes[node]))
-            I.vehicles[vehicle].calculate_destination_time_window(instance, position - 1, position)
+    while vehicle < len(solution.vehicles) and not inserted:
+        if solution.vehicles[vehicle].current_capacity + instance.nodes[node].demand < instance.capacity_of_vehicles:
+            position = solution.vehicles[vehicle].get_num_of_customers_visited() + 1
+            solution.vehicles[vehicle].destinations.insert(position, Destination(instance.nodes[node]))
+            solution.vehicles[vehicle].calculate_destination_time_window(instance, position - 1, position)
 
-            if I.vehicles[vehicle].destinations[position].arrival_time <= instance.nodes[node].due_date:
+            if solution.vehicles[vehicle].destinations[position].arrival_time <= instance.nodes[node].due_date:
                 inserted = True
                 break
-            elif not len(I.vehicles) < instance.amount_of_vehicles and I.vehicles[vehicle].destinations[position].wait_time < lowest_delay:
+            elif not len(solution.vehicles) < instance.amount_of_vehicles and solution.vehicles[vehicle].destinations[position].wait_time < lowest_delay:
                 infeasible_vehicle = vehicle
-                lowest_delay = I.vehicles[vehicle].destinations[position].wait_time
+                lowest_delay = solution.vehicles[vehicle].destinations[position].wait_time
 
-            I.vehicles[vehicle].destinations.pop(position)
+            solution.vehicles[vehicle].destinations.pop(position)
         if not inserted:
             vehicle += 1
 
     if not inserted: # in this case, the unvisited node doesn't fit into any of the existing routes, so it needs a new vehicle
-        if len(I.vehicles) < instance.amount_of_vehicles:
+        if len(solution.vehicles) < instance.amount_of_vehicles:
             new_vehicle = Vehicle.create_route(instance, node=instance.nodes[node])
-            I.vehicles.append(new_vehicle)
+            solution.vehicles.append(new_vehicle)
         else:
-            I.vehicles[infeasible_vehicle].destinations.insert(len(I.vehicles[infeasible_vehicle].destinations) - 1, Destination(node=instance.nodes[node]))
+            solution.vehicles[infeasible_vehicle].destinations.insert(len(solution.vehicles[infeasible_vehicle].destinations) - 1, Destination(node=instance.nodes[node]))
             vehicle = infeasible_vehicle
 
-        # these seem unnecessary as the crossover operator invokes all of these methods once it's finished inserting all of the unvisited nodes, but they're needed so that an other invocation of "insert_unvisited_nodes()" will have the correct time windows when determining where to insert an unvisited node
-        I.vehicles[vehicle].calculate_destinations_time_windows(instance)
-        I.vehicles[vehicle].calculate_vehicle_load(instance)
-        I.vehicles[vehicle].calculate_length_of_route(instance)
+        # these seem unnecessary as the crossover operator invokes all of these methods once it's finished inserting all the unvisited nodes, but they're needed so that another invocation of "insert_unvisited_nodes()" will have the correct time windows when determining where to insert an unvisited node
+        solution.vehicles[vehicle].calculate_destinations_time_windows(instance)
+        solution.vehicles[vehicle].calculate_vehicle_load(instance)
+        solution.vehicles[vehicle].calculate_length_of_route(instance)
     else:
-        num_customers = I.vehicles[vehicle].get_num_of_customers_visited()
-        I.vehicles[vehicle].calculate_destination_time_window(instance, num_customers, num_customers + 1)
-        I.vehicles[vehicle].current_capacity += instance.nodes[node].demand
-        I.vehicles[vehicle].route_distance += instance.get_distance(node, 0)
+        num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
+        solution.vehicles[vehicle].calculate_destination_time_window(instance, num_customers, num_customers + 1)
+        solution.vehicles[vehicle].current_capacity += instance.nodes[node].demand
+        solution.vehicles[vehicle].route_distance += instance.get_distance(node, 0)
 
-    return I
+    return solution
