@@ -208,7 +208,7 @@ def MMOEASA(instance: ProblemInstance, p: int, MS: int, TC: int, TC_type: str, P
                     print(f"{iterations=}, time={round(time.time() - start, 1)}s")"""
 
             if TC_type == "iterations":
-                terminate = check_iterations_termination_condition(iterations, TC)
+                terminate = check_iterations_termination_condition(iterations, TC * MS)
             elif TC_type == "seconds":
                 terminate = check_seconds_termination_condition(start, TC)
 
