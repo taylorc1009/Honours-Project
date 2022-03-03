@@ -170,10 +170,11 @@ def MMOEASA(instance: ProblemInstance, population_size: int, multi_starts: int, 
                 if instance.acceptance_criterion == "Ombuki":
                     child_dominated = ombuki_is_nondominated(solution, solution_copy)
                     if child_dominated or not population[s].feasible:
-                        if crossover_occurred:
-                            crossover_successes += 1
-                        if mutations > 0:
-                            mutation_successes += mutations
+                        if child_dominated:
+                            if crossover_occurred:
+                                crossover_successes += 1
+                            if mutations > 0:
+                                mutation_successes += mutations
                         population[s] = solution_copy
                         dominated_any = ombuki_is_nondominated_by_any(nondominated_set, population[s])
                 else:
