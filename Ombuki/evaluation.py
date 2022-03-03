@@ -1,15 +1,8 @@
 from Ombuki.ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
-from MMOEASA.mmoeasa import TWIH
 from typing import Tuple, List
 
 def TWIH_ref_point(instance: ProblemInstance) -> Tuple[float, float]:
-    """solution = TWIH(instance)
-
-    solution.calculate_length_of_routes(instance)
-    solution.total_distance = sum([vehicle.route_distance for vehicle in solution.vehicles])
-
-    return solution.total_distance * 10, len(solution.vehicles) * 10"""
     return 10000.0, instance.amount_of_vehicles
 
 def calculate_median_Hypervolumes(ND_solutions: List[OmbukiSolution], TWIH_Hypervolumes: Tuple[float, float]) -> float:

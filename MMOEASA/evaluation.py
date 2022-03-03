@@ -1,30 +1,8 @@
 from problemInstance import ProblemInstance
-from MMOEASA.mmoeasa import TWIH
-from MMOEASA.constants import INFINITY
 from MMOEASA.mmoeasaSolution import MMOEASASolution
 from typing import Tuple, List
 
 def TWIH_ref_point(instance: ProblemInstance) -> Tuple[float, float, float]:
-    """solution = TWIH(instance)
-    minimum_distance, maximum_distance, minimum_cargo, maximum_cargo = INFINITY, 0, INFINITY, 0
-
-    solution.calculate_length_of_routes(instance)
-
-    solution.total_distance = sum([vehicle.route_distance for vehicle in solution.vehicles])
-
-    for vehicle in solution.vehicles:
-        if vehicle.route_distance < minimum_distance:
-            minimum_distance = vehicle.route_distance
-        if vehicle.route_distance > maximum_distance:
-            maximum_distance = vehicle.route_distance
-        if vehicle.current_capacity < minimum_cargo:
-            minimum_cargo = vehicle.current_capacity
-        if vehicle.current_capacity > maximum_cargo:
-            maximum_cargo = vehicle.current_capacity
-    solution.distance_unbalance = maximum_distance - minimum_distance
-    solution.cargo_unbalance = maximum_cargo - minimum_cargo
-
-    return solution.total_distance * 10, solution.distance_unbalance * 10, solution.cargo_unbalance * 10"""
     return 10000.0, 2000.0, instance.capacity_of_vehicles
 
 def calculate_median_Hypervolumes(ND_solutions: List[MMOEASASolution], TWIH_Hypervolumes: Tuple[float, float, float]) -> float:
