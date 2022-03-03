@@ -18,7 +18,6 @@ crossover_invocations: int=0
 crossover_successes: int=0
 mutation_invocations: int=0
 mutation_successes: int=0
-nd = set()
 
 def DTWIH(instance: ProblemInstance) -> CustomGASolution:
     sorted_nodes = sorted([node for _, node in instance.nodes.items() if node.number], key=lambda n: n.ready_time)
@@ -171,8 +170,6 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
 
             dominates_parent = is_nondominated(solution, child)
             if not solution.feasible or dominates_parent:
-                if not child.feasible and s in nd:
-                    print("feasible solution overwritten with infeasible solution")
                 population[s] = child
         num_rank_ones = pareto_rank(population)
         iterations += 1
