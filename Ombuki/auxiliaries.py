@@ -22,8 +22,8 @@ def is_nondominated_by_any(population: List[OmbukiSolution], subject_solution: U
             return False
     return True
 
-def mmoeasa_is_nondominated(Parent: MMOEASASolution, Child: MMOEASASolution) -> bool:
-    return (Child.total_distance < Parent.total_distance and Child.cargo_unbalance <= Parent.cargo_unbalance) or (Child.total_distance <= Parent.total_distance and Child.cargo_unbalance < Parent.cargo_unbalance)
+def mmoeasa_is_nondominated(parent: MMOEASASolution, child: MMOEASASolution) -> bool:
+    return (child.total_distance < parent.total_distance and child.cargo_unbalance <= parent.cargo_unbalance) or (child.total_distance <= parent.total_distance and child.cargo_unbalance < parent.cargo_unbalance)
 
 def mmoeasa_is_nondominated_by_any(population: List[MMOEASASolution], subject_solution: int) -> bool:
     for i, solution in enumerate(population):

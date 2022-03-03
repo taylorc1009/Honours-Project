@@ -204,7 +204,10 @@ def crossover_probability(instance: ProblemInstance, iterator_parent: Union[Ombu
 
         crossover_solution = crossover(instance, iterator_parent, tournament_parent)
 
-        if is_nondominated(iterator_parent, crossover_solution):
+        if instance.acceptance_criterion == "MMOEASA":
+            if mmoeasa_is_nondominated(iterator_parent, crossover_solution):
+                crossover_successes += 1
+        elif is_nondominated(iterator_parent, crossover_solution):
             crossover_successes += 1
         return crossover_solution
     return iterator_parent
