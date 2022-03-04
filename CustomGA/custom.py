@@ -9,6 +9,7 @@ from problemInstance import ProblemInstance
 from CustomGA.customGASolution import CustomGASolution
 from CustomGA.operators import crossover, TWBS_mutation, TWBSw_mutation, WTBS_mutation, SWTBS_mutation, DBS_mutation, SDBS_mutation, TWBMF_mutation, TWBPB_mutation
 from CustomGA.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_BEST
+from Ombuki.evaluation import ref_point
 from vehicle import Vehicle
 from numpy import ceil, random
 
@@ -60,8 +61,8 @@ def is_nondominated_by_any(population: List[CustomGASolution], subject_solution:
             return False
     return True
 
-def pareto_rank(population: List[CustomGASolution]) -> int:
-    curr_rank = 1
+def pareto_rank(instance: ProblemInstance, population: List[CustomGASolution]) -> int:
+    """curr_rank = 1
     unranked_solutions = list(range(len(population)))
     num_rank_ones = 0
 
@@ -84,6 +85,24 @@ def pareto_rank(population: List[CustomGASolution]) -> int:
                     population[i].rank = INT_MAX
             break
         curr_rank += 1
+
+    return num_rank_ones"""
+
+    curr_rank = 0
+    num_rank_ones = 0
+    ref_TD, ref_NV = ref_point(instance)
+    areas = {i: ((ref_TD - s.total_distance) * (ref_NV - s.num_vehicles) if s.feasible else INT_MAX) for i, s in enumerate(population)}
+    previous_area = 0.0
+
+    for index, area in sorted(areas.items(), key=lambda item: item[1]):
+        if area < INT_MAX:
+            if not area == previous_area:
+                curr_rank += 1
+            population[index].rank = curr_rank
+            if curr_rank == 1:
+                num_rank_ones += 1
+        else:
+            population[index].rank = INT_MAX
 
     return num_rank_ones
 
@@ -174,7 +193,7 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
             dominates_parent = is_nondominated(solution, child)
             if not solution.feasible or dominates_parent:
                 population[s] = child
-        num_rank_ones = pareto_rank(population)
+        num_rank_ones = pareto_rank(instance, population)
         iterations += 1
 
         if termination_type == "iterations":
