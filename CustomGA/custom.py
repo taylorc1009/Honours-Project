@@ -91,10 +91,10 @@ def pareto_rank(instance: ProblemInstance, population: List[CustomGASolution]) -
     curr_rank = 0
     num_rank_ones = 0
     ref_TD, ref_NV = ref_point(instance)
-    areas = {i: ((ref_TD - s.total_distance) * (ref_NV - s.num_vehicles) if s.feasible else INT_MAX) for i, s in enumerate(population)}
+    areas = {i: (((ref_TD - s.total_distance) * (ref_NV - s.num_vehicles)) / (ref_TD * ref_NV) if s.feasible else INT_MAX) for i, s in enumerate(population)}
     previous_area = 0.0
 
-    for index, area in sorted(areas.items(), key=lambda item: item[1]):
+    for index, area in sorted(areas.items(), key=lambda item: item[1], reverse=True):
         if area < INT_MAX:
             if not area == previous_area:
                 curr_rank += 1
