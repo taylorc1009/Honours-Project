@@ -2,6 +2,7 @@ import copy
 import time
 import random
 from typing import List, Dict, Tuple
+from MMOEASA.parameters import POPULATION_SIZE as MMOEASA_POPULATION_SIZE
 from common import rand, check_iterations_termination_condition, check_seconds_termination_condition, INT_MAX
 from random import shuffle
 from destination import Destination
@@ -9,7 +10,6 @@ from problemInstance import ProblemInstance
 from CustomGA.customGASolution import CustomGASolution
 from CustomGA.operators import crossover, TWBS_mutation, TWBSw_mutation, WTBS_mutation, SWTBS_mutation, DBS_mutation, SDBS_mutation, TWBMF_mutation, TWBPB_mutation
 from CustomGA.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_BEST
-from Ombuki.evaluation import ref_point
 from vehicle import Vehicle
 from numpy import ceil, random
 
@@ -55,13 +55,24 @@ def DTWIH(instance: ProblemInstance) -> CustomGASolution:
 def is_nondominated(old_solution: CustomGASolution, new_solution: CustomGASolution) -> bool:
     return (new_solution.total_distance < old_solution.total_distance and new_solution.num_vehicles <= old_solution.num_vehicles) or (new_solution.total_distance <= old_solution.total_distance and new_solution.num_vehicles < old_solution.num_vehicles)
 
-def is_nondominated_by_any(population: List[CustomGASolution], subject_solution: int) -> bool:
+"""def is_nondominated_by_any(population: List[CustomGASolution], subject_solution: int) -> bool:
     for s, solution in enumerate(population):
         if s != subject_solution and not is_nondominated(solution, population[subject_solution]):
             return False
-    return True
+    return True"""
 
-def pareto_rank(instance: ProblemInstance, population: List[CustomGASolution]) -> int:
+def is_nondominated_by_any(nondominated_set: List[CustomGASolution], subject_solution: CustomGASolution) -> bool:
+    i = 0
+    for solution in nondominated_set:
+        if not is_nondominated(solution, subject_solution):
+            nondominated_set[i] = solution
+            i += 1
+    if i != len(nondominated_set):
+        del nondominated_set[i:]
+        return True
+    return False
+
+"""def pareto_rank(instance: ProblemInstance, population: List[CustomGASolution]) -> int:
     curr_rank = 1
     unranked_solutions = list(range(len(population)))
     num_rank_ones = 0
@@ -88,7 +99,7 @@ def pareto_rank(instance: ProblemInstance, population: List[CustomGASolution]) -
 
     return num_rank_ones
 
-    """curr_rank = 0
+    ""curr_rank = 0
     num_rank_ones = 0
     ref_TD, ref_NV = ref_point(instance)
     areas = {i: (float(((ref_TD - s.total_distance) * (ref_NV - float(s.num_vehicles))) / (ref_TD * ref_NV)) if s.feasible else float(INT_MAX)) for i, s in enumerate(population)}
@@ -171,6 +182,7 @@ def try_mutation(instance, solution: CustomGASolution, mutation_probability: int
 
 def CustomGA(instance: ProblemInstance, population_size: int, termination_condition: int, termination_type: str, crossover_probability: int, mutation_probability: int) -> Tuple[List[CustomGASolution], Dict[str, int]]:
     population: List[CustomGASolution] = list()
+    nondominated_set: List[CustomGASolution] = list()
 
     global initialiser_execution_time, feasible_initialisations
     initialiser_execution_time = time.time()
@@ -193,21 +205,22 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
             dominates_parent = is_nondominated(solution, child)
             if not solution.feasible or dominates_parent:
                 population[s] = child
-        num_rank_ones = pareto_rank(instance, population)
+                if is_nondominated_by_any(nondominated_set, population[s]) or (dominates_parent and len(nondominated_set) < MMOEASA_POPULATION_SIZE): # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
+                    nondominated_set.append(copy.deepcopy(population[s]))
+        #num_rank_ones = pareto_rank(instance, population)
         iterations += 1
 
         if termination_type == "iterations":
-            terminate = check_iterations_termination_condition(iterations, termination_condition, num_rank_ones)
+            terminate = check_iterations_termination_condition(iterations, termination_condition, len(nondominated_set))
         elif termination_type == "seconds":
-            terminate = check_seconds_termination_condition(start, termination_condition, num_rank_ones)
+            terminate = check_seconds_termination_condition(start, termination_condition, len(nondominated_set))
 
-    # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
-    nondominated_set = list()
+    """nondominated_set = list()
     for solution in population:
         if solution.rank == 1:
             nondominated_set.append(solution)
             if len(nondominated_set) == 20:
-                break
+                break"""
 
     global crossover_invocations, crossover_successes, mutation_invocations, mutation_successes
     statistics = {
