@@ -62,7 +62,7 @@ def is_nondominated_by_any(population: List[CustomGASolution], subject_solution:
     return True
 
 def pareto_rank(instance: ProblemInstance, population: List[CustomGASolution]) -> int:
-    """curr_rank = 1
+    curr_rank = 1
     unranked_solutions = list(range(len(population)))
     num_rank_ones = 0
 
@@ -86,9 +86,9 @@ def pareto_rank(instance: ProblemInstance, population: List[CustomGASolution]) -
             break
         curr_rank += 1
 
-    return num_rank_ones"""
+    return num_rank_ones
 
-    curr_rank = 0
+    """curr_rank = 0
     num_rank_ones = 0
     ref_TD, ref_NV = ref_point(instance)
     areas = {i: (float(((ref_TD - s.total_distance) * (ref_NV - float(s.num_vehicles))) / (ref_TD * ref_NV)) if s.feasible else float(INT_MAX)) for i, s in enumerate(population)}
@@ -104,7 +104,7 @@ def pareto_rank(instance: ProblemInstance, population: List[CustomGASolution]) -
         else:
             population[index].rank = INT_MAX
 
-    return num_rank_ones
+    return num_rank_ones"""
 
 def selection_tournament(population: List[CustomGASolution]) -> int:
     best_solutions = list(filter(lambda s: s.rank == 1, population))
