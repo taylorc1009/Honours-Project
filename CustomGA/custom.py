@@ -117,13 +117,14 @@ def is_nondominated_by_any(nondominated_set: List[CustomGASolution], subject_sol
 
     return num_rank_ones"""
 
-def selection_tournament(population: List[CustomGASolution]) -> int:
-    best_solutions = list(filter(lambda s: s.rank == 1, population))
-    if not best_solutions:  # in this instance, the initialising population has been given and no solutions have been ranked yet, so work with any feasible solutions
+def selection_tournament(nondominated_set: List[CustomGASolution], population: List[CustomGASolution]) -> int:
+    if nondominated_set:
+        best_solutions = list(filter(lambda s: s.rank == 1, nondominated_set))
+    else: # in this instance, no non-dominated solutions have been found yet, so work with any feasible solutions
         best_solutions = list(filter(lambda s: s.feasible, population))
 
     if best_solutions:
-        tournament_set = random.choice(best_solutions, TOURNAMENT_SET_SIZE)
+        tournament_set = random.choice(best_solutions, min(len(best_solutions), TOURNAMENT_SET_SIZE))
     else:
         tournament_set = random.choice(population, TOURNAMENT_SET_SIZE)
 
@@ -134,7 +135,7 @@ def selection_tournament(population: List[CustomGASolution]) -> int:
                 best_solution = population[solution.id]
         return best_solution.id
     else:
-        return tournament_set[rand(0, TOURNAMENT_SET_SIZE - 1)].id
+        return tournament_set[rand(0, min(len(tournament_set), TOURNAMENT_SET_SIZE) - 1)].id
 
 def try_crossover(instance, parent_one: CustomGASolution, parent_two: CustomGASolution, crossover_probability) -> CustomGASolution:
     if rand(1, 100) < crossover_probability:
@@ -197,7 +198,7 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
     terminate = False
     iterations = 0
     while not terminate:
-        crossover_parent_two = selection_tournament(population)
+        crossover_parent_two = selection_tournament(nondominated_set, population)
         for s, solution in enumerate(population):
             child = try_crossover(instance, solution, population[crossover_parent_two], crossover_probability)
             child = try_mutation(instance, child, mutation_probability)
