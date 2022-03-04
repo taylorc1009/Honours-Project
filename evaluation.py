@@ -1,6 +1,6 @@
 import os
-from MMOEASA.evaluation import TWIH_ref_point as MMOEASA_ref_point, calculate_median_Hypervolumes as MMOEASA_median_hypervolumes
-from Ombuki.evaluation import TWIH_ref_point as Ombuki_ref_point, calculate_median_Hypervolumes as Ombuki_median_hypervolumes
+from MMOEASA.evaluation import ref_point as MMOEASA_ref_point, calculate_Hypervolumes_area as MMOEASA_median_hypervolumes
+from Ombuki.evaluation import ref_point as Ombuki_ref_point, calculate_Hypervolumes_area as Ombuki_median_hypervolumes
 from Ombuki.ombukiSolution import OmbukiSolution
 from MMOEASA.mmoeasaSolution import MMOEASASolution
 from typing import List, Union

@@ -2,10 +2,10 @@ from problemInstance import ProblemInstance
 from MMOEASA.mmoeasaSolution import MMOEASASolution
 from typing import Tuple, List
 
-def TWIH_ref_point(instance: ProblemInstance) -> Tuple[float, float, float]:
+def ref_point(instance: ProblemInstance) -> Tuple[float, float, float]:
     return 10000.0, 2000.0, instance.capacity_of_vehicles
 
-def calculate_median_Hypervolumes(nondominated_set: List[MMOEASASolution], ref_Hypervolumes: Tuple[float, float, float]) -> float:
+def calculate_Hypervolumes_area(nondominated_set: List[MMOEASASolution], ref_Hypervolumes: Tuple[float, float, float]) -> float:
     prev_TD, prev_DU, prev_CU = ref_TD, ref_DU, ref_CU = ref_Hypervolumes[0], ref_Hypervolumes[1], ref_Hypervolumes[2]
     area = 0.0
 
