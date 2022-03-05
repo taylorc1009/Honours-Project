@@ -14,6 +14,16 @@ class CustomGASolution(Solution):
         return f"id={self.id}, feasible={self.feasible}, total_distance={self.total_distance}, num_vehicles={self.num_vehicles}, {[(i, str(v)) for i, v in enumerate(self.vehicles)]}"
 
     def objective_function(self, instance: ProblemInstance):
+        """ error checks
+        if sum([v.get_num_of_customers_visited() for v in self.vehicles]) != 100:
+            raise ValueError(f"Mismatched amount of destinations: {sum([v.get_num_of_customers_visited() for v in self.vehicles])}")
+        elif [v for v in self.vehicles if not len(v.destinations) > 1]:
+            raise ValueError(f"Number of destinations was not at least 2")
+        elif [v for v in self.vehicles if v.destinations[0].node.number or v.destinations[-1].node.number]:
+            raise ValueError(f"Indexes 0 and n - 1 should be depot nodes")
+        elif [set(range(1, 101)).remove(d.node.number) for v in self.vehicles for d in v.get_customers_visited()][0]:
+            raise ValueError(f"Not all nodes are visited")"""
+
         vehicle = 0
         self.total_distance = 0.0
         self.num_vehicles = len(self.vehicles)
