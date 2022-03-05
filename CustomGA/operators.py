@@ -201,7 +201,7 @@ def move_destination_to_fit_window(instance: ProblemInstance, solution: CustomGA
         destinations = reversed(destinations)
     for d, destination in destinations:
         if destination.node.number != sorted_destinations[d - 1].node.number:
-            solution.vehicles[random_vehicle].destinations.insert(len(solution.vehicles[random_vehicle].destinations) - 1, solution.vehicles[random_vehicle].destinations.pop(d))
+            solution.vehicles[random_vehicle].destinations.insert(d, solution.vehicles[random_vehicle].destinations.pop(d))
             break
 
     solution.vehicles[random_vehicle].calculate_destinations_time_windows(instance)
