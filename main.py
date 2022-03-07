@@ -25,7 +25,7 @@ def execute_Custom(problem_instance: ProblemInstance) -> Tuple[List[CustomGASolu
 
 if __name__ == '__main__':
     argc = len(sys.argv)
-    if not argc in {2, 4} or (argc == 2 and sys.argv[1] not in {"--help", "-h"}):
+    if not 2 <= argc <= 4 or (argc == 2 and sys.argv[1] not in {"--help", "-h"}):
         print("If you're unsure how to use the application, give the argument -h (--help) for information")
     elif sys.argv[1] in {"--help", "-h"}: # if the user gave one of these arguments on the command line then a help message is outputted
         if argc == 2:
@@ -63,8 +63,8 @@ if __name__ == '__main__':
                 exc = ValueError("Custom algorithm should not be given a pre-determined acceptance criterion; it only has one")
                 raise exc
 
-        if not sys.argv[3].upper() in {"MMOEASA", "OMBUKI"}:
-            exc = ValueError(f"Acceptance criterion \"{sys.argv[3]}\" was not recognised")
+        if not len(sys.argv) == 4 or not sys.argv[3].upper() in {"MMOEASA", "OMBUKI"}:
+            exc = ValueError(f"Acceptance criterion \"{'' if not len(sys.argv) == 4 else sys.argv[3]}\" was not recognised")
             raise exc
         problem_instance = open_problem_instance(sys.argv[2], sys.argv[3])
 
