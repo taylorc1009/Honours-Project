@@ -56,15 +56,27 @@ def is_nondominated(old_solution: CustomGASolution, new_solution: CustomGASoluti
     return (new_solution.total_distance < old_solution.total_distance and new_solution.num_vehicles <= old_solution.num_vehicles) or (new_solution.total_distance <= old_solution.total_distance and new_solution.num_vehicles < old_solution.num_vehicles)
 
 def is_nondominated_by_any(nondominated_set: List[CustomGASolution], subject_solution: CustomGASolution) -> bool:
-    i = 0
-    for solution in nondominated_set:
-        if not is_nondominated(solution, subject_solution):
-            nondominated_set[i] = solution
-            i += 1
-    if i != len(nondominated_set):
-        del nondominated_set[i:]
-        return True
-    return False
+    if not subject_solution.feasible:
+        return False
+
+    nondominated_set.append(subject_solution)
+    solutions_to_remove = set()
+
+    for s, solution in enumerate(nondominated_set):
+        for s_aux, solution_auxiliary in enumerate(nondominated_set):
+            if not s == s_aux and is_nondominated(solution_auxiliary, solution):
+                solutions_to_remove.add(s_aux)
+
+    if solutions_to_remove:
+        i = 0
+        for s in range(len(nondominated_set)):
+            if not s in solutions_to_remove:
+                nondominated_set[i] = nondominated_set[s]
+                i += 1
+        if i != len(nondominated_set):
+            del nondominated_set[i:]
+
+    return subject_solution in nondominated_set
 
 def selection_tournament(nondominated_set: List[CustomGASolution], population: List[CustomGASolution]) -> int:
     if nondominated_set:
@@ -155,8 +167,9 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
             dominates_parent = is_nondominated(solution, child)
             if not solution.feasible or dominates_parent:
                 population[s] = child
-                if is_nondominated_by_any(nondominated_set, population[s]) or (dominates_parent and len(nondominated_set) < MMOEASA_POPULATION_SIZE): # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
-                    nondominated_set.append(copy.deepcopy(population[s]))
+                is_nondominated_by_any(nondominated_set, population[s])
+                #if is_nondominated_by_any(nondominated_set, population[s]) or (dominates_parent and len(nondominated_set) < MMOEASA_POPULATION_SIZE): # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
+                    #nondominated_set.append(copy.deepcopy(population[s]))
         #num_rank_ones = pareto_rank(instance, population)
         iterations += 1
 
