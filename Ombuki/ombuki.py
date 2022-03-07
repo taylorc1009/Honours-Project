@@ -113,37 +113,14 @@ def attempt_feasible_network_transformation(instance: ProblemInstance, solution:
     f_vehicle = 0
     for vehicle in solution.vehicles:
         for destination in vehicle.get_customers_visited()[1 if vehicle is solution.vehicles[0] else 0:]:
-            feasible_insertion = False
-            vehicle_reset = False
-            first_attempted_vehicle = f_vehicle
-
-            while not feasible_insertion:
-                if feasible_solution.vehicles[f_vehicle].current_capacity + destination.node.demand <= instance.capacity_of_vehicles and feasible_solution.vehicles[f_vehicle].destinations[-2].departure_time + instance.get_distance(feasible_solution.vehicles[f_vehicle].destinations[-2].node.number, destination.node.number) <= destination.node.due_date:
-                    feasible_solution.vehicles[f_vehicle].destinations.insert(len(feasible_solution.vehicles[f_vehicle].destinations) - 1, copy.deepcopy(destination))
-                    feasible_insertion = True
-                elif f_vehicle == instance.amount_of_vehicles - 1:
-                    if not vehicle_reset:
-                        f_vehicle = 0
-                        vehicle_reset = True
-                    else: # at this point, no feasible vehicle insertion was found, so select the vehicle with the nearest final destination where capacity constraints are not violated; therefore, this solution is now infeasible
-                        key_value_pairs = {i: vehicle for i, vehicle in enumerate(feasible_solution.vehicles)}
-                        # TODO: this sort should probably search for the node with the nearest time window instead of smallest distance? For feasibility purposes
-                        sorted_by_last_destination = sorted(key_value_pairs.items(), key=lambda v: instance.get_distance(v[1].destinations[-2].node.number, destination.node.number))
-                        for f_vehicle, infeasible_vehicle in sorted_by_last_destination:
-                            if not infeasible_vehicle.current_capacity + destination.node.demand > instance.capacity_of_vehicles:
-                                infeasible_vehicle.destinations.insert(len(infeasible_vehicle.destinations) - 1, copy.deepcopy(destination))
-                                break
-                        break
-                else:
-                    if len(feasible_solution.vehicles) < instance.amount_of_vehicles:
-                        feasible_solution.vehicles.append(Vehicle.create_route(instance, destination.node))
-                        feasible_insertion = True
-                    f_vehicle += 1
+            if feasible_solution.vehicles[f_vehicle].current_capacity + destination.node.demand <= instance.capacity_of_vehicles and feasible_solution.vehicles[f_vehicle].destinations[-2].departure_time + instance.get_distance(feasible_solution.vehicles[f_vehicle].destinations[-2].node.number, destination.node.number) <= destination.node.due_date:
+                feasible_solution.vehicles[f_vehicle].destinations.insert(len(feasible_solution.vehicles[f_vehicle].destinations) - 1, copy.deepcopy(destination))
+            else:
+                feasible_solution.vehicles.append(Vehicle.create_route(instance, destination.node))
+                f_vehicle += 1
 
             feasible_solution.vehicles[f_vehicle].current_capacity += destination.node.demand
             feasible_solution.vehicles[f_vehicle].calculate_destination_time_window(instance, -3, -2)
-            if not feasible_insertion:
-                f_vehicle = first_attempted_vehicle
 
     return feasible_solution
 
