@@ -55,12 +55,6 @@ def DTWIH(instance: ProblemInstance) -> CustomGASolution:
 def is_nondominated(old_solution: CustomGASolution, new_solution: CustomGASolution) -> bool:
     return (new_solution.total_distance < old_solution.total_distance and new_solution.num_vehicles <= old_solution.num_vehicles) or (new_solution.total_distance <= old_solution.total_distance and new_solution.num_vehicles < old_solution.num_vehicles)
 
-"""def is_nondominated_by_any(population: List[CustomGASolution], subject_solution: int) -> bool:
-    for s, solution in enumerate(population):
-        if s != subject_solution and not is_nondominated(solution, population[subject_solution]):
-            return False
-    return True"""
-
 def is_nondominated_by_any(nondominated_set: List[CustomGASolution], subject_solution: CustomGASolution) -> bool:
     i = 0
     for solution in nondominated_set:
@@ -71,51 +65,6 @@ def is_nondominated_by_any(nondominated_set: List[CustomGASolution], subject_sol
         del nondominated_set[i:]
         return True
     return False
-
-"""def pareto_rank(instance: ProblemInstance, population: List[CustomGASolution]) -> int:
-    curr_rank = 1
-    unranked_solutions = list(range(len(population)))
-    num_rank_ones = 0
-
-    while unranked_solutions:
-        could_assign_rank = False
-        for i in unranked_solutions:
-            if is_nondominated_by_any(population, i):
-                population[i].rank = curr_rank
-                if curr_rank == 1:
-                    num_rank_ones += 1
-                unranked_solutions.remove(i)
-                could_assign_rank = True
-        if not could_assign_rank:
-            for i in unranked_solutions:
-                if population[i].feasible:
-                    population[i].rank = curr_rank
-                    if curr_rank == 1:
-                        num_rank_ones += 1
-                else:
-                    population[i].rank = INT_MAX
-            break
-        curr_rank += 1
-
-    return num_rank_ones
-
-    ""curr_rank = 0
-    num_rank_ones = 0
-    ref_TD, ref_NV = ref_point(instance)
-    areas = {i: (float(((ref_TD - s.total_distance) * (ref_NV - float(s.num_vehicles))) / (ref_TD * ref_NV)) if s.feasible else float(INT_MAX)) for i, s in enumerate(population)}
-    previous_area = 0.0
-
-    for index, area in sorted(areas.items(), key=lambda item: item[1], reverse=True):
-        if area < INT_MAX:
-            if not area == previous_area:
-                curr_rank += 1
-            population[index].rank = curr_rank
-            if curr_rank == 1:
-                num_rank_ones += 1
-        else:
-            population[index].rank = INT_MAX
-
-    return num_rank_ones"""
 
 def selection_tournament(nondominated_set: List[CustomGASolution], population: List[CustomGASolution]) -> int:
     if nondominated_set:
@@ -215,13 +164,6 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
             terminate = check_iterations_termination_condition(iterations, termination_condition, len(nondominated_set))
         elif termination_type == "seconds":
             terminate = check_seconds_termination_condition(start, termination_condition, len(nondominated_set))
-
-    """nondominated_set = list()
-    for solution in population:
-        if solution.rank == 1:
-            nondominated_set.append(solution)
-            if len(nondominated_set) == 20:
-                break"""
 
     global crossover_invocations, crossover_successes, mutation_invocations, mutation_successes
     statistics = {
