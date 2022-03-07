@@ -13,7 +13,16 @@ class OmbukiSolution(Solution):
     def __str__(self) -> str:
         return f"total_distance={self.total_distance}, num_vehicles={self.num_vehicles}, {[f'{i}. {str(v)}' for i, v in enumerate(self.vehicles)]}"
 
-    def objective_function(self, instance: ProblemInstance):
+    def __nullify(self) -> None:
+        self.feasible = False
+        self.total_distance = INT_MAX
+        self.num_vehicles = INT_MAX
+
+    def objective_function(self, instance: ProblemInstance) -> None:
+        if len(self.vehicles) > instance.amount_of_vehicles:
+            self.__nullify()
+            return
+
         vehicle = 0
         self.total_distance = 0.0
         self.num_vehicles = len(self.vehicles)
@@ -24,9 +33,7 @@ class OmbukiSolution(Solution):
 
             for destination in self.vehicles[vehicle].get_customers_visited():
                 if destination.arrival_time > instance.nodes[destination.node.number].due_date or self.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
-                    self.feasible = False
-                    self.total_distance = INT_MAX
-                    self.num_vehicles = INT_MAX
+                    self.__nullify()
                     break
             vehicle += 1
 
