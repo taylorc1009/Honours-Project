@@ -25,18 +25,20 @@ def execute_Custom(problem_instance: ProblemInstance) -> Tuple[List[CustomGASolu
 
 if __name__ == '__main__':
     argc = len(sys.argv)
-    if not 2 <= argc <= 4 or (argc == 2 and sys.argv[1] not in {"--help", "-h"}):
+    if not argc in {2, 4} or (argc == 2 and sys.argv[1] not in {"--help", "-h"}):
         print("If you're unsure how to use the application, give the argument -h (--help) for information")
     elif sys.argv[1] in {"--help", "-h"}: # if the user gave one of these arguments on the command line then a help message is outputted
         if argc == 2:
             print(f"Format: main(.py) [ algorithm ] [ problem instance ] [ acceptance criteria ]{os.linesep}{os.linesep}"
                   f"The algorithms and acceptance criteria available to solve the problem are:{os.linesep}"
                   f" - MMOEASA{os.linesep}"
-                  f" - Ombuki{os.linesep}{os.linesep}"
+                  f" - Ombuki{os.linesep}"
+                  f" - Custom (algorithm \"Custom\" should not be used as and does not accept an alternative acceptance criterion; see example commands){os.linesep}{os.linesep}"
                   f"There's multiple types of problems in Solomon's instances, and here's what they are:{os.linesep}"
                   f" - Number of customers:{os.linesep}"
-                  f"   - 25 - 25 customers{os.linesep}"
-                  f"   - 50 - 50 customers{os.linesep}"
+                  f"   - Archived (and, therefore, out of order):{os.linesep}"
+                  f"     - 25 - 25 customers{os.linesep}"
+                  f"     - 50 - 50 customers{os.linesep}"
                   f"   - 100 - 100 customers{os.linesep}"
                   f" - Customers' location:{os.linesep}"
                   f"   - C - clustered customers{os.linesep}"
@@ -48,7 +50,9 @@ if __name__ == '__main__':
                   f"To execute a problem set, please enter a problem's filename. The details required, and the argument format, are:{os.linesep}"
                   f" - solomon_[ number of customers ]/[ customers' location ][ width of time windows ]XX.txt{os.linesep}"
                   f" - Where XX is the instance number; see the folder \"solomon_[ number of customers ]\" for available instances{os.linesep}{os.linesep}"
-                  f"An example command is: \"main.py MMOEASA solomon_100/C101.txt\"")
+                  f"Example commands are:{os.linesep}"
+                  f" - \"main.py MMOEASA solomon_100/C101.txt MMOEASA\"{os.linesep}"
+                  f" - \"main.py Custom solomon_100/C101.txt\"")
         else:
             print("Argument \"-h\"/\"--help\" does not take any arguments")
     else:
