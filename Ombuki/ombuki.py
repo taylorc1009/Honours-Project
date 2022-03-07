@@ -114,7 +114,7 @@ def attempt_feasible_network_transformation(instance: ProblemInstance, solution:
     for vehicle in solution.vehicles:
         for destination in vehicle.get_customers_visited()[1 if vehicle is solution.vehicles[0] else 0:]:
             if feasible_solution.vehicles[f_vehicle].current_capacity + destination.node.demand <= instance.capacity_of_vehicles and feasible_solution.vehicles[f_vehicle].destinations[-2].departure_time + instance.get_distance(feasible_solution.vehicles[f_vehicle].destinations[-2].node.number, destination.node.number) <= destination.node.due_date:
-                feasible_solution.vehicles[f_vehicle].destinations.insert(len(feasible_solution.vehicles[f_vehicle].destinations) - 1, copy.deepcopy(destination))
+                feasible_solution.vehicles[f_vehicle].destinations.insert(feasible_solution.vehicles[f_vehicle].get_num_of_customers_visited() + 1, copy.deepcopy(destination))
             else:
                 feasible_solution.vehicles.append(Vehicle.create_route(instance, destination.node))
                 f_vehicle += 1
@@ -122,33 +122,48 @@ def attempt_feasible_network_transformation(instance: ProblemInstance, solution:
             feasible_solution.vehicles[f_vehicle].current_capacity += destination.node.demand
             feasible_solution.vehicles[f_vehicle].calculate_destination_time_window(instance, -3, -2)
 
+    feasible_solution.calculate_vehicles_loads(instance)
+    feasible_solution.calculate_length_of_routes(instance)
+    feasible_solution.calculate_nodes_time_windows(instance)
+    feasible_solution.objective_function(instance)
+
     return feasible_solution
 
 def relocate_final_destinations(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
-    f_solution = copy.deepcopy(solution)
+    feasible_solution = copy.deepcopy(solution)
 
-    for i in range(0, len(f_solution.vehicles)):
-        f_solution.vehicles[i + 1 if i < len(f_solution.vehicles) - 1 else 0].destinations.insert(1, f_solution.vehicles[i].destinations[-2])
-        del f_solution.vehicles[i].destinations[-2] # can't delete an empty route here as each iteration of the loop only moves one destination to the next route; it never leaves one route empty
+    for i in range(0, len(feasible_solution.vehicles) - 1):
+        distance_of_second = feasible_solution.vehicles[i + 1].route_distance
+        #feasible_solution.vehicles[i + 1 if i < len(feasible_solution.vehicles) - 1 else 0
+        feasible_solution.vehicles[i + 1].destinations.insert(1, feasible_solution.vehicles[i].destinations.pop(feasible_solution.vehicles[i].get_num_of_customers_visited() + 1))
 
-    f_solution.calculate_vehicles_loads(instance)
-    f_solution.calculate_length_of_routes(instance)
-    f_solution.calculate_nodes_time_windows(instance)
-    f_solution.objective_function(instance)
+        feasible_solution.vehicles[i + 1].current_capacity += feasible_solution.vehicles[i + 1].destinations[-2].node.demand
+        feasible = not (feasible_solution.vehicles[i + 1].route_distance > distance_of_second or feasible_solution.vehicles[i].current_capacity > instance.capacity_of_vehicles)
+        if feasible:
+            feasible_solution.vehicles[i + 1].calculate_length_of_route(instance)
+            feasible_solution.vehicles[i + 1].calculate_destinations_time_windows(instance)
+            for d in range(1, feasible_solution.vehicles[i + 1].get_num_of_customers_visited()):
+                if feasible_solution.vehicles[i + 1].destinations[d].arrival_time > feasible_solution.vehicles[i + 1].destinations[-2].node.due_date:
+                    feasible = False
+                    break
 
-    if instance.acceptance_criterion == "MMOEASA":
-        return f_solution if mmoeasa_is_nondominated(solution, f_solution) else solution
-    return f_solution if is_nondominated(solution, f_solution) else solution
+        if not feasible:
+            feasible_solution.vehicles[i].destinations.insert(feasible_solution.vehicles[i].get_num_of_customers_visited() + 1, feasible_solution.vehicles[i].destinations.pop(1))
+            feasible_solution.vehicles[i + 1].calculate_length_of_route(instance)
+            feasible_solution.vehicles[i + 1].current_capacity -= feasible_solution.vehicles[i].destinations[-2].node.demand
+            feasible_solution.vehicles[i + 1].calculate_destinations_time_windows(instance)
+        else:
+            feasible_solution.vehicles[i].calculate_length_of_route(instance)
+            feasible_solution.vehicles[i].current_capacity -= feasible_solution.vehicles[i + 1].destinations[-2].node.demand
+            feasible_solution.vehicles[i].calculate_destination_time_window(instance, -2, -1)
+
+    feasible_solution.objective_function(instance)
+
+    return feasible_solution
 
 def routing_scheme(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
     feasible_solution = attempt_feasible_network_transformation(instance, solution)
     relocated_solution = relocate_final_destinations(instance, feasible_solution)
-
-    if relocated_solution is feasible_solution:
-        feasible_solution.calculate_vehicles_loads(instance)
-        feasible_solution.calculate_length_of_routes(instance)
-        feasible_solution.calculate_nodes_time_windows(instance)
-        feasible_solution.objective_function(instance)
 
     return relocated_solution
 
