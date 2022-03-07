@@ -48,7 +48,7 @@ def crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, 
     for d in randomized_destinations:
         parent_destination = parent_vehicle.destinations[d]
         best_vehicle, best_position = -1, 0
-        shortest_from_previous, shortest_to_next, infeasible_shortest_from_previous, infeasible_shortest_to_next = (float(INT_MAX),) * 4
+        shortest_from_previous, shortest_to_next = (float(INT_MAX),) * 2
         found_feasible_location = False
 
         for i, vehicle in enumerate(crossover_solution.vehicles):
@@ -69,12 +69,10 @@ def crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, 
                             and (distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next) or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next):
                         best_vehicle, best_position, shortest_from_previous, shortest_to_next = i, j, distance_from_previous, distance_to_next
                         found_feasible_location = True
-                    elif not found_feasible_location and ((distance_from_previous < infeasible_shortest_from_previous and distance_to_next <= infeasible_shortest_to_next) or (distance_from_previous <= infeasible_shortest_from_previous and distance_to_next < infeasible_shortest_to_next)): # until a feasible location is found, record the best infeasible location as it will be needed in case no feasible location is found
-                        best_vehicle, best_position, infeasible_shortest_from_previous, infeasible_shortest_to_next = i, j, distance_from_previous, distance_to_next
 
                     #del crossover_solution.vehicles[i].destinations[j]
 
-        if not found_feasible_location and len(crossover_solution.vehicles) < instance.amount_of_vehicles:
+        if not found_feasible_location:
             best_vehicle = len(crossover_solution.vehicles)
             crossover_solution.vehicles.append(Vehicle.create_route(instance, parent_destination.node))
         else:
