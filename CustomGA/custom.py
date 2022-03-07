@@ -2,8 +2,7 @@ import copy
 import time
 import random
 from typing import List, Dict, Tuple
-from MMOEASA.parameters import POPULATION_SIZE as MMOEASA_POPULATION_SIZE
-from common import rand, check_iterations_termination_condition, check_seconds_termination_condition, INT_MAX
+from common import rand, check_iterations_termination_condition, check_seconds_termination_condition
 from random import shuffle
 from destination import Destination
 from problemInstance import ProblemInstance
@@ -62,40 +61,37 @@ def check_nondominated_set_acceptance(nondominated_set: List[CustomGASolution], 
     nondominated_set.append(subject_solution)
     solutions_to_remove = set()
 
-    for s, solution in enumerate(nondominated_set):
-        for s_aux, solution_auxiliary in enumerate(nondominated_set):
-            if not s == s_aux and is_nondominated(solution_auxiliary, solution):
-                solutions_to_remove.add(s_aux)
+    if len(nondominated_set) > 1:
+        for s, solution in enumerate(nondominated_set[:len(nondominated_set) - 1]):
+            for s_aux, solution_auxiliary in enumerate(nondominated_set[s + 1:], s + 1):
+                if is_nondominated(solution, solution_auxiliary):
+                    solutions_to_remove.add(s)
+                elif is_nondominated(solution_auxiliary, solution):
+                    solutions_to_remove.add(s_aux)
 
-    if solutions_to_remove:
-        i = 0
-        for s in range(len(nondominated_set)):
-            if s not in solutions_to_remove:
-                nondominated_set[i] = nondominated_set[s]
-                i += 1
-        if i != len(nondominated_set):
-            del nondominated_set[i:]
+        if solutions_to_remove:
+            i = 0
+            for s in range(len(nondominated_set)):
+                if s not in solutions_to_remove:
+                    nondominated_set[i] = nondominated_set[s]
+                    i += 1
+            if i != len(nondominated_set):
+                del nondominated_set[i:]
 
     return subject_solution in nondominated_set
 
 def selection_tournament(nondominated_set: List[CustomGASolution], population: List[CustomGASolution]) -> int:
-    if nondominated_set:
-        best_solutions = list(filter(lambda s: s.rank == 1, nondominated_set))
-    else: # in this instance, no non-dominated solutions have been found yet, so work with any feasible solutions
-        best_solutions = list(filter(lambda s: s.feasible, population))
-
-    if best_solutions:
-        tournament_set = random.choice(best_solutions, min(len(best_solutions), TOURNAMENT_SET_SIZE))
-    else:
-        tournament_set = random.choice(population, TOURNAMENT_SET_SIZE)
-
-    if rand(1, 100) < TOURNAMENT_PROBABILITY_SELECT_BEST:
+    if nondominated_set and rand(1, 100) < TOURNAMENT_PROBABILITY_SELECT_BEST:
+        tournament_set = random.choice(nondominated_set, min(len(nondominated_set), TOURNAMENT_SET_SIZE))
         best_solution = population[tournament_set[0].id]
-        for solution in tournament_set:
-            if is_nondominated(best_solution, population[solution.id]):
-                best_solution = population[solution.id]
+
+        if len(tournament_set) > 1:
+            for solution in tournament_set[1:]:
+                if is_nondominated(best_solution, population[solution.id]):
+                    best_solution = population[solution.id]
         return best_solution.id
     else:
+        tournament_set = random.choice(population, TOURNAMENT_SET_SIZE)
         return tournament_set[rand(0, min(len(tournament_set), TOURNAMENT_SET_SIZE) - 1)].id
 
 def try_crossover(instance, parent_one: CustomGASolution, parent_two: CustomGASolution, crossover_probability) -> CustomGASolution:
