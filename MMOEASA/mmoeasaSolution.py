@@ -16,7 +16,7 @@ class MMOEASASolution(Solution):
         self.cooling_rate: float=float(cooling_rate)
 
     def __str__(self) -> str:
-        return f"id={self.id}, feasible={self.feasible}, default_temperature={self.default_temperature}, temperature={self.temperature}, cooling_rate={self.cooling_rate}, total_distance={self.total_distance}, distance_unbalance={self.distance_unbalance}, cargo_unbalance={self.cargo_unbalance}, {len(self.vehicles)=}, {[(i, str(v)) for i, v in enumerate(self.vehicles)]}"
+        return f"total_distance={self.total_distance}, distance_unbalance={self.distance_unbalance}, cargo_unbalance={self.cargo_unbalance}, {len(self.vehicles)=}, {[f'{i}. {str(v)}' for i, v in enumerate(self.vehicles)]}"
 
     def objective_function(self, instance: ProblemInstance) -> None:
         vehicle = 0

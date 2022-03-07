@@ -11,7 +11,7 @@ class OmbukiSolution(Solution):
         self.num_vehicles: int=int(num_vehicles) # the reason this objective is a variable instead of just using "len(vehicles)" is because if the solution is invalid, it needs to be set to a very high number
 
     def __str__(self) -> str:
-        return f"id={self.id}, feasible={self.feasible}, total_distance={self.total_distance}, num_vehicles={self.num_vehicles}, {[(i, str(v)) for i, v in enumerate(self.vehicles)]}"
+        return f"total_distance={self.total_distance}, num_vehicles={self.num_vehicles}, {[f'{i}. {str(v)}' for i, v in enumerate(self.vehicles)]}"
 
     def objective_function(self, instance: ProblemInstance):
         vehicle = 0
