@@ -45,7 +45,7 @@ def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_tw
         parent_destination = parent_two_vehicle.destinations[d]
         best_vehicle, best_position = instance.amount_of_vehicles, 1
         shortest_from_previous, shortest_to_next = (float(INT_MAX),) * 2
-        fewest_destinations = INT_MAX
+        highest_wait_time = 0.0
         found_feasible_location = False
 
         for i, vehicle in enumerate(crossover_solution.vehicles):
@@ -61,8 +61,8 @@ def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_tw
                             and ((distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next) or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next)):
                         best_vehicle, best_position, shortest_from_previous, shortest_to_next = i, j, distance_from_previous, distance_to_next
                         found_feasible_location = True
-                    elif j == 1 and not found_feasible_location and crossover_solution.vehicles[i].get_num_of_customers_visited() < fewest_destinations:
-                        best_vehicle, fewest_destinations = i, crossover_solution.vehicles[i].get_num_of_customers_visited()
+                    elif not found_feasible_location and crossover_solution.vehicles[i].destinations[j - 1].wait_time > highest_wait_time:
+                        best_vehicle, best_position, highest_wait_time = i, j - 1, crossover_solution.vehicles[i].destinations[j - 1].wait_time
 
                     del crossover_solution.vehicles[i].destinations[j]
 
