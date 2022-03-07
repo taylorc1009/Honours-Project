@@ -55,7 +55,7 @@ def DTWIH(instance: ProblemInstance) -> CustomGASolution:
 def is_nondominated(old_solution: CustomGASolution, new_solution: CustomGASolution) -> bool:
     return (new_solution.total_distance < old_solution.total_distance and new_solution.num_vehicles <= old_solution.num_vehicles) or (new_solution.total_distance <= old_solution.total_distance and new_solution.num_vehicles < old_solution.num_vehicles)
 
-def is_nondominated_by_any(nondominated_set: List[CustomGASolution], subject_solution: CustomGASolution) -> bool:
+def check_nondominated_set_acceptance(nondominated_set: List[CustomGASolution], subject_solution: CustomGASolution) -> bool:
     if not subject_solution.feasible:
         return False
 
@@ -70,7 +70,7 @@ def is_nondominated_by_any(nondominated_set: List[CustomGASolution], subject_sol
     if solutions_to_remove:
         i = 0
         for s in range(len(nondominated_set)):
-            if not s in solutions_to_remove:
+            if s not in solutions_to_remove:
                 nondominated_set[i] = nondominated_set[s]
                 i += 1
         if i != len(nondominated_set):
@@ -167,7 +167,7 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
             dominates_parent = is_nondominated(solution, child)
             if not solution.feasible or dominates_parent:
                 population[s] = child
-                is_nondominated_by_any(nondominated_set, population[s])
+                check_nondominated_set_acceptance(nondominated_set, population[s])
                 #if is_nondominated_by_any(nondominated_set, population[s]) or (dominates_parent and len(nondominated_set) < MMOEASA_POPULATION_SIZE): # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
                     #nondominated_set.append(copy.deepcopy(population[s]))
         iterations += 1
