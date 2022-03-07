@@ -170,7 +170,6 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
                 is_nondominated_by_any(nondominated_set, population[s])
                 #if is_nondominated_by_any(nondominated_set, population[s]) or (dominates_parent and len(nondominated_set) < MMOEASA_POPULATION_SIZE): # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
                     #nondominated_set.append(copy.deepcopy(population[s]))
-        #num_rank_ones = pareto_rank(instance, population)
         iterations += 1
 
         if termination_type == "iterations":
