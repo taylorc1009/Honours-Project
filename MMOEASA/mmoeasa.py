@@ -1,9 +1,8 @@
 import copy
 import time
-from MMOEASA.auxiliaries import is_nondominated, is_nondominated_by_any, ombuki_is_nondominated_by_any
+from MMOEASA.auxiliaries import is_nondominated, ombuki_is_nondominated, check_nondominated_set_acceptance
 from MMOEASA.operators import mutation1, mutation2, mutation3, mutation4, mutation5, mutation6, mutation7, mutation8, mutation9, mutation10, crossover1
 from MMOEASA.constants import MAX_SIMULTANEOUS_MUTATIONS
-from Ombuki.auxiliaries import is_nondominated as ombuki_is_nondominated
 from MMOEASA.mmoeasaSolution import MMOEASASolution
 from Ombuki.ombukiSolution import OmbukiSolution
 from problemInstance import ProblemInstance
@@ -112,11 +111,11 @@ def mutation(instance: ProblemInstance, I: Union[MMOEASASolution, OmbukiSolution
 def euclidean_distance_dispersion(instance: ProblemInstance, x1: float, y1: float, x2: float, y2: float) -> float:
     return sqrt(((x2 - x1) / 2 * instance.Hypervolume_total_distance) ** 2 + ((y2 - y1) / 2 * instance.Hypervolume_cargo_unbalance) ** 2)
 
-def mo_metropolis(instance: ProblemInstance, parent: MMOEASASolution, child: MMOEASASolution, temperature: float) -> Tuple[MMOEASASolution, bool]:
+def mo_metropolis(instance: ProblemInstance, parent: MMOEASASolution, child: MMOEASASolution, temperature: float) -> MMOEASASolution:
     if is_nondominated(parent, child):
-        return child, True
+        return child
     elif temperature <= 0.00001:
-        return parent, False
+        return parent
     else:
         d_df = euclidean_distance_dispersion(instance, child.total_distance, child.cargo_unbalance, parent.total_distance, parent.cargo_unbalance)
         random_val = rand(0, INT_MAX) / INT_MAX
@@ -124,9 +123,9 @@ def mo_metropolis(instance: ProblemInstance, parent: MMOEASASolution, child: MMO
         pt_exp = exp(-1.0 * d_pt_pt)
 
         if random_val < pt_exp:
-            return child, not (child.cargo_unbalance == parent.cargo_unbalance and child.total_distance == parent.total_distance)
+            return child
         else:
-            return parent, False
+            return parent
 
 def MMOEASA(instance: ProblemInstance, population_size: int, multi_starts: int, termination_condition: int, termination_type: str, crossover_probability: int, mutation_probability: int, temperature_max: float, temperature_min: float, temperature_stop: float) -> Tuple[List[Union[OmbukiSolution, MMOEASASolution]], Dict[str, int]]:
     population: List[Union[MMOEASASolution, OmbukiSolution]] = list()
@@ -166,31 +165,26 @@ def MMOEASA(instance: ProblemInstance, population_size: int, multi_starts: int, 
                     if mutation_occurred:
                         mutations += 1
 
-                child_dominated, dominated_any = False, False
                 if instance.acceptance_criterion == "Ombuki":
                     child_dominated = ombuki_is_nondominated(solution, solution_copy)
                     if child_dominated or not population[s].feasible:
-                        if child_dominated:
+                        population[s] = solution_copy
+                        if child_dominated and check_nondominated_set_acceptance(nondominated_set, solution_copy, ombuki_is_nondominated):
                             if crossover_occurred:
                                 crossover_successes += 1
                             if mutations > 0:
                                 mutation_successes += mutations
-                        population[s] = solution_copy
-                        dominated_any = ombuki_is_nondominated_by_any(nondominated_set, population[s])
                 else:
-                    population[s], child_dominated = mo_metropolis(instance, solution, solution_copy, solution.temperature)
-                    if child_dominated:
+                    population[s] = mo_metropolis(instance, solution, solution_copy, solution.temperature)
+                    if population[s] is solution_copy and population[s].feasible and check_nondominated_set_acceptance(nondominated_set, solution_copy, is_nondominated):
                         if crossover_occurred:
                             crossover_successes += 1
                         if mutations > 0:
                             mutation_successes += mutations
-                        dominated_any = is_nondominated_by_any(nondominated_set, population[s])
 
-                if dominated_any or (child_dominated and len(nondominated_set) < population_size):
-                    nondominated_set.append(copy.deepcopy(population[s]))
-                    """should_write = False # use the debugger to edit the value in "should_write" if you'd like a solution to be written to a CSV
-                    if should_write:
-                        MMOEASA_write_solution_for_validation(population[s], instance.capacity_of_vehicles)"""
+                """should_write = False # use the debugger to edit the value in "should_write" if you'd like a solution to be written to a CSV
+                if should_write and nondominated_set:
+                    MMOEASA_write_solution_for_validation(nondominated_set[0], instance.capacity_of_vehicles)"""
 
                 if instance.acceptance_criterion == "MMOEASA":
                     population[s].temperature *= population[s].cooling_rate

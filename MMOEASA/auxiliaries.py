@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Union, Callable
 from common import INT_MAX
 from MMOEASA.mmoeasaSolution import MMOEASASolution
 from Ombuki.ombukiSolution import OmbukiSolution
@@ -9,30 +9,34 @@ from destination import Destination
 def is_nondominated(parent: MMOEASASolution, child: MMOEASASolution) -> bool:
     return (child.total_distance < parent.total_distance and child.cargo_unbalance <= parent.cargo_unbalance) or (child.total_distance <= parent.total_distance and child.cargo_unbalance < parent.cargo_unbalance)
 
-def is_nondominated_by_any(nondominated_set: List[MMOEASASolution], subject_solution: MMOEASASolution) -> bool:
-    i = 0
-    for solution in nondominated_set:
-        if not is_nondominated(solution, subject_solution):
-            nondominated_set[i] = solution
-            i += 1
-    if i != len(nondominated_set):
-        del nondominated_set[i:]
-        return True
-    return False
-
 def ombuki_is_nondominated(old_solution: OmbukiSolution, new_solution: OmbukiSolution) -> bool:
     return (new_solution.total_distance < old_solution.total_distance and new_solution.num_vehicles <= old_solution.num_vehicles) or (new_solution.total_distance <= old_solution.total_distance and new_solution.num_vehicles < old_solution.num_vehicles)
 
-def ombuki_is_nondominated_by_any(nondominated_set: List[OmbukiSolution], subject_solution: OmbukiSolution) -> bool:
-    i = 0
-    for solution in nondominated_set:
-        if not ombuki_is_nondominated(solution, subject_solution):
-            nondominated_set[i] = solution
-            i += 1
-    if i != len(nondominated_set):
-        del nondominated_set[i:]
-        return True
-    return False
+def check_nondominated_set_acceptance(nondominated_set: List[Union[MMOEASASolution, OmbukiSolution]], subject_solution: Union[MMOEASASolution, OmbukiSolution], nondominated_check: Callable[[Union[OmbukiSolution, MMOEASASolution], Union[OmbukiSolution, MMOEASASolution]], bool]) -> bool:
+    if not subject_solution.feasible:
+        return False
+
+    nondominated_set.append(subject_solution)
+    solutions_to_remove = set()
+
+    if len(nondominated_set) > 1:
+        for s, solution in enumerate(nondominated_set[:len(nondominated_set) - 1]):
+            for s_aux, solution_auxiliary in enumerate(nondominated_set[s + 1:], s + 1):
+                if nondominated_check(solution, solution_auxiliary):
+                    solutions_to_remove.add(s)
+                elif nondominated_check(solution_auxiliary, solution):
+                    solutions_to_remove.add(s_aux)
+
+        if solutions_to_remove:
+            i = 0
+            for s in range(len(nondominated_set)):
+                if s not in solutions_to_remove:
+                    nondominated_set[i] = nondominated_set[s]
+                    i += 1
+            if i != len(nondominated_set):
+                del nondominated_set[i:]
+
+    return subject_solution in nondominated_set
 
 def insert_unvisited_node(solution: Union[MMOEASASolution, OmbukiSolution], instance: ProblemInstance, node: int) -> Union[MMOEASASolution, OmbukiSolution]:
     inserted = False

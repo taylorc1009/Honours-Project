@@ -262,7 +262,7 @@ def Ombuki(instance: ProblemInstance, population_size: int, termination_conditio
                 population[i] = result
             elif result.feasible:
                 if instance.acceptance_criterion == "MMOEASA":
-                    population[i], _ = mo_metropolis(instance, solution, result, 100.0)
+                    population[i] = mo_metropolis(instance, solution, result, 100.0)
                 elif is_nondominated(population[i], result):
                     population[i] = result
         num_rank_ones = pareto_rank(instance, population)
