@@ -273,14 +273,6 @@ def Ombuki(instance: ProblemInstance, population_size: int, termination_conditio
         elif termination_type == "seconds":
             terminate = check_seconds_termination_condition(start, termination_condition, num_rank_ones)
 
-    # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
-    nondominated_set = list()
-    for solution in population:
-        if solution.rank == 1 and solution.feasible:
-            nondominated_set.append(solution)
-            if len(nondominated_set) == 20:
-                break
-
     global crossover_invocations, crossover_successes, mutation_invocations, mutation_successes
     statistics = {
         "initialiser_execution_time": f"{initialiser_execution_time} milliseconds",
@@ -291,4 +283,5 @@ def Ombuki(instance: ProblemInstance, population_size: int, termination_conditio
         "mutation_successes": mutation_successes
     }
 
-    return nondominated_set, statistics
+    # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasedly) a fixed amount of rank 1 solutions for a fair evaluation
+    return list(filter(lambda s: s.rank == 1, population))[:20], statistics
