@@ -70,12 +70,12 @@ def calculate_cooling(i: int, temperature_max: float, temperature_min: float, te
 
     return cooling_rate
 
-def crossover(instance: ProblemInstance, I: Union[MMOEASASolution, OmbukiSolution], population: List[Union[MMOEASASolution, OmbukiSolution]], P_crossover: int) -> Union[MMOEASASolution, OmbukiSolution]:
+def crossover(instance: ProblemInstance, I: Union[MMOEASASolution, OmbukiSolution], population: List[Union[MMOEASASolution, OmbukiSolution]], P_crossover: int, is_nondominated_set: bool) -> Union[MMOEASASolution, OmbukiSolution]:
     if rand(1, 100) <= P_crossover:
         global crossover_invocations
         crossover_invocations += 1
 
-        return crossover1(instance, copy.deepcopy(I), population)
+        return crossover1(instance, copy.deepcopy(I), population, is_nondominated_set)
     return I
 
 def mutation(instance: ProblemInstance, I: Union[MMOEASASolution, OmbukiSolution], P_mutation: int, pending_copy: bool) -> Tuple[Union[MMOEASASolution, OmbukiSolution], bool]:
@@ -156,8 +156,8 @@ def MMOEASA(instance: ProblemInstance, population_size: int, multi_starts: int, 
 
         while (instance.acceptance_criterion == "MMOEASA" and population[0].temperature > temperature_stop and not terminate) or not terminate:
             for s, solution in enumerate(population):
-                #selection_tournament = rand(1, population_size * (2 if len(nondominated_set) > 1 else 1))
-                solution_copy = crossover(instance, solution, population, crossover_probability)#population if selection_tournament <= population_size else nondominated_set, P_crossover)
+                selection_tournament = rand(0, 1) if nondominated_set else 0
+                solution_copy = crossover(instance, solution, nondominated_set if selection_tournament else population, crossover_probability, selection_tournament)
                 crossover_occurred = solution_copy is not solution
                 mutations = 0
                 for _ in range(0, rand(1, MAX_SIMULTANEOUS_MUTATIONS)):

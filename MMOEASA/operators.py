@@ -241,19 +241,19 @@ def vehicle_insertion_possible(unvisited_nodes: Set[int], new_vehicle: Vehicle) 
     nodes_to_insert = set([d.node.number for d in new_vehicle.get_customers_visited()])
     return len(unvisited_nodes.difference(nodes_to_insert)) == len(unvisited_nodes) - len(nodes_to_insert), nodes_to_insert
 
-def crossover1(instance: ProblemInstance, solution: Union[MMOEASASolution, OmbukiSolution], P: List[Union[MMOEASASolution, OmbukiSolution]]) -> Union[MMOEASASolution, OmbukiSolution]:
+def crossover1(instance: ProblemInstance, solution: Union[MMOEASASolution, OmbukiSolution], population: List[Union[MMOEASASolution, OmbukiSolution]], is_nondominated_set: bool) -> Union[MMOEASASolution, OmbukiSolution]:
     solution.vehicles = [v for v in solution.vehicles if rand(1, 100) < 50]
     
-    random_solution = rand(0, len(P) - 1, exclude_values={solution.id})
+    random_solution = rand(0, len(population) - 1, exclude_values={solution.id} if not is_nondominated_set else {})
 
     unvisited_nodes = set(range(1, len(instance.nodes))).difference([d.node.number for v in solution.vehicles for d in v.get_customers_visited()])
 
-    for i, _ in enumerate(P[random_solution].vehicles):
-        if P[random_solution].vehicles[i].get_num_of_customers_visited() >= 1:
-            insertion_possible, new_nodes = vehicle_insertion_possible(unvisited_nodes, P[random_solution].vehicles[i])
+    for i in range(len(population[random_solution].vehicles)):
+        if population[random_solution].vehicles[i].get_num_of_customers_visited() >= 1:
+            insertion_possible, new_nodes = vehicle_insertion_possible(unvisited_nodes, population[random_solution].vehicles[i])
 
             if insertion_possible and len(solution.vehicles) < instance.amount_of_vehicles:
-                solution.vehicles.append(copy.deepcopy(P[random_solution].vehicles[i]))
+                solution.vehicles.append(copy.deepcopy(population[random_solution].vehicles[i]))
                 unvisited_nodes.difference_update(new_nodes)
 
                 if not unvisited_nodes:
