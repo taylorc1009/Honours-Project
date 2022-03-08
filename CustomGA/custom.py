@@ -56,7 +56,7 @@ def is_nondominated(old_solution: CustomGASolution, new_solution: CustomGASoluti
 
 def check_nondominated_set_acceptance(nondominated_set: List[CustomGASolution], subject_solution: CustomGASolution) -> None:
     if not subject_solution.feasible:
-        return False
+        return# False
 
     nondominated_set.append(subject_solution)
     solutions_to_remove = set()
