@@ -66,7 +66,8 @@ def check_nondominated_set_acceptance(nondominated_set: List[CustomGASolution], 
             for s_aux, solution_auxiliary in enumerate(nondominated_set[s + 1:], s + 1):
                 if is_nondominated(solution, solution_auxiliary):
                     solutions_to_remove.add(s)
-                elif is_nondominated(solution_auxiliary, solution):
+                elif is_nondominated(solution_auxiliary, solution) \
+                        or (solution.total_distance == solution_auxiliary.total_distance and solution.num_vehicles == solution_auxiliary.num_vehicles):
                     solutions_to_remove.add(s_aux)
 
         if solutions_to_remove:
