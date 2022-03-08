@@ -126,14 +126,15 @@ def relocate_final_destinations(instance: ProblemInstance, solution: Union[Ombuk
 
     i = 0
     while i < len(feasible_solution.vehicles) - 1:
-        distance_of_second = feasible_solution.vehicles[i + 1].route_distance
+        distance_of_first, distance_of_second = feasible_solution.vehicles[i].route_distance, feasible_solution.vehicles[i + 1].route_distance
         #feasible_solution.vehicles[i + 1 if i < len(feasible_solution.vehicles) - 1 else 0]
         feasible_solution.vehicles[i + 1].destinations.insert(1, feasible_solution.vehicles[i].destinations.pop(feasible_solution.vehicles[i].get_num_of_customers_visited()))
-
+        feasible_solution.vehicles[i].calculate_length_of_route(instance)
+        feasible_solution.vehicles[i + 1].calculate_length_of_route(instance)
         feasible_solution.vehicles[i + 1].current_capacity += feasible_solution.vehicles[i + 1].destinations[-2].node.demand
-        feasible = not (feasible_solution.vehicles[i + 1].route_distance > distance_of_second or feasible_solution.vehicles[i].current_capacity > instance.capacity_of_vehicles)
+
+        feasible = not (feasible_solution.vehicles[i].route_distance + feasible_solution.vehicles[i + 1].route_distance > distance_of_first + distance_of_second or feasible_solution.vehicles[i + 1].current_capacity > instance.capacity_of_vehicles)
         if feasible:
-            feasible_solution.vehicles[i + 1].calculate_length_of_route(instance)
             feasible_solution.vehicles[i + 1].calculate_destinations_time_windows(instance)
             for d in range(1, feasible_solution.vehicles[i + 1].get_num_of_customers_visited()):
                 if feasible_solution.vehicles[i + 1].destinations[d].arrival_time > feasible_solution.vehicles[i + 1].destinations[-2].node.due_date:
@@ -142,18 +143,23 @@ def relocate_final_destinations(instance: ProblemInstance, solution: Union[Ombuk
 
         if not feasible:
             feasible_solution.vehicles[i].destinations.insert(feasible_solution.vehicles[i].get_num_of_customers_visited() + 1, feasible_solution.vehicles[i + 1].destinations.pop(1))
+            feasible_solution.vehicles[i].calculate_length_of_route(instance)
+            feasible_solution.vehicles[i].current_capacity += feasible_solution.vehicles[i].destinations[-2].node.demand
+            feasible_solution.vehicles[i].calculate_destinations_time_windows(instance)
+
             feasible_solution.vehicles[i + 1].calculate_length_of_route(instance)
             feasible_solution.vehicles[i + 1].current_capacity -= feasible_solution.vehicles[i].destinations[-2].node.demand
             feasible_solution.vehicles[i + 1].calculate_destinations_time_windows(instance)
+
+            i += 1
         else:
-            feasible_solution.vehicles[i].calculate_length_of_route(instance)
             feasible_solution.vehicles[i].current_capacity -= feasible_solution.vehicles[i + 1].destinations[-2].node.demand
             feasible_solution.vehicles[i].calculate_destination_time_window(instance, -2, -1)
 
-        if not feasible_solution.vehicles[i].get_num_of_customers_visited():
-            del feasible_solution.vehicles[i]
-        else:
-            i += 1
+            if not feasible_solution.vehicles[i].get_num_of_customers_visited():
+                del feasible_solution.vehicles[i]
+            else:
+                i += 1
 
     feasible_solution.objective_function(instance)
 
