@@ -76,6 +76,8 @@ def check_nondominated_set_acceptance(nondominated_set: List[CustomGASolution], 
                     nondominated_set[i] = nondominated_set[s]
                     i += 1
             if i != len(nondominated_set):
+                if i > 20:
+                    i = 20
                 del nondominated_set[i:]
 
     #return subject_solution in nondominated_set
