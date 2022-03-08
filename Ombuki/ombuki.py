@@ -121,55 +121,62 @@ def attempt_feasible_network_transformation(instance: ProblemInstance, solution:
 
     return feasible_solution
 
+def check_route_time_windows(vehicle: Vehicle) -> bool:
+    for d in range(1, vehicle.get_num_of_customers_visited()):
+        if vehicle.destinations[d].arrival_time > vehicle.destinations[d].node.due_date:
+            return False
+    return True
+
 def relocate_final_destinations(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
-    feasible_solution = copy.deepcopy(solution)
+    relocated_solution = copy.deepcopy(solution)
 
     i = 0
-    while i < len(feasible_solution.vehicles) - 1:
-        distance_of_first, distance_of_second = feasible_solution.vehicles[i].route_distance, feasible_solution.vehicles[i + 1].route_distance
-        #feasible_solution.vehicles[i + 1 if i < len(feasible_solution.vehicles) - 1 else 0]
-        feasible_solution.vehicles[i + 1].destinations.insert(1, feasible_solution.vehicles[i].destinations.pop(feasible_solution.vehicles[i].get_num_of_customers_visited()))
-        feasible_solution.vehicles[i].calculate_length_of_route(instance)
-        feasible_solution.vehicles[i + 1].calculate_length_of_route(instance)
-        feasible_solution.vehicles[i + 1].current_capacity += feasible_solution.vehicles[i + 1].destinations[-2].node.demand
+    while i < len(relocated_solution.vehicles):
+        feasible = check_route_time_windows(relocated_solution.vehicles[i])
+        j = i + 1 if i < len(relocated_solution.vehicles) - 1 else 0
+        
+        relocated_solution.vehicles[j].destinations.insert(1, relocated_solution.vehicles[i].destinations.pop(relocated_solution.vehicles[i].get_num_of_customers_visited()))
+        relocated_solution.vehicles[i].calculate_length_of_route(instance)
+        relocated_solution.vehicles[j].calculate_length_of_route(instance)
+        relocated_solution.vehicles[j].current_capacity += relocated_solution.vehicles[j].destinations[1].node.demand
 
-        feasible = not (feasible_solution.vehicles[i].route_distance + feasible_solution.vehicles[i + 1].route_distance > distance_of_first + distance_of_second or feasible_solution.vehicles[i + 1].current_capacity > instance.capacity_of_vehicles)
-        if feasible:
-            feasible_solution.vehicles[i + 1].calculate_destinations_time_windows(instance)
-            for d in range(1, feasible_solution.vehicles[i + 1].get_num_of_customers_visited()):
-                if feasible_solution.vehicles[i + 1].destinations[d].arrival_time > feasible_solution.vehicles[i + 1].destinations[-2].node.due_date:
-                    feasible = False
-                    break
+        if not relocated_solution.vehicles[j].current_capacity > instance.capacity_of_vehicles:
+            relocated_solution.vehicles[j].calculate_destinations_time_windows(instance)
+            swap_is_feasible = check_route_time_windows(relocated_solution.vehicles[j])
+            if feasible and not swap_is_feasible:
+                feasible = False
+            else:
+                feasible = swap_is_feasible
+        else:
+            feasible = False
 
         if not feasible:
-            feasible_solution.vehicles[i].destinations.insert(feasible_solution.vehicles[i].get_num_of_customers_visited() + 1, feasible_solution.vehicles[i + 1].destinations.pop(1))
-            feasible_solution.vehicles[i].calculate_length_of_route(instance)
-            feasible_solution.vehicles[i].current_capacity += feasible_solution.vehicles[i].destinations[-2].node.demand
-            feasible_solution.vehicles[i].calculate_destinations_time_windows(instance)
+            relocated_solution.vehicles[i].destinations.insert(relocated_solution.vehicles[i].get_num_of_customers_visited() + 1, relocated_solution.vehicles[j].destinations.pop(1))
+            relocated_solution.vehicles[i].calculate_length_of_route(instance)
+            relocated_solution.vehicles[i].calculate_destination_time_window(instance, -3, -2)
 
-            feasible_solution.vehicles[i + 1].calculate_length_of_route(instance)
-            feasible_solution.vehicles[i + 1].current_capacity -= feasible_solution.vehicles[i].destinations[-2].node.demand
-            feasible_solution.vehicles[i + 1].calculate_destinations_time_windows(instance)
+            relocated_solution.vehicles[j].calculate_length_of_route(instance)
+            relocated_solution.vehicles[j].current_capacity -= relocated_solution.vehicles[i].destinations[-2].node.demand
+            relocated_solution.vehicles[j].calculate_destinations_time_windows(instance)
 
             i += 1
         else:
-            feasible_solution.vehicles[i].current_capacity -= feasible_solution.vehicles[i + 1].destinations[-2].node.demand
-            feasible_solution.vehicles[i].calculate_destination_time_window(instance, -2, -1)
+            relocated_solution.vehicles[i].current_capacity -= relocated_solution.vehicles[j].destinations[-2].node.demand
+            relocated_solution.vehicles[i].calculate_destination_time_window(instance, -2, -1)
 
-            if not feasible_solution.vehicles[i].get_num_of_customers_visited():
-                del feasible_solution.vehicles[i]
+            if not relocated_solution.vehicles[i].get_num_of_customers_visited():
+                del relocated_solution.vehicles[i]
             else:
                 i += 1
 
-    feasible_solution.objective_function(instance)
-
-    return feasible_solution
+    relocated_solution.objective_function(instance)
+    return relocated_solution
 
 def routing_scheme(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
     feasible_solution = attempt_feasible_network_transformation(instance, solution)
     relocated_solution = relocate_final_destinations(instance, feasible_solution)
 
-    return relocated_solution
+    return relocated_solution if relocated_solution.total_distance < feasible_solution.total_distance and relocated_solution.num_vehicles < feasible_solution.num_vehicles else feasible_solution
 
 def selection_tournament(instance: ProblemInstance, population: List[Union[OmbukiSolution, MMOEASASolution]]) -> int:
     best_solutions = list(filter(lambda s: s.rank == 1, population))
