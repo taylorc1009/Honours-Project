@@ -54,7 +54,7 @@ def DTWIH(instance: ProblemInstance) -> CustomGASolution:
 def is_nondominated(old_solution: CustomGASolution, new_solution: CustomGASolution) -> bool:
     return (new_solution.total_distance < old_solution.total_distance and new_solution.num_vehicles <= old_solution.num_vehicles) or (new_solution.total_distance <= old_solution.total_distance and new_solution.num_vehicles < old_solution.num_vehicles)
 
-def check_nondominated_set_acceptance(nondominated_set: List[CustomGASolution], subject_solution: CustomGASolution) -> bool:
+def check_nondominated_set_acceptance(nondominated_set: List[CustomGASolution], subject_solution: CustomGASolution) -> None:
     if not subject_solution.feasible:
         return False
 
@@ -78,7 +78,7 @@ def check_nondominated_set_acceptance(nondominated_set: List[CustomGASolution], 
             if i != len(nondominated_set):
                 del nondominated_set[i:]
 
-    return subject_solution in nondominated_set
+    #return subject_solution in nondominated_set
 
 def selection_tournament(nondominated_set: List[CustomGASolution], population: List[CustomGASolution]) -> int:
     if nondominated_set and rand(1, 100) < TOURNAMENT_PROBABILITY_SELECT_BEST:
