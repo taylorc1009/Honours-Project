@@ -105,14 +105,43 @@ def attempt_feasible_network_transformation(instance: ProblemInstance, solution:
     f_vehicle = 0
     for vehicle in solution.vehicles:
         for destination in vehicle.get_customers_visited()[1 if vehicle is solution.vehicles[0] else 0:]:
-            if feasible_solution.vehicles[f_vehicle].current_capacity + destination.node.demand <= instance.capacity_of_vehicles and feasible_solution.vehicles[f_vehicle].destinations[-2].departure_time + instance.get_distance(feasible_solution.vehicles[f_vehicle].destinations[-2].node.number, destination.node.number) <= destination.node.due_date:
-                feasible_solution.vehicles[f_vehicle].destinations.insert(feasible_solution.vehicles[f_vehicle].get_num_of_customers_visited() + 1, copy.deepcopy(destination))
-            else:
-                feasible_solution.vehicles.append(Vehicle.create_route(instance, destination.node))
-                f_vehicle += 1
+            feasible_insertion = False
+            vehicle_reset = False
+            first_attempted_vehicle = f_vehicle
+
+            while not feasible_insertion:
+                if feasible_solution.vehicles[f_vehicle].current_capacity + destination.node.demand <= instance.capacity_of_vehicles and feasible_solution.vehicles[f_vehicle].destinations[-2].departure_time + instance.get_distance(feasible_solution.vehicles[f_vehicle].destinations[-2].node.number, destination.node.number) <= destination.node.due_date:
+                    feasible_solution.vehicles[f_vehicle].destinations.insert(len(feasible_solution.vehicles[f_vehicle].destinations) - 1, copy.deepcopy(destination))
+                    feasible_insertion = True
+                elif f_vehicle == instance.amount_of_vehicles - 1 or (vehicle_reset and f_vehicle == first_attempted_vehicle):
+                    if not vehicle_reset:
+                        f_vehicle = 0
+                        vehicle_reset = True
+                    else: # at this point, no feasible vehicle insertion was found, so select the best destination based on distance where capacity constraints are not violated; therefore, this solution is now infeasible
+                        best_vehicle, best_position = -1, 1
+                        shortest_from_previous, shortest_to_next = (float(INT_MAX),) * 2
+
+                        for v, infeasible_vehicle in enumerate(feasible_solution.vehicles):
+                            if not infeasible_vehicle.current_capacity + destination.node.demand > instance.capacity_of_vehicles:
+                                for d in range(len(infeasible_vehicle.destinations)):
+                                    distance_from_previous = instance.get_distance(infeasible_vehicle.destinations[d - 1].node.number, destination.node.number)
+                                    distance_to_next = instance.get_distance(infeasible_vehicle.destinations[d - 1].node.number, destination.node.number)
+
+                                    if (distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next) or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next):
+                                        best_vehicle, best_position, shortest_from_previous, shortest_to_next = v, d, distance_from_previous, distance_to_next
+
+                        feasible_solution.vehicles[best_vehicle].destinations.insert(best_position, copy.deepcopy(destination))
+                        break
+                else:
+                    if len(feasible_solution.vehicles) < instance.amount_of_vehicles:
+                        feasible_solution.vehicles.append(Vehicle.create_route(instance, destination.node))
+                        feasible_insertion = True
+                    f_vehicle += 1
 
             feasible_solution.vehicles[f_vehicle].current_capacity += destination.node.demand
             feasible_solution.vehicles[f_vehicle].calculate_destination_time_window(instance, -3, -2)
+            if not feasible_insertion:
+                f_vehicle = first_attempted_vehicle
 
     feasible_solution.calculate_vehicles_loads(instance)
     feasible_solution.calculate_length_of_routes(instance)

@@ -48,15 +48,12 @@ def crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, 
     for d in randomized_destinations:
         parent_destination = parent_vehicle.destinations[d]
         best_vehicle, best_position = -1, 0
-        shortest_from_previous, shortest_to_next = (float(INT_MAX),) * 2
+        shortest_from_previous, shortest_to_next, infeasible_shortest_from_previous, infeasible_shortest_to_next = (float(INT_MAX),) * 4
         found_feasible_location = False
 
         for i, vehicle in enumerate(crossover_solution.vehicles):
             if not vehicle.current_capacity + parent_destination.node.demand > instance.capacity_of_vehicles:
                 for j in range(1, len(crossover_solution.vehicles[i].destinations)):
-                    #crossover_solution.vehicles[i].destinations.insert(j, copy.deepcopy(parent_destination))
-                    #crossover_solution.vehicles[i].calculate_destination_time_window(instance, j - 1, j)
-
                     distance_from_previous = instance.get_distance(vehicle.destinations[j - 1].node.number, parent_destination.node.number)
                     distance_to_next = instance.get_distance(parent_destination.node.number, vehicle.destinations[j].node.number)
 
@@ -69,10 +66,10 @@ def crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, 
                             and (distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next) or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next):
                         best_vehicle, best_position, shortest_from_previous, shortest_to_next = i, j, distance_from_previous, distance_to_next
                         found_feasible_location = True
+                    elif not found_feasible_location and (distance_from_previous < infeasible_shortest_from_previous and distance_to_next <= infeasible_shortest_to_next) or (distance_from_previous <= infeasible_shortest_from_previous and distance_to_next < infeasible_shortest_to_next):
+                        best_vehicle, best_position, infeasible_shortest_from_previous, infeasible_shortest_to_next = i, j, distance_from_previous, distance_to_next
 
-                    #del crossover_solution.vehicles[i].destinations[j]
-
-        if not found_feasible_location:
+        if not found_feasible_location and len(crossover_solution.vehicles) < instance.amount_of_vehicles:
             best_vehicle = len(crossover_solution.vehicles)
             crossover_solution.vehicles.append(Vehicle.create_route(instance, parent_destination.node))
         else:
@@ -81,8 +78,8 @@ def crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, 
         crossover_solution.vehicles[best_vehicle].calculate_vehicle_load(instance)
         crossover_solution.vehicles[best_vehicle].calculate_destinations_time_windows(instance)
         crossover_solution.vehicles[best_vehicle].calculate_length_of_route(instance)
-        crossover_solution.objective_function(instance)
 
+    crossover_solution.objective_function(instance)
     result[currentThread().getName()] = crossover_solution
 
 def crossover(instance: ProblemInstance, parent_one: Union[OmbukiSolution, MMOEASASolution], parent_two: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
