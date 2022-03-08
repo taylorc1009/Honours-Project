@@ -7,7 +7,7 @@ from problemInstance import ProblemInstance
 from Ombuki.ombukiSolution import OmbukiSolution
 from vehicle import Vehicle
 from destination import Destination
-from Ombuki.auxiliaries import rand, is_nondominated, is_nondominated_by_any, mmoeasa_is_nondominated, mmoeasa_is_nondominated_by_any
+from Ombuki.auxiliaries import rand, is_nondominated, mmoeasa_is_nondominated, get_nondominated_set
 from numpy import arange, round, random
 from Ombuki.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_BEST, GREEDY_PERCENT
 from common import INT_MAX, check_iterations_termination_condition, check_seconds_termination_condition
@@ -75,31 +75,23 @@ def generate_greedy_solution(instance: ProblemInstance) -> Union[OmbukiSolution,
 
 def pareto_rank(instance: ProblemInstance, population: List[Union[OmbukiSolution, MMOEASASolution]]) -> int:
     curr_rank = 1
-    unranked_solutions = list(range(0, len(population)))
+    unranked_solutions = population.copy()
     num_rank_ones = 0
 
     while unranked_solutions:
-        could_assign_rank = False
-        for i in unranked_solutions:
-            if instance.acceptance_criterion == "MMOEASA":
-                if mmoeasa_is_nondominated_by_any(population, i):
-                    population[i].rank = curr_rank
-                    if curr_rank == 1:
-                        num_rank_ones += 1
-                    unranked_solutions.remove(population[i].id)
-                    could_assign_rank = True
-            elif is_nondominated_by_any(population, i):
-                population[i].rank = curr_rank
-                if curr_rank == 1:
-                    num_rank_ones += 1
-                unranked_solutions.remove(population[i].id)
-                could_assign_rank = True
-        if not could_assign_rank:
-            for i in unranked_solutions:
-                population[i].rank = curr_rank
+        nondominated_set = get_nondominated_set(unranked_solutions, mmoeasa_is_nondominated if instance.acceptance_criterion == "MMOEASA" else is_nondominated)
+        for s in list(nondominated_set):
+            population[s].rank = curr_rank
+            if curr_rank == 1:
+                num_rank_ones += 1
+        if not nondominated_set:
+            for solution in unranked_solutions:
+                solution.rank = curr_rank
             if curr_rank == 1:
                 num_rank_ones += len(unranked_solutions)
             break
+        else:
+            unranked_solutions = list(filter(lambda s: s.id not in nondominated_set, unranked_solutions))
         curr_rank += 1
 
     return num_rank_ones
