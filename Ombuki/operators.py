@@ -40,7 +40,47 @@ def set_up_crossover_child(instance: ProblemInstance, parent_one: Union[OmbukiSo
 
     return crossover_solution
 
-def crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], parent_vehicle: Vehicle, result: Dict[str, Union[OmbukiSolution, MMOEASASolution]]) -> None:
+def original_crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], parent_vehicle: Vehicle, result: Dict[str, Union[OmbukiSolution, MMOEASASolution]]) -> None:
+    crossover_solution = set_up_crossover_child(instance, solution, parent_vehicle)
+
+    randomized_destinations = list(range(1, len(parent_vehicle.destinations) - 1))
+    shuffle(randomized_destinations)
+    for d in randomized_destinations:
+        parent_destination = parent_vehicle.destinations[d]
+        best_vehicle, best_position = INT_MAX, 0
+        shortest_from_previous, shortest_to_next = (float(INT_MAX),) * 2
+        found_feasible_location = False
+
+        for i, vehicle in enumerate(crossover_solution.vehicles):
+            if not vehicle.current_capacity + parent_destination.node.demand > instance.capacity_of_vehicles:
+                for j in range(1, len(crossover_solution.vehicles[i].destinations)):
+                    distance_from_previous = instance.get_distance(vehicle.destinations[j - 1].node.number, parent_destination.node.number)
+                    distance_to_next = instance.get_distance(parent_destination.node.number, vehicle.destinations[j].node.number)
+
+                    simulated_arrival_time = vehicle.destinations[j - 1].departure_time + distance_from_previous
+                    if simulated_arrival_time < parent_destination.node.ready_time:
+                        simulated_arrival_time = parent_destination.node.ready_time
+                    simulated_departure_time = simulated_arrival_time + parent_destination.node.service_duration
+
+                    if not (simulated_arrival_time > parent_destination.node.due_date or simulated_departure_time + distance_to_next > vehicle.destinations[j].node.due_date) \
+                            and (distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next) or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next):
+                        best_vehicle, best_position, shortest_from_previous, shortest_to_next = i, j, distance_from_previous, distance_to_next
+                        found_feasible_location = True
+
+        if not found_feasible_location:
+            best_vehicle = len(crossover_solution.vehicles)
+            crossover_solution.vehicles.append(Vehicle.create_route(instance, parent_destination.node))
+        else:
+            crossover_solution.vehicles[best_vehicle].destinations.insert(best_position, copy.deepcopy(parent_destination))
+
+        crossover_solution.vehicles[best_vehicle].calculate_vehicle_load(instance)
+        crossover_solution.vehicles[best_vehicle].calculate_destinations_time_windows(instance)
+        crossover_solution.vehicles[best_vehicle].calculate_length_of_route(instance)
+
+    crossover_solution.objective_function(instance)
+    result[currentThread().getName()] = crossover_solution
+
+def modified_crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], parent_vehicle: Vehicle, result: Dict[str, Union[OmbukiSolution, MMOEASASolution]]) -> None:
     crossover_solution = set_up_crossover_child(instance, solution, parent_vehicle)
 
     randomized_destinations = list(range(1, len(parent_vehicle.destinations) - 1))
@@ -82,14 +122,14 @@ def crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, 
     crossover_solution.objective_function(instance)
     result[currentThread().getName()] = crossover_solution
 
-def crossover(instance: ProblemInstance, parent_one: Union[OmbukiSolution, MMOEASASolution], parent_two: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
+def crossover(instance: ProblemInstance, parent_one: Union[OmbukiSolution, MMOEASASolution], parent_two: Union[OmbukiSolution, MMOEASASolution], use_original: bool) -> Union[OmbukiSolution, MMOEASASolution]:
     parent_one_vehicle = parent_one.vehicles[rand(0, len(parent_one.vehicles) - 1)]
     parent_two_vehicle = parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)]
 
     # threads cannot return values, so they need to be given a mutable type that can be given the values we'd like to return; in this instance, a list is used
     thread_results: Dict[str, Union[OmbukiSolution, MMOEASASolution]] = {"child_one": None, "child_two": None}
-    child_one_thread = Thread(name="child_one", target=crossover_thread, args=(instance, parent_one, parent_two_vehicle, thread_results))
-    child_two_thread = Thread(name="child_two", target=crossover_thread, args=(instance, parent_two, parent_one_vehicle, thread_results))
+    child_one_thread = Thread(name="child_one", target=original_crossover_thread if use_original else modified_crossover_thread, args=(instance, parent_one, parent_two_vehicle, thread_results))
+    child_two_thread = Thread(name="child_two", target=original_crossover_thread if use_original else modified_crossover_thread, args=(instance, parent_two, parent_one_vehicle, thread_results))
     child_one_thread.start()
     child_two_thread.start()
     child_one_thread.join()

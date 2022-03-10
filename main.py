@@ -15,9 +15,9 @@ def execute_MMOEASA(problem_instance: ProblemInstance) -> Tuple[List[Union[MMOEA
     from MMOEASA.parameters import POPULATION_SIZE, MULTI_STARTS, TERMINATION_CONDITION_ITERATIONS, TERMINATION_CONDITION_SECONDS, TERMINATION_CONDITION_TYPE, CROSSOVER_PROBABILITY, MUTATION_PROBABILITY, TEMPERATURE_MAX, TEMPERATURE_MIN, TEMPERATURE_STOP
     return MMOEASA(problem_instance, POPULATION_SIZE, MULTI_STARTS, TERMINATION_CONDITION_SECONDS, TERMINATION_CONDITION_TYPE, CROSSOVER_PROBABILITY, MUTATION_PROBABILITY, TEMPERATURE_MAX, TEMPERATURE_MIN, TEMPERATURE_STOP)
 
-def execute_Ombuki(problem_instance: ProblemInstance) -> Tuple[List[Union[OmbukiSolution, MMOEASASolution]], Dict[str, int]]:
+def execute_Ombuki(problem_instance: ProblemInstance, use_original: bool) -> Tuple[List[Union[OmbukiSolution, MMOEASASolution]], Dict[str, int]]:
     from Ombuki.parameters import POPULATION_SIZE, TERMINATION_CONDITION_ITERATIONS, TERMINATION_CONDITION_SECONDS, TERMINATION_CONDITION_TYPE, CROSSOVER_PROBABILITY, MUTATION_PROBABILITY
-    return Ombuki(problem_instance, POPULATION_SIZE, TERMINATION_CONDITION_SECONDS, TERMINATION_CONDITION_TYPE, CROSSOVER_PROBABILITY, MUTATION_PROBABILITY)
+    return Ombuki(problem_instance, POPULATION_SIZE, TERMINATION_CONDITION_SECONDS, TERMINATION_CONDITION_TYPE, CROSSOVER_PROBABILITY, MUTATION_PROBABILITY, use_original)
 
 def execute_Custom(problem_instance: ProblemInstance) -> Tuple[List[CustomGASolution], Dict[str, int]]:
     from CustomGA.parameters import POPULATION_SIZE, TERMINATION_CONDITION_ITERATIONS, TERMINATION_CONDITION_SECONDS, TERMINATION_CONDITION_TYPE, CROSSOVER_PROBABILITY, MUTATION_PROBABILITY
@@ -32,14 +32,14 @@ if __name__ == '__main__':
             print(f"Format: main(.py) [ algorithm ] [ problem instance ] [ acceptance criteria ]{os.linesep}{os.linesep}"
                   f"The algorithms and acceptance criteria available to solve the problem are:{os.linesep}"
                   f" - MMOEASA{os.linesep}"
-                  f" - Ombuki{os.linesep}"
+                  f" - Ombuki (note that \"Ombuki-Original\" is also an algorithm; it contains features that seem to be anomalous from the original research paper){os.linesep}"
                   f" - Custom (algorithm \"Custom\" should not be used as and does not accept an alternative acceptance criterion; see example commands){os.linesep}{os.linesep}"
                   f"There's multiple types of problems in Solomon's instances, and here's what they are:{os.linesep}"
                   f" - Number of customers:{os.linesep}"
+                  f"   - 100 - 100 customers{os.linesep}"
                   f"   - Archived (and, therefore, out of order):{os.linesep}"
                   f"     - 25 - 25 customers{os.linesep}"
                   f"     - 50 - 50 customers{os.linesep}"
-                  f"   - 100 - 100 customers{os.linesep}"
                   f" - Customers' location:{os.linesep}"
                   f"   - C - clustered customers{os.linesep}"
                   f"   - R - uniformly distributed customers{os.linesep}"
@@ -52,7 +52,8 @@ if __name__ == '__main__':
                   f" - Where XX is the instance number; see the folder \"solomon_[ number of customers ]\" for available instances{os.linesep}{os.linesep}"
                   f"Example commands are:{os.linesep}"
                   f" - \"main.py MMOEASA solomon_100/C101.txt MMOEASA\"{os.linesep}"
-                  f" - \"main.py Custom solomon_100/C101.txt\"")
+                  f" - \"main.py Custom solomon_100/C101.txt\"{os.linesep}"
+                  f" - \"main.py Ombuki solomon_100/C101.txt MMOEASA\"")
         else:
             print("Argument \"-h\"/\"--help\" does not take any arguments")
     else:
@@ -71,8 +72,10 @@ if __name__ == '__main__':
         nondominated_set, statistics = None, None
         if sys.argv[1].upper() == "MMOEASA":
             nondominated_set, statistics = execute_MMOEASA(problem_instance)
+        elif sys.argv[1].upper() == "OMBUKI-ORIGINAL":
+            nondominated_set, statistics = execute_Ombuki(problem_instance, True)
         elif sys.argv[1].upper() == "OMBUKI":
-            nondominated_set, statistics = execute_Ombuki(problem_instance)
+            nondominated_set, statistics = execute_Ombuki(problem_instance, False)
         elif sys.argv[1].upper() == "CUSTOM":
             nondominated_set, statistics = execute_Custom(problem_instance)
         else:

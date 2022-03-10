@@ -96,7 +96,32 @@ def pareto_rank(instance: ProblemInstance, population: List[Union[OmbukiSolution
 
     return num_rank_ones
 
-def attempt_feasible_network_transformation(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
+def original_feasible_network_transformation(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
+    vehicles = [Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)]
+    feasible_solution = OmbukiSolution(_id=solution.id, vehicles=vehicles) if instance.acceptance_criterion == "Ombuki" else MMOEASASolution(_id=solution.id, vehicles=vehicles)
+    feasible_solution.vehicles[0].current_capacity += solution.vehicles[0].destinations[1].node.demand
+    feasible_solution.vehicles[0].calculate_destination_time_window(instance, 0, 1)
+
+    v = 0
+    for vehicle in solution.vehicles:
+        for destination in vehicle.get_customers_visited()[1 if vehicle is solution.vehicles[0] else 0:]:
+            if feasible_solution.vehicles[v].current_capacity + destination.node.demand <= instance.capacity_of_vehicles and feasible_solution.vehicles[v].destinations[-2].departure_time + instance.get_distance(feasible_solution.vehicles[v].destinations[-2].node.number, destination.node.number) <= destination.node.due_date:
+                feasible_solution.vehicles[v].destinations.insert(len(feasible_solution.vehicles[v].destinations) - 1, copy.deepcopy(destination))
+                feasible_solution.vehicles[v].calculate_destination_time_window(instance, -3, -2)
+                feasible_solution.vehicles[v].calculate_destination_time_window(instance, -2, -1)
+            else:
+                feasible_solution.vehicles.append(Vehicle.create_route(instance, destination.node))
+                v += 1
+                feasible_solution.vehicles[v].calculate_destinations_time_windows(instance)
+
+            feasible_solution.vehicles[v].current_capacity += destination.node.demand
+
+    feasible_solution.calculate_length_of_routes(instance)
+    feasible_solution.objective_function(instance)
+
+    return feasible_solution
+
+def modified_feasible_network_transformation(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
     vehicles = [Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)]
     feasible_solution = OmbukiSolution(_id=solution.id, vehicles=vehicles) if instance.acceptance_criterion == "Ombuki" else MMOEASASolution(_id=solution.id, vehicles=vehicles)
     feasible_solution.vehicles[0].current_capacity += solution.vehicles[0].destinations[1].node.demand
@@ -205,7 +230,8 @@ def relocate_final_destinations(instance: ProblemInstance, solution: Union[Ombuk
     relocated_solution.objective_function(instance)
     return relocated_solution
 
-def routing_scheme(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
+def routing_scheme(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], use_original: bool) -> Union[OmbukiSolution, MMOEASASolution]:
+    attempt_feasible_network_transformation = original_feasible_network_transformation if use_original else modified_feasible_network_transformation
     feasible_solution = attempt_feasible_network_transformation(instance, solution)
     relocated_solution = relocate_final_destinations(instance, feasible_solution)
 
@@ -233,12 +259,12 @@ def selection_tournament(instance: ProblemInstance, population: List[Union[Ombuk
     else:
         return tournament_set[rand(0, TOURNAMENT_SET_SIZE - 1)].id
 
-def crossover_probability(instance: ProblemInstance, iterator_parent: Union[OmbukiSolution, MMOEASASolution], tournament_parent: Union[OmbukiSolution, MMOEASASolution], probability: int) -> Union[OmbukiSolution, MMOEASASolution]:
+def crossover_probability(instance: ProblemInstance, iterator_parent: Union[OmbukiSolution, MMOEASASolution], tournament_parent: Union[OmbukiSolution, MMOEASASolution], probability: int, use_original: bool) -> Union[OmbukiSolution, MMOEASASolution]:
     if rand(1, 100) < probability:
         global crossover_invocations, crossover_successes
         crossover_invocations += 1
 
-        crossover_solution = crossover(instance, iterator_parent, tournament_parent)
+        crossover_solution = crossover(instance, iterator_parent, tournament_parent, use_original)
 
         if instance.acceptance_criterion == "MMOEASA":
             if mmoeasa_is_nondominated(iterator_parent, crossover_solution):
@@ -264,7 +290,7 @@ def mutation_probability(instance: ProblemInstance, solution: Union[OmbukiSoluti
             return mutated_solution
     return solution
 
-def Ombuki(instance: ProblemInstance, population_size: int, termination_condition: int, termination_type: str, crossover: int, mutation: int) -> Tuple[List[Union[OmbukiSolution, MMOEASASolution]], Dict[str, int]]:
+def Ombuki(instance: ProblemInstance, population_size: int, termination_condition: int, termination_type: str, crossover: int, mutation: int, use_original: bool) -> Tuple[List[Union[OmbukiSolution, MMOEASASolution]], Dict[str, int]]:
     population: List[Union[OmbukiSolution, MMOEASASolution]] = list()
 
     global initialiser_execution_time, feasible_initialisations
@@ -299,9 +325,9 @@ def Ombuki(instance: ProblemInstance, population_size: int, termination_conditio
         winning_parent = selection_tournament(instance, population)
         for i, solution in enumerate(population):
             if not population[i].feasible:
-                population[i] = routing_scheme(instance, solution)
+                population[i] = routing_scheme(instance, solution, use_original)
 
-            result = crossover_probability(instance, solution, population[winning_parent], crossover)
+            result = crossover_probability(instance, solution, population[winning_parent], crossover, use_original)
             result = mutation_probability(instance, result, mutation, result is solution)
 
             if not population[i].feasible:
