@@ -226,6 +226,8 @@ def routing_scheme(instance: ProblemInstance, solution: Union[OmbukiSolution, MM
     feasible_solution = attempt_feasible_network_transformation(instance, solution)
     relocated_solution = relocate_final_destinations(instance, feasible_solution)
 
+    if isinstance(solution, MMOEASASolution):
+        return relocated_solution if not feasible_solution.feasible or (relocated_solution.total_distance < feasible_solution.total_distance and relocated_solution.cargo_unbalance < feasible_solution.cargo_unbalance) else feasible_solution
     return relocated_solution if not feasible_solution.feasible or (relocated_solution.total_distance < feasible_solution.total_distance and relocated_solution.num_vehicles < feasible_solution.num_vehicles) else feasible_solution
 
 def selection_tournament(instance: ProblemInstance, population: List[Union[OmbukiSolution, MMOEASASolution]]) -> int:
