@@ -88,7 +88,7 @@ def modified_crossover_thread(instance: ProblemInstance, solution: Union[OmbukiS
     for d in randomized_destinations:
         parent_destination = parent_vehicle.destinations[d]
         best_vehicle, best_position = -1, 0
-        shortest_from_previous, shortest_to_next, infeasible_shortest_from_previous, infeasible_shortest_to_next = (float(INT_MAX),) * 4
+        shortest_from_previous, shortest_to_next = (float(INT_MAX),) * 2
         found_feasible_location = False
 
         for i, vehicle in enumerate(crossover_solution.vehicles):
@@ -106,8 +106,6 @@ def modified_crossover_thread(instance: ProblemInstance, solution: Union[OmbukiS
                             and (distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next) or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next):
                         best_vehicle, best_position, shortest_from_previous, shortest_to_next = i, j, distance_from_previous, distance_to_next
                         found_feasible_location = True
-                    elif not found_feasible_location and (distance_from_previous < infeasible_shortest_from_previous and distance_to_next <= infeasible_shortest_to_next) or (distance_from_previous <= infeasible_shortest_from_previous and distance_to_next < infeasible_shortest_to_next):
-                        best_vehicle, best_position, infeasible_shortest_from_previous, infeasible_shortest_to_next = i, j, distance_from_previous, distance_to_next
 
         if not found_feasible_location:
             if len(crossover_solution.vehicles) < instance.amount_of_vehicles:
