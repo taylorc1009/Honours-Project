@@ -141,21 +141,12 @@ def modified_feasible_network_transformation(instance: ProblemInstance, solution
                     feasible_solution.vehicles[v].calculate_destination_time_window(instance, -2, -1)
                     feasible_insertion = True
                 elif v == instance.amount_of_vehicles - 1 or (vehicle_reset and v == first_attempted_vehicle):
-                    if vehicle_reset: # at this point, no feasible vehicle insertion was found, so select the best destination based on distance where capacity constraints are not violated; therefore, this solution is now infeasible
-                        best_vehicle, best_position = -1, 1
-                        shortest_from_previous, shortest_to_next = (float(INT_MAX),) * 2
-
-                        for i, infeasible_vehicle in enumerate(feasible_solution.vehicles):
-                            if not infeasible_vehicle.current_capacity + destination.node.demand > instance.capacity_of_vehicles:
-                                for j in range(len(infeasible_vehicle.destinations)):
-                                    distance_from_previous = instance.get_distance(infeasible_vehicle.destinations[j - 1].node.number, destination.node.number)
-                                    distance_to_next = instance.get_distance(infeasible_vehicle.destinations[j - 1].node.number, destination.node.number)
-
-                                    if (distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next) or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next):
-                                        best_vehicle, best_position, shortest_from_previous, shortest_to_next = i, j, distance_from_previous, distance_to_next
-
-                        feasible_solution.vehicles[best_vehicle].destinations.insert(best_position, copy.deepcopy(destination))
-                        v = best_vehicle
+                    if vehicle_reset: # at this point, no feasible vehicle insertion was found, so select the best vehicle based on distance between the last destination and the destination to insert where capacity constraints are not violated; this solution is now infeasible
+                        sorted_with_index = sorted(feasible_solution.vehicles, key=lambda veh: instance.get_distance(veh.destinations[-2].node.number, destination.node.number))
+                        for infeasible_vehicle in sorted_with_index:
+                            if infeasible_vehicle.current_capacity + destination.node.demand < instance.capacity_of_vehicles:
+                                infeasible_vehicle.destinations.insert(infeasible_vehicle.get_num_of_customers_visited() + 1, copy.deepcopy(destination))
+                                break
                         break
                     else:
                         vehicle_reset = True

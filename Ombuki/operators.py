@@ -109,9 +109,16 @@ def modified_crossover_thread(instance: ProblemInstance, solution: Union[OmbukiS
                     elif not found_feasible_location and (distance_from_previous < infeasible_shortest_from_previous and distance_to_next <= infeasible_shortest_to_next) or (distance_from_previous <= infeasible_shortest_from_previous and distance_to_next < infeasible_shortest_to_next):
                         best_vehicle, best_position, infeasible_shortest_from_previous, infeasible_shortest_to_next = i, j, distance_from_previous, distance_to_next
 
-        if not found_feasible_location and len(crossover_solution.vehicles) < instance.amount_of_vehicles:
-            best_vehicle = len(crossover_solution.vehicles)
-            crossover_solution.vehicles.append(Vehicle.create_route(instance, parent_destination.node))
+        if not found_feasible_location:
+            if len(crossover_solution.vehicles) < instance.amount_of_vehicles:
+                best_vehicle = len(crossover_solution.vehicles)
+                crossover_solution.vehicles.append(Vehicle.create_route(instance, parent_destination.node))
+            else:
+                sorted_with_index = sorted(crossover_solution.vehicles, key=lambda veh: instance.get_distance(veh.destinations[-2].node.number, parent_destination.node.number))
+                for infeasible_vehicle in sorted_with_index:
+                    if infeasible_vehicle.current_capacity + parent_destination.node.demand < instance.capacity_of_vehicles:
+                        infeasible_vehicle.destinations.insert(infeasible_vehicle.get_num_of_customers_visited() + 1, copy.deepcopy(parent_destination))
+                        break
         else:
             crossover_solution.vehicles[best_vehicle].destinations.insert(best_position, copy.deepcopy(parent_destination))
 
