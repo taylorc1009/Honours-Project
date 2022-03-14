@@ -157,4 +157,4 @@ def crossover_multithreaded(instance: ProblemInstance, parent_one: CustomGASolut
 
     return crossover_solution
 
-""" ^^^ Serial Decision-tree-based Crossover Operator END ^^^ """
+""" ^^^ Parallel Decision-tree-based Crossover Operator END ^^^ """
