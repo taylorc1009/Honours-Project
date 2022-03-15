@@ -13,14 +13,14 @@ def move_destination(instance: ProblemInstance, solution: Union[MMOEASASolution,
         solution.vehicles[vehicle_1].destinations[origin], solution.vehicles[vehicle_2].destinations[destination] = solution.vehicles[vehicle_2].destinations[destination], solution.vehicles[vehicle_1].destinations[origin]
     else:
         solution.vehicles[vehicle_2].destinations.insert(destination, solution.vehicles[vehicle_1].destinations.pop(origin))
+
         solution.vehicles[vehicle_1].current_capacity -= solution.vehicles[vehicle_2].destinations[destination].node.demand
         solution.vehicles[vehicle_2].current_capacity += solution.vehicles[vehicle_2].destinations[destination].node.demand
+        solution.vehicles[vehicle_2].calculate_destinations_time_windows(instance)
+        solution.vehicles[vehicle_2].calculate_length_of_route(instance)
 
     solution.vehicles[vehicle_1].calculate_destinations_time_windows(instance)
     solution.vehicles[vehicle_1].calculate_length_of_route(instance)
-    if vehicle_1 != vehicle_2:
-        solution.vehicles[vehicle_2].calculate_destinations_time_windows(instance)
-        solution.vehicles[vehicle_2].calculate_length_of_route(instance)
     solution.objective_function(instance)
 
     return solution
