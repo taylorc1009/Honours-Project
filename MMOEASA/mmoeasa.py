@@ -157,7 +157,7 @@ def MMOEASA(instance: ProblemInstance, population_size: int, multi_starts: int, 
         while (instance.acceptance_criterion == "MMOEASA" and population[0].temperature > temperature_stop and not terminate) or not terminate:
             for s, solution in enumerate(population):
                 selection_tournament = rand(0, 1) if nondominated_set else 0
-                solution_copy = crossover(instance, solution, nondominated_set if selection_tournament else population, crossover_probability, selection_tournament)
+                solution_copy = crossover(instance, solution, nondominated_set if selection_tournament else population, crossover_probability, not not selection_tournament)
                 crossover_occurred = solution_copy is not solution
                 mutations = 0
                 for _ in range(0, rand(1, MAX_SIMULTANEOUS_MUTATIONS)):
