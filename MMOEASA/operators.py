@@ -9,24 +9,18 @@ from typing import List, Tuple, Set, Union
 from vehicle import Vehicle
 
 def move_destination(instance: ProblemInstance, solution: Union[MMOEASASolution, OmbukiSolution], vehicle_1: int, origin: int, vehicle_2: int, destination: int) -> Union[MMOEASASolution, OmbukiSolution]:
-    origin_node = solution.vehicles[vehicle_1].destinations[origin]
-
     if vehicle_1 == vehicle_2:
-        omd_absolute = abs(origin - destination)
-
-        if omd_absolute == 1:
-            solution.vehicles[vehicle_1].destinations[origin] = solution.vehicles[vehicle_2].destinations[destination]
-            solution.vehicles[vehicle_2].destinations[destination] = origin_node
-        elif omd_absolute > 1:
-            solution.vehicles[vehicle_2].destinations.insert(destination, origin_node)
-            del solution.vehicles[vehicle_1].destinations[origin + 1 if origin > destination else origin]
+        solution.vehicles[vehicle_1].destinations[origin], solution.vehicles[vehicle_2].destinations[destination] = solution.vehicles[vehicle_2].destinations[destination], solution.vehicles[vehicle_1].destinations[origin]
     else:
-        solution.vehicles[vehicle_2].destinations.insert(destination, origin_node)
-        del solution.vehicles[vehicle_1].destinations[origin]
+        solution.vehicles[vehicle_2].destinations.insert(destination, solution.vehicles[vehicle_1].destinations.pop(origin))
+        solution.vehicles[vehicle_1].current_capacity -= solution.vehicles[vehicle_2].destinations[destination].node.demand
+        solution.vehicles[vehicle_2].current_capacity += solution.vehicles[vehicle_2].destinations[destination].node.demand
 
-    solution.calculate_nodes_time_windows(instance)
-    solution.calculate_vehicles_loads(instance)
-    solution.calculate_length_of_routes(instance)
+    solution.vehicles[vehicle_1].calculate_destinations_time_windows(instance)
+    solution.vehicles[vehicle_1].calculate_length_of_route(instance)
+    if vehicle_1 != vehicle_2:
+        solution.vehicles[vehicle_2].calculate_destinations_time_windows(instance)
+        solution.vehicles[vehicle_2].calculate_length_of_route(instance)
     solution.objective_function(instance)
 
     return solution
