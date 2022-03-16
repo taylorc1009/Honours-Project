@@ -9,11 +9,9 @@ from typing import List, Tuple, Set, Union
 from vehicle import Vehicle
 
 def move_destination(instance: ProblemInstance, solution: Union[MMOEASASolution, OmbukiSolution], vehicle_1: int, origin: int, vehicle_2: int, destination: int) -> Union[MMOEASASolution, OmbukiSolution]:
-    if vehicle_1 == vehicle_2:
-        solution.vehicles[vehicle_1].destinations[origin], solution.vehicles[vehicle_2].destinations[destination] = solution.vehicles[vehicle_2].destinations[destination], solution.vehicles[vehicle_1].destinations[origin]
-    else:
-        solution.vehicles[vehicle_2].destinations.insert(destination, solution.vehicles[vehicle_1].destinations.pop(origin))
+    solution.vehicles[vehicle_2].destinations.insert(destination, solution.vehicles[vehicle_1].destinations.pop(origin))
 
+    if vehicle_1 != vehicle_2:
         solution.vehicles[vehicle_1].current_capacity -= solution.vehicles[vehicle_2].destinations[destination].node.demand
         solution.vehicles[vehicle_2].current_capacity += solution.vehicles[vehicle_2].destinations[destination].node.demand
         solution.vehicles[vehicle_2].calculate_destinations_time_windows(instance)
@@ -237,7 +235,7 @@ def vehicle_insertion_possible(unvisited_nodes: Set[int], new_vehicle: Vehicle) 
 
 def crossover1(instance: ProblemInstance, solution: Union[MMOEASASolution, OmbukiSolution], population: List[Union[MMOEASASolution, OmbukiSolution]], is_nondominated_set: bool) -> Union[MMOEASASolution, OmbukiSolution]:
     solution.vehicles = [v for v in solution.vehicles if rand(1, 100) < 50]
-    
+
     random_solution = rand(0, len(population) - 1, exclude_values={solution.id} if not is_nondominated_set else {})
 
     unvisited_nodes = set(range(1, len(instance.nodes))).difference([d.node.number for v in solution.vehicles for d in v.get_customers_visited()])
