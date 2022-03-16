@@ -52,7 +52,7 @@ def mutation2(instance: ProblemInstance, solution: Union[MMOEASASolution, Ombuki
             if 0 <= solution.total_distance < fitness_of_best_location:
                 fitness_of_best_location = solution.total_distance
                 best_location = i
-            solution = move_destination(instance, solution, random_vehicle, i, random_vehicle, origin_position + 1 if origin_position > i else origin_position)
+            solution = move_destination(instance, solution, random_vehicle, i, random_vehicle, origin_position)
 
     if not best_location == origin_position:
         solution = move_destination(instance, solution, random_vehicle, origin_position, random_vehicle, best_location)
