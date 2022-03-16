@@ -14,14 +14,11 @@ class Vehicle:
         return f"capacity={self.current_capacity}, distance={self.route_distance}, {len(self.destinations)=}, {[d.node.number for d in self.destinations]})"
 
     def get_customers_visited(self) -> List[Destination]:
-        return self.destinations[1:-1] # to do this, we assume that every depot departure and return is initialised correctly (at index 0 and n - 1) which we can do as any route that isn't in this format is incorrect
-        #return list(filter(lambda d: (d.node.number != 0), self.destinations)) # this is an alternative to hoping that the list of destinations begins and ends at 0
+        return self.destinations[1:-1] # to do this, we assume that every depot departure and return is ordered correctly (at index 0 and n - 1) which we can do as any route that isn't in this format is incorrect
 
     def get_num_of_customers_visited(self) -> int:
-        return len(self.destinations) - 2 # to do this, we assume that every depot departure and return is initialised correctly (at index 0 and n - 1) which we can do as any route that isn't in this format is incorrect
-        #return len(list(filter(lambda d: (d.node.number != 0), self.destinations))) # this is an alternative to hoping that the list of destinations begins and ends at 0
+        return len(self.destinations) - 2 # like "get_customers_visited", to do this, we assume that every depot departure and return is ordered correctly
 
-    # TODO: you probably don't need to give these methods the problem instance as each Node object holds the values you're looking for (such as the "ready_time") and they're all in "self.destinations"
     def calculate_destination_time_window(self, instance: ProblemInstance, previous_destination: int, current_destination: int):
         previous_node = self.destinations[previous_destination].node.number
         current_node = self.destinations[current_destination].node.number
@@ -38,19 +35,10 @@ class Vehicle:
             self.calculate_destination_time_window(instance, i - 1, i)
 
     def calculate_vehicle_load(self, instance: ProblemInstance):
-        temporary_capacity = 0.0
-        for i in range(1, len(self.destinations) - 1):
-            node_number = self.destinations[i].node.number
-            temporary_capacity += instance.nodes[node_number].demand
-        self.current_capacity = temporary_capacity
+        self.current_capacity = sum([instance.nodes[self.destinations[i].node.number].demand for i in range(1, len(self.destinations) - 1)])
 
     def calculate_length_of_route(self, instance: ProblemInstance):
-        temporary_distance = 0.0
-        for i in range(1, len(self.destinations)):
-            previous_node = self.destinations[i - 1].node.number
-            current_node = self.destinations[i].node.number
-            temporary_distance += instance.get_distance(previous_node, current_node)
-        self.route_distance = temporary_distance
+        self.route_distance = sum([instance.get_distance(self.destinations[i - 1].node.number, self.destinations[i].node.number) for i in range(1, len(self.destinations))])
 
     def __deepcopy__(self, memodict: Dict=None):
         return Vehicle(current_capacity=self.current_capacity, route_distance=self.route_distance, destinations=[copy.deepcopy(d) for d in self.destinations])
