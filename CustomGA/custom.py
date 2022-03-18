@@ -12,6 +12,7 @@ from CustomGA.constants import TOURNAMENT_PROBABILITY_SELECT_BEST
 from vehicle import Vehicle
 from numpy import ceil, random
 
+# operators' statistics
 initialiser_execution_time: int=0
 feasible_initialisations: int=0
 crossover_invocations: int=0
@@ -20,22 +21,22 @@ mutation_invocations: int=0
 mutation_successes: int=0
 
 def DTWIH(instance: ProblemInstance) -> CustomGASolution:
-    sorted_nodes = sorted([node for _, node in instance.nodes.items() if node.number], key=lambda n: n.ready_time)
+    sorted_nodes = sorted([node for _, node in instance.nodes.items() if node.number], key=lambda n: n.ready_time) # sort every available node by their ready_time
     num_routes = int(ceil(instance.amount_of_vehicles / 2))
     solution = CustomGASolution(_id=0, vehicles=[Vehicle.create_route(instance) for _ in range(0, num_routes)])
     additional_vehicles = 0
 
     while sorted_nodes:
-        range_of_sorted_nodes = num_routes if num_routes < len(sorted_nodes) else len(sorted_nodes)
-        nodes_to_insert = sorted_nodes[:range_of_sorted_nodes]
+        range_of_sorted_nodes = num_routes if num_routes < len(sorted_nodes) else len(sorted_nodes) # if there are less remaining nodes than there are routes, set the range end to the number of remaining nodes
+        nodes_to_insert = sorted_nodes[:range_of_sorted_nodes] # get nodes from 0 to range_of_sorted_nodes; once these nodes have been inserted, they will be deleted do the next iteration gets the next "range_of_sorted_nodes" nodes
         shuffle(nodes_to_insert)
         for i in range(range_of_sorted_nodes):
-            index = i
+            index = i # index is used to keep track of the route that a node was inserted into so that the addition of that node's cargo demand can be added to that route
             if solution.vehicles[index].current_capacity + nodes_to_insert[i].demand <= instance.capacity_of_vehicles:
                 solution.vehicles[index].destinations.insert(len(solution.vehicles[index].destinations) - 1, Destination(node=nodes_to_insert[i]))
-            else:
+            else: # a new vehicle had to be created in this instance because the vehicle to be inserted to couldn't occupy it due to capacity constraints
                 # TODO: try picking the best location in an existing vehicle?
-                index = (num_routes - 1) + additional_vehicles
+                index = (num_routes - 1) + additional_vehicles # set index to the number of expected routes plus the number of additional vehicles whose capacity is also full
                 if solution.vehicles[index].current_capacity + nodes_to_insert[i].demand > instance.capacity_of_vehicles:
                     solution.vehicles.append(Vehicle.create_route(instance, nodes_to_insert[i]))
                     additional_vehicles += 1
@@ -43,7 +44,7 @@ def DTWIH(instance: ProblemInstance) -> CustomGASolution:
                 else:
                     solution.vehicles[index].destinations.insert(len(solution.vehicles[index].destinations) - 1, Destination(node=nodes_to_insert[i]))
             solution.vehicles[index].current_capacity += nodes_to_insert[i].demand
-        del sorted_nodes[:range_of_sorted_nodes]
+        del sorted_nodes[:range_of_sorted_nodes] # remove the nodes that have been added from the sorted nodes to be added
 
     solution.calculate_nodes_time_windows(instance)
     solution.calculate_length_of_routes(instance)
@@ -58,27 +59,28 @@ def check_nondominated_set_acceptance(nondominated_set: List[CustomGASolution], 
     if not subject_solution.feasible:
         return
 
-    nondominated_set.append(subject_solution)
+    nondominated_set.append(subject_solution) # append the new solution to the non-dominated set; it will either remain or be removed by this procedure, depending on whether it dominates or not
     solutions_to_remove = set()
 
     if len(nondominated_set) > 1:
-        for s, solution in enumerate(nondominated_set[:len(nondominated_set) - 1]):
-            for s_aux, solution_auxiliary in enumerate(nondominated_set[s + 1:], s + 1):
+        for s, solution in enumerate(nondominated_set[:len(nondominated_set) - 1]): # len - 1 because in the next loop, s + 1 will do the comparison of the last non-dominated solution; we never need s and s_aux to equal the same value as there's no point comparing identical solutions
+            for s_aux, solution_auxiliary in enumerate(nondominated_set[s + 1:], s + 1): # s + 1 to len will perform the comparisons that have not been carried out yet; any solutions between indexes 0 and s + 1 have already been compared to the solution at index s, and + 1 is so that solution s is not compared to s
+                # we need to check if both solutions dominate one another; s may not dominate s_aux, but s_aux may dominate s, and if neither dominate each other, then they still remain in the non-dominated set
                 if is_nondominated(solution, solution_auxiliary):
                     solutions_to_remove.add(s)
                 elif is_nondominated(solution_auxiliary, solution) \
-                        or (solution.total_distance == solution_auxiliary.total_distance and solution.num_vehicles == solution_auxiliary.num_vehicles):
+                        or (solution.total_distance == solution_auxiliary.total_distance and solution.num_vehicles == solution_auxiliary.num_vehicles): # this "or" clause removes identical solutions
                     solutions_to_remove.add(s_aux)
 
         if solutions_to_remove:
             i = 0
             for s in range(len(nondominated_set)):
                 if s not in solutions_to_remove:
-                    nondominated_set[i] = nondominated_set[s]
+                    nondominated_set[i] = nondominated_set[s] # shift every solution whose list index is not in solutions_to_remove
                     i += 1
-            if i != len(nondominated_set):
+            if i != len(nondominated_set): # i will not equal the non-dominated set length if there are solutions to remove
                 if i > 20:
-                    i = 20
+                    i = 20 # MMOEASA limits its non-dominated set to 20, so do the same here (this is optional)
                 del nondominated_set[i:]
 
 def selection_tournament(nondominated_set: List[CustomGASolution], population: List[CustomGASolution]) -> CustomGASolution:
@@ -101,7 +103,7 @@ def try_mutation(instance, solution: CustomGASolution, mutation_probability: int
         global mutation_invocations, mutation_successes
         mutation_invocations += 1
 
-        mutated_solution = copy.deepcopy(solution)
+        mutated_solution = copy.deepcopy(solution) # make a copy solution as we don't want to mutate the original; the functions below are given the object by reference in Python
         probability = rand(1, 8)
 
         if probability == 1:
@@ -124,8 +126,6 @@ def try_mutation(instance, solution: CustomGASolution, mutation_probability: int
         if is_nondominated(solution, mutated_solution):
             mutation_successes += 1
             return mutated_solution
-        else:
-            return solution
     return solution
 
 def CustomGA(instance: ProblemInstance, population_size: int, termination_condition: int, termination_type: str, crossover_probability: int, mutation_probability: int) -> Tuple[List[CustomGASolution], Dict[str, int]]:
@@ -152,7 +152,7 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
 
             if not solution.feasible or is_nondominated(solution, child):
                 population[s] = child
-                check_nondominated_set_acceptance(nondominated_set, population[s])
+                check_nondominated_set_acceptance(nondominated_set, population[s]) # this procedure will add the dominating child to the non-dominated set for us, if it should be there
         iterations += 1
 
         if termination_type == "iterations":
