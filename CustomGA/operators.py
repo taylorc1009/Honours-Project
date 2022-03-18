@@ -212,13 +212,14 @@ def SDBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Cust
 def move_destination_to_fit_window(instance: ProblemInstance, solution: CustomGASolution, reverse: bool=False) -> CustomGASolution:
     random_vehicle = select_random_vehicle(solution)
 
-    sorted_destinations = sorted(solution.vehicles[random_vehicle].get_customers_visited(), key=lambda d: d.node.ready_time) # sort the destinations in a route by their ready_time
-    destinations = list(enumerate(solution.vehicles[random_vehicle].get_customers_visited(), 1))
-    if reverse:
-        destinations = reversed(destinations)
-    for d, destination in destinations:
-        if destination.node.number != sorted_destinations[d - 1].node.number:
-            solution.vehicles[random_vehicle].destinations.insert(d, solution.vehicles[random_vehicle].destinations.pop(d))
+    original_indexes = {destination.node.number: index for index, destination in enumerate(solution.vehicles[random_vehicle].get_customers_visited(), 1)} # will be used to get the current index of a destination to be moved forward or pushed back
+    sorted_destinations = list(enumerate(sorted(solution.vehicles[random_vehicle].get_customers_visited(), key=lambda d: d.node.ready_time), 1)) # sort the destinations in a route by their ready_time
+    if reverse: # if the list is reversed then we want to push the destination with the highest ready_time to the back of the route
+        sorted_destinations = reversed(sorted_destinations)
+
+    for d, destination in sorted_destinations:
+        if destination.node.number != solution.vehicles[random_vehicle].destinations[d].node.number: # if the destination ("d") is not at the index that it should be in the sorted route, then move it from its current position to the index that it would be at in a sorted route
+            solution.vehicles[random_vehicle].destinations.insert(d, solution.vehicles[random_vehicle].destinations.pop(original_indexes[destination.node.number]))
             break
 
     solution.vehicles[random_vehicle].calculate_destinations_time_windows(instance)
