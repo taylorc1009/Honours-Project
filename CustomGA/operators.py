@@ -10,25 +10,27 @@ from vehicle import Vehicle
 def set_up_crossover_child(instance: ProblemInstance, parent_one: CustomGASolution, parent_two_vehicle: Vehicle) -> CustomGASolution:
     child_solution = copy.deepcopy(parent_one)
 
-    nodes_to_remove = {d.node.number for d in parent_two_vehicle.get_customers_visited()}
+    nodes_to_remove = {d.node.number for d in parent_two_vehicle.get_customers_visited()} # create a set containing the numbers of every node in the vehicle to be merged into parent_one's routes
     i = 0
     while i < len(child_solution.vehicles) and nodes_to_remove:
         increment = True
         j = 1
         while j <= child_solution.vehicles[i].get_num_of_customers_visited() and nodes_to_remove:
             destination = child_solution.vehicles[i].destinations[j]
+
             if destination.node.number in nodes_to_remove:
                 nodes_to_remove.remove(destination.node.number)
                 child_solution.vehicles[i].current_capacity -= destination.node.demand
+
                 if child_solution.vehicles[i].get_num_of_customers_visited() - 1 > 0:
                     del child_solution.vehicles[i].destinations[j]
                 else:
                     increment = False
-                    del child_solution.vehicles[i]
-                    break  # break, otherwise the while loop will start searching the next vehicle with "j" as the same value; without incrementing "i" and starting "j" at 0
-            else:
+                    del child_solution.vehicles[i] # remove the vehicle if its route is empty
+                    break # break, otherwise the while loop will start searching the next vehicle with "j" as the same value; without incrementing "i" and starting "j" at 0
+            else: # only move to the next destination if "j" isn't the index of a destination to be removed
                 j += 1
-        if increment:
+        if increment: # don't move to the next vehicle if an empty one was deleted
             i += 1
 
     child_solution.calculate_nodes_time_windows(instance)
@@ -54,22 +56,28 @@ def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_tw
                     distance_from_previous = instance.get_distance(vehicle.destinations[j - 1].node.number, parent_destination.node.number)
                     distance_to_next = instance.get_distance(parent_destination.node.number, vehicle.destinations[j].node.number)
 
+                    # used to simulate the time windows of the previous and next destinations to "parent_destination" if it were to be inserted into index j
+                    # these are calculated so that we do not need to temporarily insert the parent_destination and then remove it again after evaluation of its fitness in that position
                     simulated_arrival_time = vehicle.destinations[j - 1].departure_time + distance_from_previous
                     if simulated_arrival_time < parent_destination.node.ready_time:
                         simulated_arrival_time = parent_destination.node.ready_time
                     simulated_departure_time = simulated_arrival_time + parent_destination.node.service_duration
 
+                    # if, based on the simulated arrival and departure times, insertion does not violate time window constraints and the distance from the nodes at j - 1 and j is less than any that's been found, then record this as the best position
                     if not (simulated_arrival_time > parent_destination.node.due_date or simulated_departure_time + distance_to_next > vehicle.destinations[j].node.due_date) \
                             and ((distance_from_previous < shortest_from_previous and distance_to_next <= shortest_to_next) or (distance_from_previous <= shortest_from_previous and distance_to_next < shortest_to_next)):
                         best_vehicle, best_position, shortest_from_previous, shortest_to_next = i, j, distance_from_previous, distance_to_next
                         found_feasible_location = True
                     elif not found_feasible_location and crossover_solution.vehicles[i].destinations[j - 1].wait_time > highest_wait_time:
+                        # if no feasible insertion point has been found yet and the wait time of the previous destination is the highest that's been found, then record this as the best position
                         best_vehicle, best_position, highest_wait_time = i, j - 1, crossover_solution.vehicles[i].destinations[j - 1].wait_time
 
         if not found_feasible_location and len(crossover_solution.vehicles) < instance.amount_of_vehicles:
             best_vehicle = len(crossover_solution.vehicles)
             crossover_solution.vehicles.append(Vehicle.create_route(instance, parent_destination.node))
         else:
+            # best_vehicle and best_position will equal the insertion position before the vehicle with the longest wait time
+            # that is if no feasible insertion point was found, otherwise it will equal the fittest feasible insertion point
             crossover_solution.vehicles[best_vehicle].destinations.insert(best_position, copy.deepcopy(parent_destination))
 
         crossover_solution.vehicles[best_vehicle].calculate_vehicle_load(instance)
@@ -96,18 +104,21 @@ def select_route_with_longest_wait(solution: CustomGASolution) -> int:
         for v, vehicle in enumerate(solution.vehicles):
             if vehicle.get_num_of_customers_visited() > 1:
                 total_wait = 0.0
+
                 for destination in vehicle.get_customers_visited():
                     total_wait += destination.wait_time
+
                     if total_wait > longest_total_wait:
                         longest_waiting_vehicle = v
                         longest_total_wait = total_wait
-    if not longest_waiting_vehicle >= 0:
-        longest_waiting_vehicle = select_random_vehicle(solution)
-    return longest_waiting_vehicle
+
+    # check if not >= 0 instead of using "else" in case no vehicle has a wait time; this will never be the case, but this is here to be safe
+    return longest_waiting_vehicle if longest_waiting_vehicle >= 0 else select_random_vehicle(solution)
 
 def TWBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: #	Time-Window-based Sort Mutator
     longest_waiting_vehicle = select_route_with_longest_wait(solution)
 
+    # sort all destinations between 1 and n - 1 by ready_time (exclude 1 and n - 1 as they're the depot nodes)
     solution.vehicles[longest_waiting_vehicle].destinations[1:-1] = sorted(solution.vehicles[longest_waiting_vehicle].get_customers_visited(), key=lambda d: d.node.ready_time)
 
     solution.vehicles[longest_waiting_vehicle].calculate_destinations_time_windows(instance)
@@ -137,19 +148,22 @@ def swap_high_wait_time_destinations(instance: ProblemInstance, solution: Custom
     longest_waiting_vehicle = select_route_with_longest_wait(solution)
 
     destination = 1
-    while destination <= solution.vehicles[longest_waiting_vehicle].get_num_of_customers_visited() - 1:
+    while destination < solution.vehicles[longest_waiting_vehicle].get_num_of_customers_visited():
         if solution.vehicles[longest_waiting_vehicle].destinations[destination].wait_time > solution.vehicles[longest_waiting_vehicle].destinations[destination + 1].wait_time:
             swap(solution.vehicles[longest_waiting_vehicle].destinations, destination, destination + 1)
-            for _ in range(2):
+
+            for _ in range(2): # fix the arrival and departure times for the nodes that were swapped
                 solution.vehicles[longest_waiting_vehicle].calculate_destination_time_window(instance, destination - 1, destination)
                 destination += 1
             if just_once:
+                for d in range(destination, solution.vehicles[longest_waiting_vehicle].get_num_of_customers_visited() + 1): # fix the arrival and departure times of destinations that follow the swapped nodes
+                    solution.vehicles[longest_waiting_vehicle].calculate_destination_time_window(instance, d - 1, d)
                 break
+            elif not destination > solution.vehicles[longest_waiting_vehicle].get_num_of_customers_visited(): # fix the arrival and departure time for only the destination after the node moved back one position
+                solution.vehicles[longest_waiting_vehicle].calculate_destination_time_window(instance, destination, destination + 1)
         else:
             destination += 1
 
-    d = len(solution.vehicles[longest_waiting_vehicle].destinations) - 1
-    solution.vehicles[longest_waiting_vehicle].calculate_destination_time_window(instance, d - 1, d)
     solution.vehicles[longest_waiting_vehicle].calculate_length_of_route(instance)
     solution.objective_function(instance)
 
@@ -164,7 +178,9 @@ def SWTBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Cus
 def swap_long_distance_destinations(instance: ProblemInstance, solution: CustomGASolution, just_once: bool=False) -> CustomGASolution:
     longest_route_length = 0
     furthest_travelling_vehicle = -1
+
     if rand(1, 100) < MUTATION_LONGEST_ROUTE_PROBABILITY:
+        # find the furthest travelling vehicle
         for v, vehicle in enumerate(solution.vehicles):
             if vehicle.route_distance > longest_route_length and vehicle.get_num_of_customers_visited() > 2:
                 furthest_travelling_vehicle = v
@@ -174,6 +190,7 @@ def swap_long_distance_destinations(instance: ProblemInstance, solution: CustomG
 
     destination = 1
     while destination <= solution.vehicles[furthest_travelling_vehicle].get_num_of_customers_visited() - 2:
+        # if the distance between "destination" and "destination + 1" is greater than "destination" and "destination + 2" then swap "destination + 1" and "destination + 2"
         if instance.get_distance(solution.vehicles[furthest_travelling_vehicle].destinations[destination].node.number, solution.vehicles[furthest_travelling_vehicle].destinations[destination + 1].node.number) > instance.get_distance(solution.vehicles[furthest_travelling_vehicle].destinations[destination].node.number, solution.vehicles[furthest_travelling_vehicle].destinations[destination + 2].node.number):
             swap(solution.vehicles[furthest_travelling_vehicle].destinations, destination + 1, destination + 2)
             if just_once:
@@ -195,7 +212,7 @@ def SDBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Cust
 def move_destination_to_fit_window(instance: ProblemInstance, solution: CustomGASolution, reverse: bool=False) -> CustomGASolution:
     random_vehicle = select_random_vehicle(solution)
 
-    sorted_destinations = sorted(solution.vehicles[random_vehicle].get_customers_visited(), key=lambda d: d.node.ready_time)
+    sorted_destinations = sorted(solution.vehicles[random_vehicle].get_customers_visited(), key=lambda d: d.node.ready_time) # sort the destinations in a route by their ready_time
     destinations = list(enumerate(solution.vehicles[random_vehicle].get_customers_visited(), 1))
     if reverse:
         destinations = reversed(destinations)
