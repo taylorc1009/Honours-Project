@@ -8,7 +8,7 @@ from destination import Destination
 from problemInstance import ProblemInstance
 from CustomGA.customGASolution import CustomGASolution
 from CustomGA.operators import crossover, TWBS_mutation, TWBSw_mutation, WTBS_mutation, SWTBS_mutation, DBS_mutation, SDBS_mutation, TWBMF_mutation, TWBPB_mutation
-from CustomGA.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_BEST
+from CustomGA.constants import TOURNAMENT_PROBABILITY_SELECT_BEST
 from vehicle import Vehicle
 from numpy import ceil, random
 
@@ -56,7 +56,7 @@ def is_nondominated(old_solution: CustomGASolution, new_solution: CustomGASoluti
 
 def check_nondominated_set_acceptance(nondominated_set: List[CustomGASolution], subject_solution: CustomGASolution) -> None:
     if not subject_solution.feasible:
-        return# False
+        return
 
     nondominated_set.append(subject_solution)
     solutions_to_remove = set()
@@ -81,23 +81,7 @@ def check_nondominated_set_acceptance(nondominated_set: List[CustomGASolution], 
                     i = 20
                 del nondominated_set[i:]
 
-    #return subject_solution in nondominated_set
-
 def selection_tournament(nondominated_set: List[CustomGASolution], population: List[CustomGASolution]) -> CustomGASolution:
-    """ it's pointless to check which solution dominates all in the nondominated set because they're all nondominated
-    if nondominated_set and rand(1, 100) < TOURNAMENT_PROBABILITY_SELECT_BEST:
-        tournament_set = random.choice(nondominated_set, min(len(nondominated_set), TOURNAMENT_SET_SIZE))
-        best_solution = tournament_set[0]
-
-        if len(tournament_set) > 1:
-            for solution in tournament_set[1:]:
-                if is_nondominated(best_solution, solution):
-                    best_solution = solution
-        return best_solution
-    else:
-        tournament_set = random.choice(population, TOURNAMENT_SET_SIZE)
-        return tournament_set[rand(0, min(len(tournament_set), TOURNAMENT_SET_SIZE) - 1)]"""
-
     return random.choice(nondominated_set if nondominated_set and rand(1, 100) < TOURNAMENT_PROBABILITY_SELECT_BEST else population)
 
 def try_crossover(instance, parent_one: CustomGASolution, parent_two: CustomGASolution, crossover_probability) -> CustomGASolution:
@@ -166,12 +150,9 @@ def CustomGA(instance: ProblemInstance, population_size: int, termination_condit
             child = try_crossover(instance, solution, crossover_parent_two, crossover_probability)
             child = try_mutation(instance, child, mutation_probability)
 
-            #dominates_parent = is_nondominated(solution, child)
-            if not solution.feasible or is_nondominated(solution, child):#dominates_parent:
+            if not solution.feasible or is_nondominated(solution, child):
                 population[s] = child
                 check_nondominated_set_acceptance(nondominated_set, population[s])
-                #if is_nondominated_by_any(nondominated_set, population[s]) or (dominates_parent and len(nondominated_set) < MMOEASA_POPULATION_SIZE): # because MMOEASA only returns a non-dominated set with a size equal to the population size, and Ombuki doesn't have a non-dominated set with a restricted size, the algorithm needs to select (unbiasly) a fixed amount of rank 1 solutions for a fair evaluation
-                    #nondominated_set.append(copy.deepcopy(population[s]))
         iterations += 1
 
         if termination_type == "iterations":
