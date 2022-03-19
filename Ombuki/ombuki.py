@@ -28,16 +28,21 @@ def generate_random_solution(instance: ProblemInstance) -> Union[OmbukiSolution,
         inserted = False
         while not inserted:
             vehicle = rand(0, instance.amount_of_vehicles - 1, exclude_values=infeasible_vehicles) # generate a random number between 1 and max vehicles instead of 1 to current num of vehicles; to keep the original probability of inserting the node to a new vehicle
+
             if vehicle < len(solution.vehicles) and solution.vehicles[vehicle].current_capacity + instance.nodes[i].demand <= instance.capacity_of_vehicles:
                 solution.vehicles[vehicle].destinations.insert(len(solution.vehicles[vehicle].destinations) - 1, Destination(node=instance.nodes[i]))
                 solution.vehicles[vehicle].current_capacity += instance.nodes[i].demand
                 inserted = True
-            elif len(infeasible_vehicles) == len(solution.vehicles):
+            elif len(infeasible_vehicles) == len(solution.vehicles): # if every vehicle in the solution cannot occupy a new destination, then make a new vehicle
                 solution.vehicles.append(Vehicle.create_route(instance, node=instance.nodes[i]))
                 solution.vehicles[-1].current_capacity = instance.nodes[i].demand
                 inserted = True
             else:
                 infeasible_vehicles.add(vehicle)
+
+    solution.calculate_length_of_routes(instance)
+    solution.calculate_nodes_time_windows(instance)
+    solution.objective_function(instance)
 
     return solution
 
@@ -48,28 +53,34 @@ def generate_greedy_solution(instance: ProblemInstance) -> Union[OmbukiSolution,
 
     while unvisited_nodes:
         node = instance.nodes[random.choice(unvisited_nodes)]
-        solution.vehicles[vehicle].destinations.insert(len(solution.vehicles[vehicle].destinations) - 1, Destination(node=node))
+        solution.vehicles[vehicle].destinations.insert(len(solution.vehicles[vehicle].destinations) - 1, Destination(node=node)) # first, insert the randomly selected vehicle to start a greedy search from
         solution.vehicles[vehicle].current_capacity = node.demand
-        unvisited_nodes.remove(node.number)
+        unvisited_nodes.remove(node.number) # the randomly chosen node was inserted, so it can be removed from the unvisited nodes
 
-        while not solution.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
+        while solution.vehicles[vehicle].current_capacity <= instance.capacity_of_vehicles:
             closest_node = None
             distance_of_closest = float(INT_MAX)
-            for u_node in unvisited_nodes:
+
+            for u_node in unvisited_nodes: # for every unvisited node, find the one closest to the node last inserted
                 distance = instance.get_distance(node.number, u_node)
                 if distance < distance_of_closest:
                     closest_node = u_node
                     distance_of_closest = distance
+
             if closest_node and not solution.vehicles[vehicle].current_capacity + instance.nodes[closest_node].demand > instance.capacity_of_vehicles:
                 solution.vehicles[vehicle].destinations.insert(len(solution.vehicles[vehicle].destinations) - 1, Destination(node=instance.nodes[closest_node]))
                 solution.vehicles[vehicle].current_capacity += instance.nodes[closest_node].demand
                 node = solution.vehicles[vehicle].destinations[-2].node
                 unvisited_nodes.remove(closest_node)
             else:
-                if closest_node:
+                if closest_node: # closest node will be given a value if there are still nodes to insert, so if the current vehicle cannot occupy the closest node due to capacity then create a new vehicle
                     solution.vehicles.append(Vehicle.create_route(instance))
                     vehicle += 1
                 break
+
+    solution.calculate_length_of_routes(instance)
+    solution.calculate_nodes_time_windows(instance)
+    solution.objective_function(instance)
 
     return solution
 
@@ -80,52 +91,55 @@ def pareto_rank(instance: ProblemInstance, population: List[Union[OmbukiSolution
 
     while unranked_solutions:
         nondominated_set = get_nondominated_set(unranked_solutions, mmoeasa_is_nondominated if instance.acceptance_criterion == "MMOEASA" else is_nondominated)
-        for s in list(nondominated_set):
+        for s in list(nondominated_set): # assign the current rank to every non-dominated solution in the population; curr_rank will equal 1 during the first iteration, then 2 in the next, and so on
             population[s].rank = curr_rank
             if curr_rank == 1:
                 num_rank_ones += 1
-        if not nondominated_set:
+        if not nondominated_set: # if there are no non-dominated solutions, then assign every remaining unranked solution the same rank (curr_rank)
             for solution in unranked_solutions:
                 solution.rank = curr_rank
             if curr_rank == 1:
                 num_rank_ones += len(unranked_solutions)
             break
         else:
-            unranked_solutions = list(filter(lambda s: s.id not in nondominated_set, unranked_solutions))
+            unranked_solutions = list(filter(lambda s: s.id not in nondominated_set, unranked_solutions)) # once solutions have been assigned a rank, remove them from the solutions to be ranked and start the Pareto-rank again with curr_rank + 1
         curr_rank += 1
 
     return num_rank_ones
 
 def original_feasible_network_transformation(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
+    # create a new vehicle with the first destination of the first route as a starting point
     vehicles = [Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)]
-    feasible_solution = OmbukiSolution(_id=solution.id, vehicles=vehicles) if instance.acceptance_criterion == "Ombuki" else MMOEASASolution(_id=solution.id, vehicles=vehicles)
-    feasible_solution.vehicles[0].current_capacity += solution.vehicles[0].destinations[1].node.demand
-    feasible_solution.vehicles[0].calculate_destination_time_window(instance, 0, 1)
+    transformed_solution = OmbukiSolution(_id=solution.id, vehicles=vehicles) if instance.acceptance_criterion == "Ombuki" else MMOEASASolution(_id=solution.id, vehicles=vehicles)
+    transformed_solution.vehicles[0].current_capacity += solution.vehicles[0].destinations[1].node.demand
+    transformed_solution.vehicles[0].calculate_destination_time_window(instance, 0, 1)
 
     v = 0
     for vehicle in solution.vehicles:
-        for destination in vehicle.get_customers_visited()[1 if vehicle is solution.vehicles[0] else 0:]:
-            if feasible_solution.vehicles[v].current_capacity + destination.node.demand <= instance.capacity_of_vehicles and feasible_solution.vehicles[v].destinations[-2].departure_time + instance.get_distance(feasible_solution.vehicles[v].destinations[-2].node.number, destination.node.number) <= destination.node.due_date:
-                feasible_solution.vehicles[v].destinations.insert(len(feasible_solution.vehicles[v].destinations) - 1, copy.deepcopy(destination))
-                feasible_solution.vehicles[v].calculate_destination_time_window(instance, -3, -2)
-                feasible_solution.vehicles[v].calculate_destination_time_window(instance, -2, -1)
-            else:
-                feasible_solution.vehicles.append(Vehicle.create_route(instance, destination.node))
+        for destination in vehicle.get_customers_visited()[1 if vehicle is solution.vehicles[0] else 0:]: # if "vehicle" is the first vehicle, we can start the list at destination 2 as we already inserted the first one above 
+            # try to rebuild the routes as they were, but...
+            if transformed_solution.vehicles[v].current_capacity + destination.node.demand <= instance.capacity_of_vehicles and transformed_solution.vehicles[v].destinations[-2].departure_time + instance.get_distance(transformed_solution.vehicles[v].destinations[-2].node.number, destination.node.number) <= destination.node.due_date:
+                transformed_solution.vehicles[v].destinations.insert(len(transformed_solution.vehicles[v].destinations) - 1, copy.deepcopy(destination))
+                transformed_solution.vehicles[v].calculate_destination_time_window(instance, -3, -2)
+                transformed_solution.vehicles[v].calculate_destination_time_window(instance, -2, -1)
+            else: # ... every time an infeasible insertion is found (i.e. by inserting a destination to the end of the route being rebuilt, feasibility is broken), create a new vehicle and start rebuilding again from the new vehicle (v += 1 moves to the next vehicle)
+                transformed_solution.vehicles.append(Vehicle.create_route(instance, destination.node))
                 v += 1
-                feasible_solution.vehicles[v].calculate_destinations_time_windows(instance)
+                transformed_solution.vehicles[v].calculate_destinations_time_windows(instance)
 
-            feasible_solution.vehicles[v].current_capacity += destination.node.demand
+            transformed_solution.vehicles[v].current_capacity += destination.node.demand
 
-    feasible_solution.calculate_length_of_routes(instance)
-    feasible_solution.objective_function(instance)
+    transformed_solution.calculate_length_of_routes(instance)
+    transformed_solution.objective_function(instance)
 
-    return feasible_solution
+    return transformed_solution
 
 def modified_feasible_network_transformation(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution]) -> Union[OmbukiSolution, MMOEASASolution]:
+    # largely the same as the "original_feasible_network_transformation", except when a new vehicle cannot be created because of the problem instance's limit, the infeasible insertion is appended to the end of the route with the nearest final destination
     vehicles = [Vehicle.create_route(instance, solution.vehicles[0].destinations[1].node)]
-    feasible_solution = OmbukiSolution(_id=solution.id, vehicles=vehicles) if instance.acceptance_criterion == "Ombuki" else MMOEASASolution(_id=solution.id, vehicles=vehicles)
-    feasible_solution.vehicles[0].current_capacity += solution.vehicles[0].destinations[1].node.demand
-    feasible_solution.vehicles[0].calculate_destination_time_window(instance, 0, 1)
+    transformed_solution = OmbukiSolution(_id=solution.id, vehicles=vehicles) if instance.acceptance_criterion == "Ombuki" else MMOEASASolution(_id=solution.id, vehicles=vehicles)
+    transformed_solution.vehicles[0].current_capacity += solution.vehicles[0].destinations[1].node.demand
+    transformed_solution.vehicles[0].calculate_destination_time_window(instance, 0, 1)
 
     v = 0
     for vehicle in solution.vehicles:
@@ -135,40 +149,40 @@ def modified_feasible_network_transformation(instance: ProblemInstance, solution
             first_attempted_vehicle = v
 
             while not feasible_insertion:
-                if feasible_solution.vehicles[v].current_capacity + destination.node.demand <= instance.capacity_of_vehicles and feasible_solution.vehicles[v].destinations[-2].departure_time + instance.get_distance(feasible_solution.vehicles[v].destinations[-2].node.number, destination.node.number) <= destination.node.due_date:
-                    feasible_solution.vehicles[v].destinations.insert(len(feasible_solution.vehicles[v].destinations) - 1, copy.deepcopy(destination))
-                    feasible_solution.vehicles[v].calculate_destination_time_window(instance, -3, -2)
-                    feasible_solution.vehicles[v].calculate_destination_time_window(instance, -2, -1)
+                if transformed_solution.vehicles[v].current_capacity + destination.node.demand <= instance.capacity_of_vehicles and transformed_solution.vehicles[v].destinations[-2].departure_time + instance.get_distance(transformed_solution.vehicles[v].destinations[-2].node.number, destination.node.number) <= destination.node.due_date:
+                    transformed_solution.vehicles[v].destinations.insert(len(transformed_solution.vehicles[v].destinations) - 1, copy.deepcopy(destination))
+                    transformed_solution.vehicles[v].calculate_destination_time_window(instance, -3, -2)
+                    transformed_solution.vehicles[v].calculate_destination_time_window(instance, -2, -1)
                     feasible_insertion = True
-                elif v == instance.amount_of_vehicles - 1 or (vehicle_reset and v == first_attempted_vehicle):
+                elif v == instance.amount_of_vehicles - 1 or (vehicle_reset and v == first_attempted_vehicle): # if we've reached the end of the instance's permitted vehicle amount or the feasible insertion search has already been restarted once, and we've returned to the vehicle that the search started at
                     if vehicle_reset: # at this point, no feasible vehicle insertion was found, so select the best vehicle based on distance between the last destination and the destination to insert where capacity constraints are not violated; this solution is now infeasible
-                        sorted_with_index = sorted(feasible_solution.vehicles, key=lambda veh: instance.get_distance(veh.destinations[-2].node.number, destination.node.number))
+                        sorted_with_index = sorted(transformed_solution.vehicles, key=lambda veh: instance.get_distance(veh.destinations[-2].node.number, destination.node.number))
                         for infeasible_vehicle in sorted_with_index:
                             if infeasible_vehicle.current_capacity + destination.node.demand < instance.capacity_of_vehicles:
                                 infeasible_vehicle.destinations.insert(infeasible_vehicle.get_num_of_customers_visited() + 1, copy.deepcopy(destination))
                                 break
                         break
                     else:
-                        vehicle_reset = True
+                        vehicle_reset = True # start again from vehicle zero as the destination being inserted may be feasible on the end of one of the previously built routes
                         v = 0
                 else:
-                    if len(feasible_solution.vehicles) < instance.amount_of_vehicles:
-                        feasible_solution.vehicles.append(Vehicle.create_route(instance, destination.node))
+                    if len(transformed_solution.vehicles) < instance.amount_of_vehicles:
+                        transformed_solution.vehicles.append(Vehicle.create_route(instance, destination.node))
                         feasible_insertion = True
                     v += 1
 
-            feasible_solution.vehicles[v].current_capacity += destination.node.demand
-            feasible_solution.vehicles[v].calculate_destination_time_window(instance, -3, -2)
-            feasible_solution.vehicles[v].calculate_destination_time_window(instance, -2, -1)
+            transformed_solution.vehicles[v].current_capacity += destination.node.demand
+            transformed_solution.vehicles[v].calculate_destination_time_window(instance, -3, -2)
+            transformed_solution.vehicles[v].calculate_destination_time_window(instance, -2, -1)
             if not feasible_insertion:
                 v = first_attempted_vehicle
 
-    feasible_solution.calculate_vehicles_loads(instance)
-    feasible_solution.calculate_length_of_routes(instance)
-    feasible_solution.calculate_nodes_time_windows(instance)
-    feasible_solution.objective_function(instance)
+    transformed_solution.calculate_vehicles_loads(instance)
+    transformed_solution.calculate_length_of_routes(instance)
+    transformed_solution.calculate_nodes_time_windows(instance)
+    transformed_solution.objective_function(instance)
 
-    return feasible_solution
+    return transformed_solution
 
 def check_route_time_windows(vehicle: Vehicle) -> bool:
     for d in range(1, vehicle.get_num_of_customers_visited()):
@@ -184,7 +198,7 @@ def relocate_final_destinations(instance: ProblemInstance, solution: Union[Ombuk
         feasible = check_route_time_windows(relocated_solution.vehicles[i])
         j = i + 1 if i < len(relocated_solution.vehicles) - 1 else 0
         
-        relocated_solution.vehicles[j].destinations.insert(1, relocated_solution.vehicles[i].destinations.pop(relocated_solution.vehicles[i].get_num_of_customers_visited()))
+        relocated_solution.vehicles[j].destinations.insert(1, relocated_solution.vehicles[i].destinations.pop(relocated_solution.vehicles[i].get_num_of_customers_visited())) # move a route's final destination to the following route's first destination
         relocated_solution.vehicles[i].calculate_length_of_route(instance)
         relocated_solution.vehicles[j].calculate_length_of_route(instance)
         relocated_solution.vehicles[j].current_capacity += relocated_solution.vehicles[j].destinations[1].node.demand
@@ -192,14 +206,14 @@ def relocate_final_destinations(instance: ProblemInstance, solution: Union[Ombuk
         if not relocated_solution.vehicles[j].current_capacity > instance.capacity_of_vehicles:
             relocated_solution.vehicles[j].calculate_destinations_time_windows(instance)
             swap_is_feasible = check_route_time_windows(relocated_solution.vehicles[j])
-            if feasible and not swap_is_feasible:
+            if feasible and not swap_is_feasible: # if, after relocation, the route's time windows are violated and the route before relocation was feasible, set "feasible" to false so that this chamge is reverted ...
                 feasible = False
-            else:
+            else: # ... otherwise set it to whether the time windows were violated or not
                 feasible = swap_is_feasible
         else:
             feasible = False
 
-        if not feasible:
+        if not feasible: # undo the previous relocation of a route's last destination to the next route's first, if it was not feasible
             relocated_solution.vehicles[i].destinations.insert(relocated_solution.vehicles[i].get_num_of_customers_visited() + 1, relocated_solution.vehicles[j].destinations.pop(1))
             relocated_solution.vehicles[i].calculate_length_of_route(instance)
             relocated_solution.vehicles[i].calculate_destination_time_window(instance, -3, -2)
@@ -223,33 +237,31 @@ def relocate_final_destinations(instance: ProblemInstance, solution: Union[Ombuk
 
 def routing_scheme(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], use_original: bool) -> Union[OmbukiSolution, MMOEASASolution]:
     attempt_feasible_network_transformation = original_feasible_network_transformation if use_original else modified_feasible_network_transformation
-    feasible_solution = attempt_feasible_network_transformation(instance, solution)
-    relocated_solution = relocate_final_destinations(instance, feasible_solution)
+    transformed_solution = attempt_feasible_network_transformation(instance, solution)
+    relocated_solution = relocate_final_destinations(instance, transformed_solution)
 
+    # return the relocated solution if it dominates the transformed solution is dominated by it, otherwise return the transformed solution
     if isinstance(solution, MMOEASASolution):
-        return relocated_solution if not feasible_solution.feasible or (relocated_solution.total_distance < feasible_solution.total_distance and relocated_solution.cargo_unbalance < feasible_solution.cargo_unbalance) else feasible_solution
-    return relocated_solution if not feasible_solution.feasible or (relocated_solution.total_distance < feasible_solution.total_distance and relocated_solution.num_vehicles < feasible_solution.num_vehicles) else feasible_solution
+        return relocated_solution if not transformed_solution.feasible or (relocated_solution.total_distance < transformed_solution.total_distance and relocated_solution.cargo_unbalance < transformed_solution.cargo_unbalance) else transformed_solution
+    return relocated_solution if not transformed_solution.feasible or (relocated_solution.total_distance < transformed_solution.total_distance and relocated_solution.num_vehicles < transformed_solution.num_vehicles) else transformed_solution
 
 def selection_tournament(instance: ProblemInstance, population: List[Union[OmbukiSolution, MMOEASASolution]]) -> int:
     best_solutions = list(filter(lambda s: s.rank == 1, population))
-    if not best_solutions: # in this instance, the initialising population has been given and no solutions have been ranked yet, so work with any feasible solutions
-        best_solutions = list(filter(lambda s: s.feasible, population))
-
     if best_solutions:
         tournament_set = random.choice(best_solutions, TOURNAMENT_SET_SIZE)
-    else:
+    else: # in this instance, there are no feasible (and therefore, rank 1) solutions, so work with the entire population instead
         tournament_set = random.choice(population, TOURNAMENT_SET_SIZE)
 
-    if rand(1, 100) < TOURNAMENT_PROBABILITY_SELECT_BEST:
+    if rand(1, 100) < TOURNAMENT_PROBABILITY_SELECT_BEST: # probability of selecting the best solution in the tournament set to be returned ...
         best_solution = population[tournament_set[0].id]
-        for solution in tournament_set:
+        for solution in tournament_set: # find the non-dominated solution of the 4 chosen solutions, for it to be returned
             if instance.acceptance_criterion == "MMOEASA":
                 if mmoeasa_is_nondominated(best_solution, population[solution.id]):
                     best_solution = population[solution.id]
             elif is_nondominated(best_solution, population[solution.id]):
                 best_solution = population[solution.id]
         return best_solution.id
-    else:
+    else: # ... otherwise, return a random solution of the torurnament set
         return tournament_set[rand(0, TOURNAMENT_SET_SIZE - 1)].id
 
 def crossover_probability(instance: ProblemInstance, iterator_parent: Union[OmbukiSolution, MMOEASASolution], tournament_parent: Union[OmbukiSolution, MMOEASASolution], probability: int, use_original: bool) -> Union[OmbukiSolution, MMOEASASolution]:
@@ -288,24 +300,16 @@ def Ombuki(instance: ProblemInstance, population_size: int, termination_conditio
 
     global initialiser_execution_time, feasible_initialisations
     initialiser_execution_time = time.time()
-    num_greedy_solutions = int(round(float(population_size * GREEDY_PERCENT)))
+    num_greedy_solutions = int(round(float(population_size * GREEDY_PERCENT))) # by default, "GREEDY_PERCENT" is 10%, so 10% of the population (30 as 300 * 0.1) will be greedy solutions ...
     for i in range(0, num_greedy_solutions):
         greedy_solution = generate_greedy_solution(instance)
         greedy_solution.id = i
-        greedy_solution.calculate_vehicles_loads(instance)
-        greedy_solution.calculate_length_of_routes(instance)
-        greedy_solution.calculate_nodes_time_windows(instance)
-        greedy_solution.objective_function(instance)
         if greedy_solution.feasible:
             feasible_initialisations += 1
         population.insert(i, greedy_solution)
-    for i in range(num_greedy_solutions, population_size):
+    for i in range(num_greedy_solutions, population_size): # ... the other 90% will be random generations
         random_solution = generate_random_solution(instance)
         random_solution.id = i
-        random_solution.calculate_vehicles_loads(instance)
-        random_solution.calculate_length_of_routes(instance)
-        random_solution.calculate_nodes_time_windows(instance)
-        random_solution.objective_function(instance)
         if random_solution.feasible:
             feasible_initialisations += 1
         population.insert(i, random_solution)
@@ -317,15 +321,15 @@ def Ombuki(instance: ProblemInstance, population_size: int, termination_conditio
     while not terminate:
         winning_parent = selection_tournament(instance, population)
         for i, solution in enumerate(population):
-            if not population[i].feasible:
+            if not population[i].feasible: # the routing scheme is likely destructive of good solutions and will have no effect on feasible solutions, so only execute it on infeasible solutions
                 population[i] = routing_scheme(instance, solution, use_original)
 
             result = crossover_probability(instance, solution, population[winning_parent], crossover, use_original)
             result = mutation_probability(instance, result, mutation, result is solution)
 
-            if not population[i].feasible:
+            if not population[i].feasible: # always overwrite the parent if it is infeasible as there's no other way to determine if the child should be accepted, and we don't want to keep infeasible solutions
                 population[i] = result
-            elif result.feasible:
+            elif result.feasible: # if the child is feasible then try and accept it into the population
                 if instance.acceptance_criterion == "MMOEASA":
                     population[i] = mo_metropolis(instance, solution, result, 100.0)
                 elif is_nondominated(population[i], result):
