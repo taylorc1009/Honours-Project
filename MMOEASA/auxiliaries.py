@@ -19,6 +19,7 @@ def check_nondominated_set_acceptance(nondominated_set: List[Union[MMOEASASoluti
     nondominated_set.append(subject_solution)
     solutions_to_remove = set()
 
+    # check commentary of "check_nondominated_set_acceptance" in "../CustomGA/custom.py"
     if len(nondominated_set) > 1:
         for s, solution in enumerate(nondominated_set[:len(nondominated_set) - 1]):
             for s_aux, solution_auxiliary in enumerate(nondominated_set[s + 1:], s + 1):
@@ -57,8 +58,8 @@ def insert_unvisited_node(solution: Union[MMOEASASolution, OmbukiSolution], inst
                 inserted = True
                 break
             elif not len(solution.vehicles) < instance.amount_of_vehicles and solution.vehicles[vehicle].destinations[position].wait_time < lowest_delay:
-                infeasible_vehicle = vehicle
-                lowest_delay = solution.vehicles[vehicle].destinations[position].wait_time
+                infeasible_vehicle = vehicle # keeps track of the best vehicle to insert the infeasible destination to the end of
+                lowest_delay = solution.vehicles[vehicle].destinations[position].wait_time # the best position will cause the lowest wait time required to service the infeasible vehicle
 
             solution.vehicles[vehicle].destinations.pop(position)
         if not inserted:
@@ -68,11 +69,11 @@ def insert_unvisited_node(solution: Union[MMOEASASolution, OmbukiSolution], inst
         if len(solution.vehicles) < instance.amount_of_vehicles:
             new_vehicle = Vehicle.create_route(instance, node=instance.nodes[node])
             solution.vehicles.append(new_vehicle)
-        else:
+        else: # only use the best infeasible insertion point if the solution cannot allocate a new vehicle
             solution.vehicles[infeasible_vehicle].destinations.insert(len(solution.vehicles[infeasible_vehicle].destinations) - 1, Destination(node=instance.nodes[node]))
             vehicle = infeasible_vehicle
 
-        # these seem unnecessary as the crossover operator invokes all of these methods once it's finished inserting all the unvisited nodes, but they're needed so that another invocation of "insert_unvisited_nodes()" will have the correct time windows when determining where to insert an unvisited node
+        # the calculations needed so that another invocation of "insert_unvisited_nodes()" will have the correct time windows when determining where to insert the next unvisited node
         solution.vehicles[vehicle].calculate_destinations_time_windows(instance)
         solution.vehicles[vehicle].calculate_vehicle_load(instance)
         solution.vehicles[vehicle].calculate_length_of_route(instance)

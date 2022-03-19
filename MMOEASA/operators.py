@@ -235,9 +235,7 @@ def vehicle_insertion_possible(unvisited_nodes: Set[int], new_vehicle: Vehicle) 
 
 def crossover1(instance: ProblemInstance, solution: Union[MMOEASASolution, OmbukiSolution], population: List[Union[MMOEASASolution, OmbukiSolution]], is_nondominated_set: bool) -> Union[MMOEASASolution, OmbukiSolution]:
     solution.vehicles = [v for v in solution.vehicles if rand(1, 100) < 50]
-
     random_solution = rand(0, len(population) - 1, exclude_values={solution.id} if not is_nondominated_set else {})
-
     unvisited_nodes = set(range(1, len(instance.nodes))).difference([d.node.number for v in solution.vehicles for d in v.get_customers_visited()])
 
     for i in range(len(population[random_solution].vehicles)):
@@ -253,13 +251,6 @@ def crossover1(instance: ProblemInstance, solution: Union[MMOEASASolution, Ombuk
 
     for node_number in unvisited_nodes:
         solution = insert_unvisited_node(solution, instance, node_number)
-
-    """ these commented-out calculations shouldn't be needed as "insert_unvisited_node" does them
-    even if "insert_unvisited_node" isn't used, they aren't needed as the for loop above will be inserting vehicles with these values already calculated
-    
-    solution.calculate_nodes_time_windows(instance)
-    solution.calculate_vehicles_loads(instance)
-    solution.calculate_length_of_routes(instance)"""
     solution.objective_function(instance)
 
     return solution
