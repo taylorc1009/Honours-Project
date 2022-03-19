@@ -14,6 +14,7 @@ from common import rand, INT_MAX
 def set_up_crossover_child(instance: ProblemInstance, parent_one: Union[OmbukiSolution, MMOEASASolution], parent_two_vehicle: Vehicle) -> OmbukiSolution:
     crossover_solution = copy.deepcopy(parent_one)
 
+    # check commentary of "set_up_crossover_child" in "../CustomGA/operators.py"
     nodes_to_remove = set([d.node.number for d in parent_two_vehicle.get_customers_visited()])
     i = 0
     while i < len(crossover_solution.vehicles) and nodes_to_remove:
@@ -41,6 +42,8 @@ def set_up_crossover_child(instance: ProblemInstance, parent_one: Union[OmbukiSo
     return crossover_solution
 
 def original_crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], parent_vehicle: Vehicle, result: Dict[str, Union[OmbukiSolution, MMOEASASolution]]) -> None:
+    # check commentary of "crossover" in "../CustomGA/operators.py"
+    # the difference in this operator is that when no feasible insertion point is found and the amount of vehicles in the solution is at the limit, a new one is created anyway (which is bad)
     crossover_solution = set_up_crossover_child(instance, solution, parent_vehicle)
 
     randomized_destinations = list(range(1, len(parent_vehicle.destinations) - 1))
@@ -78,9 +81,11 @@ def original_crossover_thread(instance: ProblemInstance, solution: Union[OmbukiS
         crossover_solution.vehicles[best_vehicle].calculate_length_of_route(instance)
 
     crossover_solution.objective_function(instance)
-    result[currentThread().getName()] = crossover_solution
+    result[currentThread().getName()] = crossover_solution # since threads cannot return values, the values are assigned to a mutable type instead (a dict in this case)
 
 def modified_crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], parent_vehicle: Vehicle, result: Dict[str, Union[OmbukiSolution, MMOEASASolution]]) -> None:
+    # check commentary of "crossover" in "../CustomGA/operators.py"
+    # the difference in this operator is that when no feasible insertion point is found and the amount of vehicles in the solution is at the limit, the destination to be inserted is appended to the end of the route where the route's last destination is nearest to the deatination to be inserted
     crossover_solution = set_up_crossover_child(instance, solution, parent_vehicle)
 
     randomized_destinations = list(range(1, len(parent_vehicle.destinations) - 1))
@@ -125,13 +130,14 @@ def modified_crossover_thread(instance: ProblemInstance, solution: Union[OmbukiS
         crossover_solution.vehicles[best_vehicle].calculate_length_of_route(instance)
 
     crossover_solution.objective_function(instance)
-    result[currentThread().getName()] = crossover_solution
+    result[currentThread().getName()] = crossover_solution # since threads cannot return values, the values are assigned to a mutable type instead (a dict in this case)
 
 def crossover(instance: ProblemInstance, parent_one: Union[OmbukiSolution, MMOEASASolution], parent_two: Union[OmbukiSolution, MMOEASASolution], use_original: bool) -> Union[OmbukiSolution, MMOEASASolution]:
     parent_one_vehicle = parent_one.vehicles[rand(0, len(parent_one.vehicles) - 1)]
     parent_two_vehicle = parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)]
 
-    # threads cannot return values, so they need to be given a mutable type that can be given the values we'd like to return; in this instance, a list is used
+    # threads cannot return values, so they need to be given a mutable type that can be given the values we'd like to return; in this instance, a dict is used and the return values are assigned using the thread names
+    # threading is used because Ombuki's crossover creates two child solutions
     thread_results: Dict[str, Union[OmbukiSolution, MMOEASASolution]] = {"child_one": None, "child_two": None}
     child_one_thread = Thread(name="child_one", target=original_crossover_thread if use_original else modified_crossover_thread, args=(instance, parent_one, parent_two_vehicle, thread_results))
     child_two_thread = Thread(name="child_two", target=original_crossover_thread if use_original else modified_crossover_thread, args=(instance, parent_two, parent_one_vehicle, thread_results))
@@ -140,26 +146,28 @@ def crossover(instance: ProblemInstance, parent_one: Union[OmbukiSolution, MMOEA
     child_one_thread.join()
     child_two_thread.join()
 
+    # from the two child solutions, return the dominating one
     thread_results["child_two"].id = thread_results["child_one"].id
     if instance.acceptance_criterion == "MMOEASA":
         return thread_results["child_one"] if mmoeasa_is_nondominated(thread_results["child_one"], thread_results["child_two"]) else thread_results["child_two"]
     return thread_results["child_one"] if is_nondominated(thread_results["child_one"], thread_results["child_two"]) else thread_results["child_two"]
 
 def get_next_vehicles_destinations(solution: Union[OmbukiSolution, MMOEASASolution], vehicle: int, first_destination: int, remaining_destinations: int) -> List[Destination]:
-    if not remaining_destinations:
+    if not remaining_destinations: # if the amount of destinations left to acquire is equal to zero, then return an empty list
         return list()
     num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
-    if num_customers < first_destination + remaining_destinations:
+    if num_customers < first_destination + remaining_destinations: # if the vehicle does not contain "remaining_destinations" amount of nodes, starting from "first_destination" position in the list, then we need to move to the next vehicle for destinations
         return solution.vehicles[vehicle].destinations[first_destination:num_customers + 1] + get_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - ((num_customers + 1) - first_destination))
-    else:
+    else: # otherwise, the vehicle contains enough destinations between "first_destination" and the end of its list of destinations
         return solution.vehicles[vehicle].destinations[first_destination:first_destination + remaining_destinations]
 
 def set_next_vehicles_destinations(solution: Union[OmbukiSolution, MMOEASASolution], vehicle: int, first_destination: int, remaining_destinations: int, reversed_destinations: List[Destination]) -> None:
+    # most of the logic here is similar to "get_next_vehicles_destinations", the only difference being that, in this function, the nodes are being inserted instead of acquired
     if not (remaining_destinations and reversed_destinations):
         return
     num_customers = solution.vehicles[vehicle].get_num_of_customers_visited()
     if num_customers < first_destination + remaining_destinations:
-        num_customers_inclusive = (num_customers + 1) - first_destination
+        num_customers_inclusive = (num_customers + 1) - first_destination # list slicing is exclusive of the end point (meaning it would end at num_customers - 1), so + 1 will fix the exclusion
         solution.vehicles[vehicle].destinations[first_destination:num_customers + 1] = reversed_destinations[:num_customers_inclusive]
         del reversed_destinations[:num_customers_inclusive]
         set_next_vehicles_destinations(solution, vehicle + 1, 1, remaining_destinations - num_customers_inclusive, reversed_destinations)
@@ -173,17 +181,17 @@ def mutation(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASAS
 
     vehicle_num = -1
     num_destinations_tracker = 0
-    for i, vehicle in enumerate(solution.vehicles):
-        if not num_destinations_tracker + vehicle.get_num_of_customers_visited() > first_reversal_node:
+    for i, vehicle in enumerate(solution.vehicles): # because the mutation operator considers the routes as one collective chromosome (list of destinations from 1 to n, excluding starts and ends at the depot), we need to find which vehicle the position "first_reversal_node" belongs to if the solution were a chromosome
+        if not num_destinations_tracker + vehicle.get_num_of_customers_visited() > first_reversal_node: # as soon as the sum of destinations is greater than "first_reversal_node", we've arrived at the vehicle where reversal should start
             num_destinations_tracker += vehicle.get_num_of_customers_visited()
         else:
             vehicle_num = i
             break
 
-    first_destination = (first_reversal_node - num_destinations_tracker) + 1
+    first_destination = (first_reversal_node - num_destinations_tracker) + 1 # get the position of the "first_reversal_node" in the vehicle; + 1 to discount the depot at index 0 in the vehicle's destinations
 
     # the reason that the get and set functions are called recursively is because the mutation operator specified by Ombuki can swap customers across vehicles
-    # therefore, the first call of the recursive functions can get/set the first one/two customers from one vehicle, then any remaining customers in the next vehcile
+    # therefore, the first call of the recursive functions can get/set the first one/two customers from one vehicle, then any remaining customers in the next vehicle
     reversed_destinations = get_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap)
     reversed_destinations = list(reversed(reversed_destinations))
     set_next_vehicles_destinations(solution, vehicle_num, first_destination, num_nodes_to_swap, reversed_destinations)
