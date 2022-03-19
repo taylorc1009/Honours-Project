@@ -131,13 +131,14 @@ def MMOEASA(instance: ProblemInstance, population_size: int, multi_starts: int, 
 
     global initialiser_execution_time, feasible_initialisations, crossover_successes, mutation_successes
     initialiser_execution_time = time.time()
+    # the population is initialised with "population_size" amount of TWIH_solution copies
     TWIH_solution = TWIH(instance)
     if TWIH_solution.feasible:
         feasible_initialisations += 1
     for i in range(population_size):
         population.insert(i, copy.deepcopy(TWIH_solution))
         population[i].id = i
-        if instance.acceptance_criterion == "MMOEASA":
+        if instance.acceptance_criterion == "MMOEASA": # there is a few "if acceptance is MMOEASA" checks in the main algorithm because we don't want Simulated Annealing to be used in Ombuki's acceptance
             population[i].default_temperature = temperature_max - float(i) * ((temperature_max - temperature_min) / float(population_size - 1))
             population[i].cooling_rate = calculate_cooling(i, temperature_max, temperature_min, temperature_stop, population_size, termination_condition)
     del TWIH_solution
@@ -146,26 +147,28 @@ def MMOEASA(instance: ProblemInstance, population_size: int, multi_starts: int, 
     start = time.time()
     terminate = False
     iterations = 0
+    # the multi-start termination is commented out because it's used to calculate the number of iterations termination during the termination check
+    # this is so multi-start doesn't terminate the algorithm when time is the termination condition
     #current_multi_start = 0
     while not terminate:#current_multi_start < MS:
         if instance.acceptance_criterion == "MMOEASA":
-            for s in range(len(population)):
+            for s in range(len(population)): # multi-start is used to restart the Simulated Annealing attributes of every solution
                 population[s].temperature = population[s].default_temperature
 
         while (instance.acceptance_criterion == "MMOEASA" and population[0].temperature > temperature_stop and not terminate) or not terminate:
             for s, solution in enumerate(population):
-                selection_tournament = rand(0, 1) if nondominated_set else 0
+                selection_tournament = rand(0, 1) if nondominated_set else 0 # determines whether to use the non-dominated set to get the second crossover parent
                 solution_copy = crossover(instance, solution, nondominated_set if selection_tournament else population, crossover_probability, not not selection_tournament)
-                crossover_occurred = solution_copy is not solution
+                crossover_occurred = solution_copy is not solution # if the copy is equal to the original solution, this means that no copy happened and, therefore, crossover did not occur
                 mutations = 0
-                for _ in range(0, rand(1, MAX_SIMULTANEOUS_MUTATIONS)):
+                for _ in range(0, rand(1, MAX_SIMULTANEOUS_MUTATIONS)): # MMOEASA can perform up to three mutations in a single generation
                     solution_copy, mutation_occurred = mutation(instance, solution_copy, mutation_probability, solution_copy is solution)
                     if mutation_occurred:
                         mutations += 1
 
                 if instance.acceptance_criterion == "Ombuki":
                     child_dominated = ombuki_is_nondominated(solution, solution_copy)
-                    if child_dominated or not population[s].feasible:
+                    if child_dominated or not population[s].feasible: # overwrite the parent solution either if the child dominated it or the parent is infeasible
                         population[s] = solution_copy
                         if child_dominated and check_nondominated_set_acceptance(nondominated_set, solution_copy, ombuki_is_nondominated):
                             if crossover_occurred:
@@ -174,6 +177,7 @@ def MMOEASA(instance: ProblemInstance, population_size: int, multi_starts: int, 
                                 mutation_successes += mutations
                 else:
                     population[s] = mo_metropolis(instance, solution, solution_copy, solution.temperature)
+                    # if the metropolis function chose to overwrite the parent and the child is feasible and the child was added to the non-dominated set
                     if population[s] is solution_copy and population[s].feasible and check_nondominated_set_acceptance(nondominated_set, solution_copy, is_nondominated):
                         if crossover_occurred:
                             crossover_successes += 1
