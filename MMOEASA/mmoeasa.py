@@ -115,12 +115,16 @@ def mo_metropolis(instance: ProblemInstance, parent: MMOEASASolution, child: MMO
     elif temperature <= 0.00001:
         return parent
     else:
+        # d_df is a simulated deterioration (difference between the new and old solution) between the multi-objective variables
+        # the Metropolis function accepts a solution based on this deterioration when neither the parent nor child dominate
+        # the reason the deterioration needs to be simulated is that it cannot be calculated in a multi objective case; in a single-objective case, the deterioration would simply be "solution one's objective - solution two's objective"
+        # if the deterioration is low, there is a better chance that the Metropolis function will accept the child solution
         d_df = euclidean_distance_dispersion(instance, child.total_distance, child.cargo_unbalance, parent.total_distance, parent.cargo_unbalance)
-        random_val = rand(0, INT_MAX) / INT_MAX
+        # deterioration per-temperature-per-temperature simply incorporates the parent's Simulated Annealing temperature into the acceptance probability of MO_Metropolis
         d_pt_pt = d_df / temperature ** 2
-        pt_exp = exp(-1.0 * d_pt_pt)
+        d_exp = exp(-1.0 * d_pt_pt) # Metropolis criterion
 
-        if random_val < pt_exp:
+        if (rand(0, INT_MAX) / INT_MAX) < d_exp: # Metropolis acceptance criterion result is accepted based on probability
             return child
         else:
             return parent
