@@ -7,10 +7,10 @@ from problemInstance import ProblemInstance
 from Ombuki.ombukiSolution import OmbukiSolution
 from vehicle import Vehicle
 from destination import Destination
-from Ombuki.auxiliaries import rand, is_nondominated, mmoeasa_is_nondominated, get_nondominated_set
+from Ombuki.auxiliaries import is_nondominated, mmoeasa_is_nondominated, get_nondominated_set
 from numpy import arange, round, random
 from Ombuki.constants import TOURNAMENT_SET_SIZE, TOURNAMENT_PROBABILITY_SELECT_BEST, GREEDY_PERCENT
-from common import INT_MAX, check_iterations_termination_condition, check_seconds_termination_condition
+from common import rand, INT_MAX, check_iterations_termination_condition, check_seconds_termination_condition
 from MMOEASA.mmoeasa import mo_metropolis
 
 initialiser_execution_time: int=0
