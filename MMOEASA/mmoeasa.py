@@ -46,6 +46,8 @@ def TWIH(instance: ProblemInstance) -> Union[MMOEASASolution, OmbukiSolution]:
     return solution
 
 def calculate_cooling(i: int, temperature_max: float, temperature_min: float, temperature_stop: float, population_size: int, termination_condition: int) -> float:
+    # the calculate_cooling function simulates the genetic algorithm's iterations, from start to termination
+    # over and over again until it finds the cooling rate that gets a solution's temperature to "temperature_stop" at the same time that the "termination_condition" is reached
     jump_temperatures = (temperature_max - temperature_min) / float(population_size - 1) if population_size > 1 else 0.0
     temperature_aux = temperature_max - float(i) * jump_temperatures
     error = float(INT_MAX)
