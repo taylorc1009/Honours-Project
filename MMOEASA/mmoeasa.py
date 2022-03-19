@@ -1,5 +1,6 @@
 import copy
 import time
+from itertools import islice
 from MMOEASA.auxiliaries import is_nondominated, ombuki_is_nondominated, check_nondominated_set_acceptance
 from MMOEASA.operators import mutation1, mutation2, mutation3, mutation4, mutation5, mutation6, mutation7, mutation8, mutation9, mutation10, crossover1
 from MMOEASA.constants import MAX_SIMULTANEOUS_MUTATIONS
@@ -20,20 +21,17 @@ mutation_invocations: int=0
 mutation_successes: int=0
 
 def TWIH(instance: ProblemInstance) -> Union[MMOEASASolution, OmbukiSolution]:
-    sorted_nodes = sorted([value for _, value in instance.nodes.items()], key=lambda x: x.ready_time)
+    sorted_nodes = sorted([value for _, value in islice(instance.nodes.items(), 1, len(instance.nodes))], key=lambda x: x.ready_time) # sort every customer (except the depot; "islice" starts the list from node 1) by their ready_time
 
     solution = MMOEASASolution(_id=0, vehicles=list()) if instance.acceptance_criterion == "MMOEASA" else OmbukiSolution(_id=0, vehicles=list())
-    s = 0 # list of destinations iterator
+    s = 0
 
     for _ in range(0, instance.amount_of_vehicles - 1):
-        if s >= len(instance.nodes) - 1:
+        if not s < len(instance.nodes) - 1: # end initialisation if the list of nodes iterator has allocated every node
             break
-        if sorted_nodes[s].number == 0:
-            s += 1
-
         vehicle = Vehicle.create_route(instance)
 
-        while s < len(instance.nodes) and vehicle.current_capacity + sorted_nodes[s].demand < instance.capacity_of_vehicles:
+        while s < len(instance.nodes) - 1 and vehicle.current_capacity + sorted_nodes[s].demand < instance.capacity_of_vehicles:
             vehicle.destinations.insert(len(vehicle.destinations) - 1, Destination(node=sorted_nodes[s]))
             vehicle.current_capacity += float(sorted_nodes[s].demand)
             s += 1
