@@ -193,8 +193,4 @@ dkms.conf
 
 # CSV outputs
 solution.csv
-mmoeasa.csv
-ombuki.csv
-mmoeasa-o.csv
-ombuki-m.csv
-custom-o.csv
+graph_solution.csv

@@ -5,7 +5,7 @@ from MMOEASA.mmoeasaSolution import MMOEASASolution
 from Ombuki.ombukiSolution import OmbukiSolution
 from CustomGA.customGASolution import CustomGASolution
 from problemInstance import ProblemInstance
-from data import open_problem_instance
+from data import open_problem_instance, write_solution_for_graph
 from MMOEASA.mmoeasa import MMOEASA
 from Ombuki.ombuki import Ombuki
 from evaluation import calculate_area
@@ -81,6 +81,11 @@ if __name__ == '__main__':
         else:
             exc = ValueError(f"Algorithm \"{sys.argv[1]}\" was not recognised")
             raise exc
+
+        """# solutions can be plotted on a scatter graph in Excel as the x and y coordinates of each vehicle's destinations are outputted and in the order that they are serviced
+        should_write_for_graph = True # use the debugger to edit the value in "should_write_for_graph" if you'd like a solution to be written to a CSV
+        if should_write_for_graph and nondominated_set:
+            write_solution_for_graph(nondominated_set[0])"""
 
         for solution in nondominated_set:
             print(f"{os.linesep + str(solution)}")

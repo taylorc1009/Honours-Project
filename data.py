@@ -1,6 +1,9 @@
 import re
 import json
 from pathlib import Path
+from typing import Union
+from CustomGA.customGASolution import CustomGASolution
+from Ombuki.ombukiSolution import OmbukiSolution
 from node import Node
 from problemInstance import ProblemInstance
 from MMOEASA.mmoeasaSolution import MMOEASASolution
@@ -43,3 +46,16 @@ def MMOEASA_write_solution_for_validation(solution: MMOEASASolution, max_capacit
                 csv.write(f"{destination.arrival_time},{destination.departure_time},{destination.wait_time}\n")
                 node = destination.node
                 csv.write(f"{node.number},{node.x},{node.y},{node.demand},{node.ready_time},{node.due_date},{node.service_duration}\n")
+
+def write_solution_for_graph(solution: Union[MMOEASASolution, OmbukiSolution, CustomGASolution]) -> None:
+    relative_path = str(Path(__file__).parent.resolve()) + "\\graph_solution.csv"
+
+    with open(relative_path, "w+") as csv:
+        max_len = max([len(v.destinations) for v in solution.vehicles])
+        for d in range(max_len):
+            for vehicle in solution.vehicles:
+                if d < len(vehicle.destinations):
+                    csv.write(f"{vehicle.destinations[d].node.x},{vehicle.destinations[d].node.y},")
+                else:
+                    csv.write(",,")
+            csv.write('\n')
