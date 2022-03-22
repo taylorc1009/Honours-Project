@@ -127,7 +127,7 @@ def TWBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Cust
 
     return solution
 
-def swap(l: List, index_one: int, index_two: int):
+def swap(l: List, index_one: int, index_two: int) -> None:
     l[index_one], l[index_two] = l[index_two], l[index_one]
 
 def TWBSw_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Time-Window-based Swap Mutator

@@ -9,11 +9,11 @@ from problemInstance import ProblemInstance
 from common import rand, INT_MAX
 
 class CrossoverPositionStats:
-    def __init__(self):
+    def __init__(self) -> None:
         self.distance_from_previous = float(INT_MAX)
         self.distance_to_next = float(INT_MAX)
 
-    def update_record(self, distance_from_previous: float, distance_to_next: float):
+    def update_record(self, distance_from_previous: float, distance_to_next: float) -> None:
         self.distance_from_previous = float(distance_from_previous)
         self.distance_to_next = float(distance_to_next)
 

@@ -13,7 +13,7 @@ class CustomGASolution(Solution):
     def __str__(self) -> str:
         return f"total_distance={self.total_distance}, num_vehicles={self.num_vehicles}, {len(self.vehicles)=}, {[f'{i}. {str(v)}' for i, v in enumerate(self.vehicles)]}"
 
-    def objective_function(self, instance: ProblemInstance):
+    def objective_function(self, instance: ProblemInstance) -> None:
         """ error checks
         if sum([v.get_num_of_customers_visited() for v in self.vehicles]) != 100:
             raise ValueError(f"Mismatched amount of destinations: {sum([v.get_num_of_customers_visited() for v in self.vehicles])}")
@@ -40,5 +40,5 @@ class CustomGASolution(Solution):
                     break
             vehicle += 1
 
-    def __deepcopy__(self, memodict: Dict=None):
+    def __deepcopy__(self, memodict: Dict=None) -> None:
         return CustomGASolution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, total_distance=self.total_distance, num_vehicles=self.num_vehicles)

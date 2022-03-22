@@ -37,5 +37,5 @@ class OmbukiSolution(Solution):
                     break
             vehicle += 1
 
-    def __deepcopy__(self, memodict: Dict=None):
+    def __deepcopy__(self, memodict: Dict=None) -> None:
         return OmbukiSolution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, total_distance=self.total_distance, num_vehicles=self.num_vehicles, rank=self.rank)
