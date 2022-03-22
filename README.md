@@ -8,10 +8,7 @@ The project investigates evolutionary algorithms (EA), heuristics, and EA-heuris
 1. Install Python version 3.9,
 2. Open the Windows command line and `cd` to the project root,
 3. Create a virtual environment in the root folder of application;
-   1. Using `py -m venv venv`,
-   2. If you have multiple Python versions installed, you will need to create a Python 3.9 virtual environment specifically:
-      1. Install the Python package `virtualenv` using `pip install virtualenv`,
-      2. Then, create the venv with the command `virtualenv venv --python=python3.9`.
+   1. Using `python3.9 -m venv venv`,
 4. Activate the virtual environment;
    1. Using `venv\Scripts\activate`,
 5. Install the necessary packages;
