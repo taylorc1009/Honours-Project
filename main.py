@@ -83,7 +83,7 @@ if __name__ == '__main__':
             raise exc
 
         """# solutions can be plotted on a scatter graph in Excel as the x and y coordinates of each vehicle's destinations are outputted and in the order that they are serviced
-        should_write_for_graph = True # use the debugger to edit the value in "should_write_for_graph" if you'd like a solution to be written to a CSV
+        should_write_for_graph = False # use the debugger to edit the value in "should_write_for_graph" if you'd like a solution to be written to a CSV
         if should_write_for_graph and nondominated_set:
             write_solution_for_graph(nondominated_set[0])"""
 
