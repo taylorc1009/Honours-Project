@@ -190,8 +190,8 @@ def MMOEASA(instance: ProblemInstance, population_size: int, multi_starts: int, 
                         if mutations > 0:
                             mutation_successes += mutations
 
-                """should_write_for_validation = False # use the debugger to edit the value in "should_write_for_validation" if you'd like a solution to be written to a CSV
-                if should_write_for_validation and nondominated_set:
+                """# uncomment this code if you'd like a solution to be written to a CSV
+                if nondominated_set:
                     MMOEASA_write_solution_for_validation(nondominated_set[0], instance.capacity_of_vehicles)"""
 
                 if instance.acceptance_criterion == "MMOEASA":
