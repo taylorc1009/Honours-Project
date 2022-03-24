@@ -4,6 +4,12 @@ My Honours Project is aimed at investigating the performance of different method
 
 The project investigates evolutionary algorithms (EA), heuristics, and EA-heuristic hybrids that solve the problem by aiming to find the combinations of routes that require the lowest cost to carry out. In other words, the cost is my objective function. Factors that to contribute to the cost of a solution are the amount of vehicles required and the total distance of each route. Any capacity and time window violations will render a solution infeasible and therefore, the solution will be rejected.
 
+As part of the project, a custom Genetic Algorithm was developed. Here are solutions to two of the problem instances used during experimentation of the algorithm.
+
+| 100-customer C101                      | 100-customer C201                      |
+|----------------------------------------|----------------------------------------|
+| <img src='figures/custom-ga-c101.png'> | <img src='figures/custom-ga-c201.png'> |
+
 ## How to execute the application (tutorial for Windows):
 1. Install Python version 3.9,
 2. Open the Windows command line and `cd` to the project root,
