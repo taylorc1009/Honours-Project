@@ -2,9 +2,9 @@
 
 My Honours Project is aimed at investigating the performance of different methods of solving the Capacitated Vehicle Routing Problem with Time Windows (CVRPTW). The problem entails finding the most efficient combination of routes that multiple vehicles can take to deliver to every customer present in a set of customers. The edition of the VRP I'm investigating (the CVRPTW) is different because it constrains the capacity of each vehicle (and, therefore, the amount of packages each vehicle can carry) and the time windows in which each customer should receive their delivery. Such constraints and complexities make the CVRPTW [NP-Hard](https://en.wikipedia.org/wiki/NP-hardness).
 
-The project investigates evolutionary algorithms (EA), heuristics, and EA-heuristic hybrids that solve the problem by aiming to find the combinations of routes that require the lowest cost to carry out. In other words, the cost is my objective function. Factors that to contribute to the cost of a solution are the amount of vehicles required and the total distance of each route. Any capacity and time window violations will render a solution infeasible and therefore, the solution will be rejected.
+The project investigates Genetic Algorithms (GAs), heuristics, and GA-heuristic hybrids that solve the problem by aiming to find the combinations of routes that require the lowest cost to carry out. In other words, the cost is my objective function. Factors that to contribute to the cost of a solution are the amount of vehicles required and the total distance of each route. Any capacity and time window violations will render a solution infeasible and therefore, the solution will be rejected.
 
-As part of the project, a custom Genetic Algorithm was developed. Here are solutions to two of the problem instances used during experimentation of the algorithm.
+As part of the project, a custom GA was developed: the Feasibility Intensive Genetic Algorithm (FIGA). Here are solutions to two of the problem instances used during experimentation of the algorithm.
 
 | 100-customer C101                      | 100-customer C201                      |
 |----------------------------------------|----------------------------------------|
