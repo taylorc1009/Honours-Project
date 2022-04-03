@@ -24,3 +24,14 @@ class Solution:
     def calculate_length_of_routes(self, instance: ProblemInstance) -> None:
         for i, _ in enumerate(self.vehicles):
             self.vehicles[i].calculate_length_of_route(instance)
+
+    def check_format_is_correct(self, instance: ProblemInstance):
+        # error checks to ensure that every route is of the valid format
+        if sum([v.get_num_of_customers_visited() for v in self.vehicles]) != instance.amount_of_vehicles - 1: # check if the solution contains the correct amount of destinations, in that it visits all of them
+            raise ValueError(f"Mismatched amount of destinations: {sum([v.get_num_of_customers_visited() for v in self.vehicles])}")
+        elif [v for v in self.vehicles if not len(v.destinations) > 1]: # checks if all the routes has at least 2 destinations; routes should always at least depart from and return to the depot
+            raise ValueError(f"Number of destinations was not at least 2")
+        elif [v for v in self.vehicles if v.destinations[0].node.number or v.destinations[-1].node.number]: # checks that every route starts and ends at the depot
+            raise ValueError(f"Indexes 0 and n - 1 should be depot nodes")
+        elif [set(range(1, 101)).remove(d.node.number) for v in self.vehicles for d in v.get_customers_visited()][0]: # checks if all nodes have been visited; will also find duplicate nodes as the ".remove" method will throw an exception when it tries to remove an already-removed node
+            raise ValueError(f"Not all nodes are visited")
