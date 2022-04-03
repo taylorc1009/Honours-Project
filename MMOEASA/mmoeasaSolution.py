@@ -54,5 +54,5 @@ class MMOEASASolution(Solution):
             self.distance_unbalance = maximum_distance - minimum_distance
             self.cargo_unbalance = maximum_cargo - minimum_cargo
 
-    def __deepcopy__(self, memodict: Dict=None) -> None:
+    def __deepcopy__(self, memodict: Dict=None) -> "MMOEASASolution":
         return MMOEASASolution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, default_temperature=self.default_temperature, temperature=self.temperature, cooling_rate=self.cooling_rate, total_distance=self.total_distance, distance_unbalance=self.distance_unbalance, cargo_unbalance=self.cargo_unbalance, rank=self.rank)
