@@ -2,7 +2,7 @@ import re
 import json
 from pathlib import Path
 from typing import Union
-from CustomGA.customGASolution import CustomGASolution
+from FIGA.figaSolution import FIGASolution
 from Ombuki.ombukiSolution import OmbukiSolution
 from node import Node
 from problemInstance import ProblemInstance
@@ -47,7 +47,7 @@ def MMOEASA_write_solution_for_validation(solution: MMOEASASolution, max_capacit
                 node = destination.node
                 csv.write(f"{node.number},{node.x},{node.y},{node.demand},{node.ready_time},{node.due_date},{node.service_duration}\n")
 
-def write_solution_for_graph(solution: Union[MMOEASASolution, OmbukiSolution, CustomGASolution]) -> None:
+def write_solution_for_graph(solution: Union[MMOEASASolution, OmbukiSolution, FIGASolution]) -> None:
     relative_path = str(Path(__file__).parent.resolve()) + "\\graph_solution.csv"
 
     with open(relative_path, "w+") as csv:

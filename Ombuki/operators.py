@@ -14,7 +14,7 @@ from common import rand, INT_MAX
 def set_up_crossover_child(instance: ProblemInstance, parent_one: Union[OmbukiSolution, MMOEASASolution], parent_two_vehicle: Vehicle) -> OmbukiSolution:
     crossover_solution = copy.deepcopy(parent_one)
 
-    # check commentary of "set_up_crossover_child" in "../CustomGA/operators.py"
+    # check commentary of "set_up_crossover_child" in "../FIGA/operators.py"
     nodes_to_remove = set([d.node.number for d in parent_two_vehicle.get_customers_visited()])
     i = 0
     while i < len(crossover_solution.vehicles) and nodes_to_remove:
@@ -42,7 +42,7 @@ def set_up_crossover_child(instance: ProblemInstance, parent_one: Union[OmbukiSo
     return crossover_solution
 
 def original_crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], parent_vehicle: Vehicle, result: Dict[str, Union[OmbukiSolution, MMOEASASolution]]) -> None:
-    # check commentary of "crossover" in "../CustomGA/operators.py"
+    # check commentary of "crossover" in "../FIGA/operators.py"
     # the difference in this operator is that when no feasible insertion point is found and the amount of vehicles in the solution is at the limit, a new one is created anyway (which is bad)
     crossover_solution = set_up_crossover_child(instance, solution, parent_vehicle)
 
@@ -84,7 +84,7 @@ def original_crossover_thread(instance: ProblemInstance, solution: Union[OmbukiS
     result[currentThread().getName()] = crossover_solution # since threads cannot return values, the values are assigned to a mutable type instead (a dict in this case)
 
 def modified_crossover_thread(instance: ProblemInstance, solution: Union[OmbukiSolution, MMOEASASolution], parent_vehicle: Vehicle, result: Dict[str, Union[OmbukiSolution, MMOEASASolution]]) -> None:
-    # check commentary of "crossover" in "../CustomGA/operators.py"
+    # check commentary of "crossover" in "../FIGA/operators.py"
     # the difference in this operator is that when no feasible insertion point is found and the amount of vehicles in the solution is at the limit, the destination to be inserted is appended to the end of the route where the route's last destination is nearest to the deatination to be inserted
     crossover_solution = set_up_crossover_child(instance, solution, parent_vehicle)
 

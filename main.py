@@ -3,13 +3,13 @@ import os
 from typing import List, Union, Tuple, Dict
 from MMOEASA.mmoeasaSolution import MMOEASASolution
 from Ombuki.ombukiSolution import OmbukiSolution
-from CustomGA.customGASolution import CustomGASolution
+from FIGA.figaSolution import FIGASolution
 from problemInstance import ProblemInstance
 from data import open_problem_instance, write_solution_for_graph
 from MMOEASA.mmoeasa import MMOEASA
 from Ombuki.ombuki import Ombuki
 from evaluation import calculate_area
-from CustomGA.custom import CustomGA
+from FIGA.figa import FIGA
 
 def execute_MMOEASA(problem_instance: ProblemInstance) -> Tuple[List[Union[MMOEASASolution, OmbukiSolution]], Dict[str, int]]:
     from MMOEASA.parameters import POPULATION_SIZE, MULTI_STARTS, TERMINATION_CONDITION_ITERATIONS, TERMINATION_CONDITION_SECONDS, TERMINATION_CONDITION_TYPE, CROSSOVER_PROBABILITY, MUTATION_PROBABILITY, TEMPERATURE_MAX, TEMPERATURE_MIN, TEMPERATURE_STOP
@@ -19,9 +19,9 @@ def execute_Ombuki(problem_instance: ProblemInstance, use_original: bool) -> Tup
     from Ombuki.parameters import POPULATION_SIZE, TERMINATION_CONDITION_ITERATIONS, TERMINATION_CONDITION_SECONDS, TERMINATION_CONDITION_TYPE, CROSSOVER_PROBABILITY, MUTATION_PROBABILITY
     return Ombuki(problem_instance, POPULATION_SIZE, TERMINATION_CONDITION_SECONDS, TERMINATION_CONDITION_TYPE, CROSSOVER_PROBABILITY, MUTATION_PROBABILITY, use_original)
 
-def execute_Custom(problem_instance: ProblemInstance) -> Tuple[List[CustomGASolution], Dict[str, int]]:
-    from CustomGA.parameters import POPULATION_SIZE, TERMINATION_CONDITION_ITERATIONS, TERMINATION_CONDITION_SECONDS, TERMINATION_CONDITION_TYPE, CROSSOVER_PROBABILITY, MUTATION_PROBABILITY
-    return CustomGA(problem_instance, POPULATION_SIZE, TERMINATION_CONDITION_SECONDS, TERMINATION_CONDITION_TYPE, CROSSOVER_PROBABILITY, MUTATION_PROBABILITY)
+def execute_FIGA(problem_instance: ProblemInstance) -> Tuple[List[FIGASolution], Dict[str, int]]:
+    from FIGA.parameters import POPULATION_SIZE, TERMINATION_CONDITION_ITERATIONS, TERMINATION_CONDITION_SECONDS, TERMINATION_CONDITION_TYPE, CROSSOVER_PROBABILITY, MUTATION_PROBABILITY
+    return FIGA(problem_instance, POPULATION_SIZE, TERMINATION_CONDITION_SECONDS, TERMINATION_CONDITION_TYPE, CROSSOVER_PROBABILITY, MUTATION_PROBABILITY)
 
 if __name__ == '__main__':
     argc = len(sys.argv)
@@ -33,7 +33,7 @@ if __name__ == '__main__':
                   f"The algorithms and acceptance criteria available to solve the problem are:{os.linesep}"
                   f" - MMOEASA{os.linesep}"
                   f" - Ombuki (note that \"Ombuki-Original\" is also an algorithm; it contains features that seem to be anomalous from the original research paper){os.linesep}"
-                  f" - Custom (algorithm \"Custom\" should not be used as and does not accept an alternative acceptance criterion; see example commands){os.linesep}{os.linesep}"
+                  f" - FIGA (algorithm \"FIGA\" should not be used as and does not accept an alternative acceptance criterion; see example commands){os.linesep}{os.linesep}"
                   f"There's multiple types of problems in Solomon's instances, and here's what they are:{os.linesep}"
                   f" - Number of customers:{os.linesep}"
                   f"   - 100 - 100 customers{os.linesep}"
@@ -52,16 +52,16 @@ if __name__ == '__main__':
                   f" - Where XX is the instance number; see the folder \"solomon_[ number of customers ]\" for available instances{os.linesep}{os.linesep}"
                   f"Example commands are:{os.linesep}"
                   f" - \"main.py MMOEASA solomon_100/C101.txt MMOEASA\"{os.linesep}"
-                  f" - \"main.py Custom solomon_100/C101.txt\"{os.linesep}"
+                  f" - \"main.py FIGA solomon_100/C101.txt\"{os.linesep}"
                   f" - \"main.py Ombuki solomon_100/C101.txt MMOEASA\"")
         else:
             print("Argument \"-h\"/\"--help\" does not take any arguments")
     else:
-        if sys.argv[1].upper() == "CUSTOM":
+        if sys.argv[1].upper() == "FIGA":
             if argc == 3:
                 sys.argv.append("Ombuki")
             else:
-                exc = ValueError("Custom algorithm should not be given a pre-determined acceptance criterion; it only has one")
+                exc = ValueError("FIGA should not be given a pre-determined acceptance criterion; it only has one")
                 raise exc
 
         if not len(sys.argv) == 4 or not sys.argv[3].upper() in {"MMOEASA", "OMBUKI"}:
@@ -76,8 +76,8 @@ if __name__ == '__main__':
             nondominated_set, statistics = execute_Ombuki(problem_instance, True)
         elif sys.argv[1].upper() == "OMBUKI":
             nondominated_set, statistics = execute_Ombuki(problem_instance, False)
-        elif sys.argv[1].upper() == "CUSTOM":
-            nondominated_set, statistics = execute_Custom(problem_instance)
+        elif sys.argv[1].upper() == "FIGA":
+            nondominated_set, statistics = execute_FIGA(problem_instance)
         else:
             exc = ValueError(f"Algorithm \"{sys.argv[1]}\" was not recognised")
             raise exc

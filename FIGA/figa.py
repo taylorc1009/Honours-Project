@@ -6,9 +6,9 @@ from common import rand, check_iterations_termination_condition, check_seconds_t
 from random import shuffle
 from destination import Destination
 from problemInstance import ProblemInstance
-from CustomGA.customGASolution import CustomGASolution
-from CustomGA.operators import crossover, TWBS_mutation, TWBSw_mutation, WTBS_mutation, SWTBS_mutation, DBS_mutation, SDBS_mutation, TWBMF_mutation, TWBPB_mutation
-from CustomGA.constants import TOURNAMENT_PROBABILITY_SELECT_BEST
+from FIGA.figaSolution import FIGASolution
+from FIGA.operators import crossover, TWBS_mutation, TWBSw_mutation, WTBS_mutation, SWTBS_mutation, DBS_mutation, SDBS_mutation, TWBMF_mutation, TWBPB_mutation
+from FIGA.constants import TOURNAMENT_PROBABILITY_SELECT_BEST
 from vehicle import Vehicle
 from numpy import ceil, random
 
@@ -20,10 +20,10 @@ crossover_successes: int=0
 mutation_invocations: int=0
 mutation_successes: int=0
 
-def DTWIH(instance: ProblemInstance) -> CustomGASolution:
+def DTWIH(instance: ProblemInstance) -> FIGASolution:
     sorted_nodes = sorted([node for _, node in instance.nodes.items() if node.number], key=lambda n: n.ready_time) # sort every available node by their ready_time
     num_routes = int(ceil(instance.amount_of_vehicles / 2))
-    solution = CustomGASolution(_id=0, vehicles=[Vehicle.create_route(instance) for _ in range(0, num_routes)])
+    solution = FIGASolution(_id=0, vehicles=[Vehicle.create_route(instance) for _ in range(0, num_routes)])
     additional_vehicles = 0
 
     while sorted_nodes:
@@ -52,10 +52,10 @@ def DTWIH(instance: ProblemInstance) -> CustomGASolution:
 
     return solution
 
-def is_nondominated(old_solution: CustomGASolution, new_solution: CustomGASolution) -> bool:
+def is_nondominated(old_solution: FIGASolution, new_solution: FIGASolution) -> bool:
     return (new_solution.total_distance < old_solution.total_distance and new_solution.num_vehicles <= old_solution.num_vehicles) or (new_solution.total_distance <= old_solution.total_distance and new_solution.num_vehicles < old_solution.num_vehicles)
 
-def check_nondominated_set_acceptance(nondominated_set: List[CustomGASolution], subject_solution: CustomGASolution) -> None:
+def check_nondominated_set_acceptance(nondominated_set: List[FIGASolution], subject_solution: FIGASolution) -> None:
     if not subject_solution.feasible:
         return
 
@@ -83,10 +83,10 @@ def check_nondominated_set_acceptance(nondominated_set: List[CustomGASolution], 
                     i = 20 # MMOEASA limits its non-dominated set to 20, so do the same here (this is optional)
                 del nondominated_set[i:]
 
-def selection_tournament(nondominated_set: List[CustomGASolution], population: List[CustomGASolution]) -> CustomGASolution:
+def selection_tournament(nondominated_set: List[FIGASolution], population: List[FIGASolution]) -> FIGASolution:
     return random.choice(nondominated_set if nondominated_set and rand(1, 100) < TOURNAMENT_PROBABILITY_SELECT_BEST else population)
 
-def try_crossover(instance, parent_one: CustomGASolution, parent_two: CustomGASolution, crossover_probability) -> CustomGASolution:
+def try_crossover(instance, parent_one: FIGASolution, parent_two: FIGASolution, crossover_probability) -> FIGASolution:
     if rand(1, 100) < crossover_probability:
         global crossover_invocations, crossover_successes
         crossover_invocations += 1
@@ -98,7 +98,7 @@ def try_crossover(instance, parent_one: CustomGASolution, parent_two: CustomGASo
         return crossover_solution
     return parent_one
 
-def try_mutation(instance, solution: CustomGASolution, mutation_probability: int) -> CustomGASolution:
+def try_mutation(instance, solution: FIGASolution, mutation_probability: int) -> FIGASolution:
     if rand(1, 100) < mutation_probability:
         global mutation_invocations, mutation_successes
         mutation_invocations += 1
@@ -128,9 +128,9 @@ def try_mutation(instance, solution: CustomGASolution, mutation_probability: int
             return mutated_solution
     return solution
 
-def CustomGA(instance: ProblemInstance, population_size: int, termination_condition: int, termination_type: str, crossover_probability: int, mutation_probability: int) -> Tuple[List[CustomGASolution], Dict[str, int]]:
-    population: List[CustomGASolution] = list()
-    nondominated_set: List[CustomGASolution] = list()
+def FIGA(instance: ProblemInstance, population_size: int, termination_condition: int, termination_type: str, crossover_probability: int, mutation_probability: int) -> Tuple[List[FIGASolution], Dict[str, int]]:
+    population: List[FIGASolution] = list()
+    nondominated_set: List[FIGASolution] = list()
 
     global initialiser_execution_time, feasible_initialisations
     initialiser_execution_time = time.time()

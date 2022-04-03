@@ -1,13 +1,13 @@
 import copy
 from random import shuffle
 from typing import List
-from CustomGA.constants import MUTATION_LONGEST_WAIT_PROBABILITY, MUTATION_LONGEST_ROUTE_PROBABILITY
-from CustomGA.customGASolution import CustomGASolution
+from FIGA.constants import MUTATION_LONGEST_WAIT_PROBABILITY, MUTATION_LONGEST_ROUTE_PROBABILITY
+from FIGA.figaSolution import FIGASolution
 from common import INT_MAX, rand
 from problemInstance import ProblemInstance
 from vehicle import Vehicle
 
-def set_up_crossover_child(instance: ProblemInstance, parent_one: CustomGASolution, parent_two_vehicle: Vehicle) -> CustomGASolution:
+def set_up_crossover_child(instance: ProblemInstance, parent_one: FIGASolution, parent_two_vehicle: Vehicle) -> FIGASolution:
     child_solution = copy.deepcopy(parent_one)
 
     nodes_to_remove = {d.node.number for d in parent_two_vehicle.get_customers_visited()} # create a set containing the numbers of every node in parent_two_vehicle to be merged into parent_one's routes
@@ -38,7 +38,7 @@ def set_up_crossover_child(instance: ProblemInstance, parent_one: CustomGASoluti
 
     return child_solution
 
-def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_two_vehicle: Vehicle) -> CustomGASolution:
+def crossover(instance: ProblemInstance, parent_one: FIGASolution, parent_two_vehicle: Vehicle) -> FIGASolution:
     crossover_solution = set_up_crossover_child(instance, parent_one, parent_two_vehicle)
 
     randomized_destinations = list(range(1, len(parent_two_vehicle.destinations) - 1))
@@ -87,7 +87,7 @@ def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_tw
     crossover_solution.objective_function(instance)
     return crossover_solution
 
-def select_random_vehicle(solution: CustomGASolution, customers_required: int=2) -> int:
+def select_random_vehicle(solution: FIGASolution, customers_required: int=2) -> int:
     random_vehicle = -1
     exclude_values = set()
     while not random_vehicle >= 0:
@@ -97,7 +97,7 @@ def select_random_vehicle(solution: CustomGASolution, customers_required: int=2)
             random_vehicle = -1
     return random_vehicle
 
-def select_route_with_longest_wait(solution: CustomGASolution) -> int:
+def select_route_with_longest_wait(solution: FIGASolution) -> int:
     longest_waiting_vehicle = -1
     longest_total_wait = 0.0
     if rand(1, 100) < MUTATION_LONGEST_WAIT_PROBABILITY:
@@ -115,7 +115,7 @@ def select_route_with_longest_wait(solution: CustomGASolution) -> int:
     # check if not >= 0 instead of using "else" in case no vehicle has a wait time; this will never be the case, but this is here to be safe
     return longest_waiting_vehicle if longest_waiting_vehicle >= 0 else select_random_vehicle(solution)
 
-def TWBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: #	Time-Window-based Sort Mutator
+def TWBS_mutation(instance: ProblemInstance, solution: FIGASolution) -> FIGASolution: #	Time-Window-based Sort Mutator
     longest_waiting_vehicle = select_route_with_longest_wait(solution)
 
     # sort all destinations between 1 and n - 1 by ready_time (exclude 1 and n - 1 as they're the depot nodes)
@@ -130,7 +130,7 @@ def TWBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Cust
 def swap(l: List, index_one: int, index_two: int) -> None:
     l[index_one], l[index_two] = l[index_two], l[index_one]
 
-def TWBSw_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Time-Window-based Swap Mutator
+def TWBSw_mutation(instance: ProblemInstance, solution: FIGASolution) -> FIGASolution: # Time-Window-based Swap Mutator
     longest_waiting_vehicle = select_route_with_longest_wait(solution)
 
     for d in range(1, solution.vehicles[longest_waiting_vehicle].get_num_of_customers_visited()):
@@ -144,7 +144,7 @@ def TWBSw_mutation(instance: ProblemInstance, solution: CustomGASolution) -> Cus
 
     return solution
 
-def swap_high_wait_time_destinations(instance: ProblemInstance, solution: CustomGASolution, just_once: bool=False) -> CustomGASolution:
+def swap_high_wait_time_destinations(instance: ProblemInstance, solution: FIGASolution, just_once: bool=False) -> FIGASolution:
     longest_waiting_vehicle = select_route_with_longest_wait(solution)
 
     destination = 1
@@ -169,13 +169,13 @@ def swap_high_wait_time_destinations(instance: ProblemInstance, solution: Custom
 
     return solution
 
-def WTBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Wait-Time-based Swap Mutator
+def WTBS_mutation(instance: ProblemInstance, solution: FIGASolution) -> FIGASolution: # Wait-Time-based Swap Mutator
     return swap_high_wait_time_destinations(instance, solution)
 
-def SWTBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Single Wait-Time-based Swap Mutator
+def SWTBS_mutation(instance: ProblemInstance, solution: FIGASolution) -> FIGASolution: # Single Wait-Time-based Swap Mutator
     return swap_high_wait_time_destinations(instance, solution, just_once=True)
 
-def swap_long_distance_destinations(instance: ProblemInstance, solution: CustomGASolution, just_once: bool=False) -> CustomGASolution:
+def swap_long_distance_destinations(instance: ProblemInstance, solution: FIGASolution, just_once: bool=False) -> FIGASolution:
     longest_route_length = 0
     furthest_travelling_vehicle = -1
 
@@ -203,13 +203,13 @@ def swap_long_distance_destinations(instance: ProblemInstance, solution: CustomG
 
     return solution
 
-def DBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Distance-based Swap Mutator
+def DBS_mutation(instance: ProblemInstance, solution: FIGASolution) -> FIGASolution: # Distance-based Swap Mutator
     return swap_long_distance_destinations(instance, solution)
 
-def SDBS_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Single Distance-based Swap Mutator
+def SDBS_mutation(instance: ProblemInstance, solution: FIGASolution) -> FIGASolution: # Single Distance-based Swap Mutator
     return swap_long_distance_destinations(instance, solution, just_once=True)
 
-def move_destination_to_fit_window(instance: ProblemInstance, solution: CustomGASolution, reverse: bool=False) -> CustomGASolution:
+def move_destination_to_fit_window(instance: ProblemInstance, solution: FIGASolution, reverse: bool=False) -> FIGASolution:
     random_vehicle = select_random_vehicle(solution)
 
     original_indexes = {destination.node.number: index for index, destination in enumerate(solution.vehicles[random_vehicle].get_customers_visited(), 1)} # will be used to get the current index of a destination to be moved forward or pushed back
@@ -228,8 +228,8 @@ def move_destination_to_fit_window(instance: ProblemInstance, solution: CustomGA
 
     return solution
 
-def TWBMF_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Time-Window-based Move Forward Mutator
+def TWBMF_mutation(instance: ProblemInstance, solution: FIGASolution) -> FIGASolution: # Time-Window-based Move Forward Mutator
     return move_destination_to_fit_window(instance, solution)
 
-def TWBPB_mutation(instance: ProblemInstance, solution: CustomGASolution) -> CustomGASolution: # Time-Window-based Push-back Mutator
+def TWBPB_mutation(instance: ProblemInstance, solution: FIGASolution) -> FIGASolution: # Time-Window-based Push-back Mutator
     return move_destination_to_fit_window(instance, solution, reverse=True)

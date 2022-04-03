@@ -3,7 +3,7 @@ import time
 from threading import Lock
 from multiprocessing import Process
 from typing import Dict, Set, Tuple
-from CustomGA.customGASolution import CustomGASolution
+from FIGA.figaSolution import FIGASolution
 from destination import Destination
 from problemInstance import ProblemInstance
 from common import rand, INT_MAX
@@ -17,7 +17,7 @@ class CrossoverPositionStats:
         self.distance_from_previous = float(distance_from_previous)
         self.distance_to_next = float(distance_to_next)
 
-def initialise_decision_tree_prerequisites(instance: ProblemInstance, parent_one: CustomGASolution, parent_two: CustomGASolution) -> Tuple[CustomGASolution, Set, List[Destination]]:
+def initialise_decision_tree_prerequisites(instance: ProblemInstance, parent_one: FIGASolution, parent_two: FIGASolution) -> Tuple[FIGASolution, Set, List[Destination]]:
     crossover_solution = copy.deepcopy(parent_one)
     parent_two_destinations = parent_two.vehicles[rand(0, len(parent_two.vehicles) - 1)].get_customers_visited()
     nodes_to_remove = set([d.node.number for d in parent_two_destinations])
@@ -50,7 +50,7 @@ def initialise_decision_tree_prerequisites(instance: ProblemInstance, parent_one
 
 """ VVV Serial Decision-tree-based Crossover Operator START VVV """
 
-def crossover_evaluation(instance: ProblemInstance, crossover_solution: CustomGASolution, nodes_to_insert: Set[int], stats_record: Dict[int, CrossoverPositionStats], best_stats_record: Dict[int, CrossoverPositionStats], iteration: int) -> CustomGASolution:
+def crossover_evaluation(instance: ProblemInstance, crossover_solution: FIGASolution, nodes_to_insert: Set[int], stats_record: Dict[int, CrossoverPositionStats], best_stats_record: Dict[int, CrossoverPositionStats], iteration: int) -> FIGASolution:
     if not iteration:
         for key, value in stats_record.items():
             best_stats_record[key].update_record(value.distance_from_previous, value.distance_to_next)
@@ -84,7 +84,7 @@ def crossover_evaluation(instance: ProblemInstance, crossover_solution: CustomGA
 
     return crossover_solution_final
 
-def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_two: CustomGASolution) -> CustomGASolution:
+def crossover(instance: ProblemInstance, parent_one: FIGASolution, parent_two: FIGASolution) -> FIGASolution:
     crossover_solution, nodes_to_insert, parent_two_destinations = initialise_decision_tree_prerequisites(instance, parent_one, parent_two)
 
     stats_record = {destination.node.number: CrossoverPositionStats() for destination in parent_two_destinations}
@@ -107,7 +107,7 @@ def crossover(instance: ProblemInstance, parent_one: CustomGASolution, parent_tw
 
 mutex = Lock()
 
-def crossover_evaluation_multithreaded(instance: ProblemInstance, crossover_solution: CustomGASolution, nodes_to_insert: Set[int], stats_record: Dict[int, CrossoverPositionStats], best_stats_record: Dict[int, CrossoverPositionStats], iteration: int, result: Dict[int, CustomGASolution]) -> None:
+def crossover_evaluation_multithreaded(instance: ProblemInstance, crossover_solution: FIGASolution, nodes_to_insert: Set[int], stats_record: Dict[int, CrossoverPositionStats], best_stats_record: Dict[int, CrossoverPositionStats], iteration: int, result: Dict[int, FIGASolution]) -> None:
     if not iteration:
         with mutex:
             for key, value in stats_record.items():
@@ -139,7 +139,7 @@ def crossover_evaluation_multithreaded(instance: ProblemInstance, crossover_solu
     for t in thread_pool:
         t.join()
 
-def crossover_multithreaded(instance: ProblemInstance, parent_one: CustomGASolution, parent_two: CustomGASolution) -> CustomGASolution:
+def crossover_multithreaded(instance: ProblemInstance, parent_one: FIGASolution, parent_two: FIGASolution) -> FIGASolution:
     crossover_solution, nodes_to_insert, parent_two_destinations = initialise_decision_tree_prerequisites(instance, parent_one, parent_two)
 
     stats_record = {destination.node.number: CrossoverPositionStats() for destination in parent_two_destinations}

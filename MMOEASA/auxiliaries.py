@@ -19,7 +19,7 @@ def check_nondominated_set_acceptance(nondominated_set: List[Union[MMOEASASoluti
     nondominated_set.append(subject_solution)
     solutions_to_remove = set()
 
-    # check commentary of "check_nondominated_set_acceptance" in "../CustomGA/custom.py"
+    # check commentary of "check_nondominated_set_acceptance" in "../FIGA/figa.py"
     if len(nondominated_set) > 1:
         for s, solution in enumerate(nondominated_set[:len(nondominated_set) - 1]):
             for s_aux, solution_auxiliary in enumerate(nondominated_set[s + 1:], s + 1):

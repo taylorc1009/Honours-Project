@@ -11,7 +11,7 @@ def mmoeasa_is_nondominated(parent: MMOEASASolution, child: MMOEASASolution) -> 
 def get_nondominated_set(unranked_solutions: List[Union[OmbukiSolution, MMOEASASolution]], nondominated_check: Callable[[Union[OmbukiSolution, MMOEASASolution], Union[OmbukiSolution, MMOEASASolution]], bool]) -> Set[int]:
     nondominated_ids = set([s.id for s in unranked_solutions])
 
-    # check commentary of "check_nondominated_set_acceptance" in "../CustomGA/custom.py"
+    # check commentary of "check_nondominated_set_acceptance" in "../FIGA/figa.py"
     for s, solution in enumerate(unranked_solutions[:len(unranked_solutions) - 1]):
         for solution_auxiliary in unranked_solutions[s + 1:]:
             if nondominated_check(solution, solution_auxiliary) and solution.id in nondominated_ids:
