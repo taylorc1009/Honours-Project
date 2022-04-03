@@ -22,7 +22,9 @@ As part of the project, a custom Genetic Algorithm was developed. Here are solut
 6. Execute the application;
    1. Using `main.py` as the entry point,
    2. `main.py [ -h | --help ]` can provide further instructions,
-   3. The file `compile.bat` can compile the app into a single executable.
+   3. The file `compile.bat` can compile the app into a single executable;
+      1. Note that the compiled executable can be found here: `../dist/main.exe`,
+      2. The executable should be moved from `/dist` to the project root so that it can find the problems' directory `/solomon_100`.
 
 ## How to externally validate solutions:
 1. Use the function `MMOEASA_write_solution_for_validation` from `data.py` in the Python application to output a solution to a CSV;
