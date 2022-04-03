@@ -33,5 +33,5 @@ class Solution:
             raise ValueError(f"Number of destinations was not at least 2")
         elif [v for v in self.vehicles if v.destinations[0].node.number or v.destinations[-1].node.number]: # checks that every route starts and ends at the depot
             raise ValueError(f"Indexes 0 and n - 1 should be depot nodes")
-        elif [set(range(1, 101)).remove(d.node.number) for v in self.vehicles for d in v.get_customers_visited()][0]: # checks if all nodes have been visited; will also find duplicate nodes as the ".remove" method will throw an exception when it tries to remove an already-removed node
+        elif [set(range(1, 101)).remove(d.node.number) for v in self.vehicles for d in v.get_customers_visited()][0]: # checks if all nodes have been visited; ".remove" will also find both: duplicate nodes as it will throw an exception when it tries to remove an already-removed node, and depot nodes in the middle of a route as the set starts at 1, so if it tries to remove the depot (node 0) it won't exist and throw an exception
             raise ValueError(f"Not all nodes are visited")
