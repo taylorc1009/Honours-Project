@@ -115,7 +115,7 @@ def select_route_with_longest_wait(solution: FIGASolution) -> int:
     # check if not >= 0 instead of using "else" in case no vehicle has a wait time; this will never be the case, but this is here to be safe
     return longest_waiting_vehicle if longest_waiting_vehicle >= 0 else select_random_vehicle(solution)
 
-def TWBS_mutation(instance: ProblemInstance, solution: FIGASolution) -> FIGASolution: #	Time-Window-based Sort Mutator
+def TWBS_mutation(instance: ProblemInstance, solution: FIGASolution) -> FIGASolution: # Time-Window-based Sort Mutator
     longest_waiting_vehicle = select_route_with_longest_wait(solution)
 
     # sort all destinations between 1 and n - 1 by ready_time (exclude 1 and n - 1 as they're the depot nodes)
