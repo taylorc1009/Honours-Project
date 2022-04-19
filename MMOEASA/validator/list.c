@@ -40,8 +40,8 @@ void append(struct List* restrict self, void* restrict value) {
     self->size++;
 }
 
-void _destroy(struct ListNode* restrict node) {
-    if(node) {
+void _destroy(struct ListNode* restrict node) { //should be a private method of the list; therefore, it's not included in the struct definition
+    if (node) {
         _destroy(node->next);
         free(node);
     }
@@ -57,7 +57,7 @@ struct ListNode* get(struct List* restrict self, const int index) {
         return NULL;
 
     struct ListNode* node = self->root;
-    for (int i = 1; i <= index; i++) // start at index 1 as the previous line already acquires 0 (the root)
+    for (int i = 1; i <= index; i++) //start at index 1 as the previous line already acquires 0 (the root)
         node = node->next;
 
     return node;
@@ -70,6 +70,6 @@ void* at(struct List* restrict self, const int index) {
 
 void set(struct List* restrict self, const int index, void** restrict value) {
     struct ListNode* node = self->get(self, index);
-    if (node)
-        node->value = *value;
+    //if (node) //don't check this because if the user gave an incorrect index, it should crash; they should know something went wrong
+    node->value = *value;
 }
