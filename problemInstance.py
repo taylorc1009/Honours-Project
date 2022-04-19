@@ -4,7 +4,7 @@ from node import Node
 class ProblemInstance:
     distances: List[float]=None
     Hypervolume_total_distance: float=0.0
-    Hypervolume_distance_unbalance: float=0.0  # currently, the distance unbalance objective is unused in the objective function, but this may change
+    Hypervolume_distance_unbalance: float=0.0 # currently, the distance unbalance objective is unused in the objective function, but this may change
     Hypervolume_cargo_unbalance: float=0.0
 
     def __init__(self, name: str, amount_of_vehicles: int, capacity_of_vehicles: int, nodes: Dict[int, Node]=None, acceptance_criterion: str="") -> None:
@@ -23,10 +23,10 @@ class ProblemInstance:
 
         for i in range(0, n):
             for j in range(0, n):
-                if not i == j:
+                if i != j:
                     self.distances[n * i + j] = self.nodes[i].get_distance(self.nodes[j].x, self.nodes[j].y)
 
-    def get_distance(self, from_node: int, to_node: int):
+    def get_distance(self, from_node: int, to_node: int) -> float:
         return self.distances[len(self.nodes) * from_node + to_node]
 
     def update_Hypervolumes(self, HV_TD: float, HV_DU: float, HV_CU: float) -> None:

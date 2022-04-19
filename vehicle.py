@@ -19,7 +19,7 @@ class Vehicle:
     def get_num_of_customers_visited(self) -> int:
         return len(self.destinations) - 2 # like "get_customers_visited", to do this, we assume that every depot departure and return is ordered correctly
 
-    def calculate_destination_time_window(self, instance: ProblemInstance, previous_destination: int, current_destination: int):
+    def calculate_destination_time_window(self, instance: ProblemInstance, previous_destination: int, current_destination: int) -> None:
         previous_node = self.destinations[previous_destination].node.number
         current_node = self.destinations[current_destination].node.number
         self.destinations[current_destination].arrival_time = self.destinations[previous_destination].departure_time + instance.get_distance(previous_node, current_node)
@@ -34,13 +34,13 @@ class Vehicle:
         for i in range(1, len(self.destinations)):
             self.calculate_destination_time_window(instance, i - 1, i)
 
-    def calculate_vehicle_load(self, instance: ProblemInstance):
+    def calculate_vehicle_load(self, instance: ProblemInstance) -> None:
         self.current_capacity = sum([instance.nodes[self.destinations[i].node.number].demand for i in range(1, len(self.destinations) - 1)])
 
-    def calculate_length_of_route(self, instance: ProblemInstance):
+    def calculate_length_of_route(self, instance: ProblemInstance) -> None:
         self.route_distance = sum([instance.get_distance(self.destinations[i - 1].node.number, self.destinations[i].node.number) for i in range(1, len(self.destinations))])
 
-    def __deepcopy__(self, memodict: Dict=None):
+    def __deepcopy__(self, memodict: Dict=None) -> "Vehicle":
         return Vehicle(current_capacity=self.current_capacity, route_distance=self.route_distance, destinations=[copy.deepcopy(d) for d in self.destinations])
 
     @classmethod

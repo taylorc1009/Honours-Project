@@ -5,7 +5,7 @@ from MMOEASA.mmoeasaSolution import MMOEASASolution
 from Ombuki.ombukiSolution import OmbukiSolution
 from FIGA.figaSolution import FIGASolution
 from problemInstance import ProblemInstance
-from data import open_problem_instance, write_solution_for_graph
+from data import open_problem_instance
 from MMOEASA.mmoeasa import MMOEASA
 from Ombuki.ombuki import Ombuki
 from evaluation import calculate_area
@@ -64,8 +64,8 @@ if __name__ == '__main__':
                 exc = ValueError("FIGA should not be given a pre-determined acceptance criterion; it only has one")
                 raise exc
 
-        if not len(sys.argv) == 4 or not sys.argv[3].upper() in {"MMOEASA", "OMBUKI"}:
-            exc = ValueError(f"Acceptance criterion \"{'' if not len(sys.argv) == 4 else sys.argv[3]}\" was not recognised")
+        if len(sys.argv) != 4 or sys.argv[3].upper() not in {"MMOEASA", "OMBUKI"}:
+            exc = ValueError(f"Acceptance criterion \"{'' if len(sys.argv) != 4 else sys.argv[3]}\" was not recognised")
             raise exc
         problem_instance = open_problem_instance(sys.argv[2], sys.argv[3])
 
@@ -93,4 +93,4 @@ if __name__ == '__main__':
         for statistic, value in statistics.items():
             print(f" - {statistic}: {value}")
         print(f"{os.linesep + str(problem_instance)}")
-        calculate_area(problem_instance, nondominated_set, sys.argv[1], sys.argv[3])
+        calculate_area(problem_instance, nondominated_set, sys.argv[3])
