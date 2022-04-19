@@ -22,6 +22,7 @@ typedef struct {
 } init_args;
 
 void append(struct List* restrict self, void* restrict value);
+void _destroy(struct ListNode* restrict node);
 void clear(struct List* restrict self);
 struct ListNode* get(struct List* restrict self, const int index);
 void* at(struct List* restrict self, const int index);

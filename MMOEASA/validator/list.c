@@ -40,15 +40,15 @@ void append(struct List* restrict self, void* restrict value) {
     self->size++;
 }
 
-void clear(struct List* restrict self) {
-    struct ListNode* node = self->root;
-
-    while (node) {
-        struct ListNode* next = node->next;
+void _destroy(struct ListNode* restrict node) {
+    if(node) {
+        _destroy(node->next);
         free(node);
-        node = next;
     }
+}
 
+void clear(struct List* restrict self) {
+    _destroy(self->root);
     self->size = 0;
 }
 
@@ -57,8 +57,7 @@ struct ListNode* get(struct List* restrict self, const int index) {
         return NULL;
 
     struct ListNode* node = self->root;
-
-    for (int i = 1; i <= index; i++)
+    for (int i = 1; i <= index; i++) // start at index 1 as the previous line already acquires 0 (the root)
         node = node->next;
 
     return node;
