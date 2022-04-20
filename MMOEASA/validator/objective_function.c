@@ -53,7 +53,7 @@ void objective_function(struct MMOEASASolution* restrict I)
                 if(vehicle->route_distance < minimum_distance)
                     minimum_distance = vehicle->route_distance;
                 if(vehicle->route_distance > maximum_distance)
-                    maximum_distance= vehicle->route_distance;
+                    maximum_distance = vehicle->route_distance;
                 if(vehicle->current_capacity < minimum_cargo)
                     minimum_cargo = vehicle->current_capacity;
                 if(vehicle->current_capacity > maximum_cargo)

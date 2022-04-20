@@ -43,6 +43,7 @@ void append(struct List* restrict self, void* restrict value) {
 void _destroy(struct ListNode* restrict node) { //should be a private method of the list; therefore, it's not included in the struct definition
     if (node) {
         _destroy(node->next);
+        //TODO is this right: don't free node->value in case it's in use by something else?
         free(node);
     }
 }
