@@ -23,19 +23,17 @@ class OmbukiSolution(Solution):
             self.__nullify()
             return
 
-        vehicle = 0
         self.total_distance = 0.0
         self.num_vehicles = len(self.vehicles)
         self.feasible = True  # set the solution as feasible temporarily
 
-        while vehicle < len(self.vehicles) and self.feasible:
-            self.total_distance += self.vehicles[vehicle].route_distance
+        for vehicle in self.vehicles:
+            self.total_distance += vehicle.route_distance
 
-            for destination in self.vehicles[vehicle].get_customers_visited():
-                if destination.arrival_time > instance.nodes[destination.node.number].due_date or self.vehicles[vehicle].current_capacity > instance.capacity_of_vehicles:
+            for destination in vehicle.get_customers_visited():
+                if destination.arrival_time > instance.nodes[destination.node.number].due_date or vehicle.current_capacity > instance.capacity_of_vehicles:
                     self.__nullify()
-                    break
-            vehicle += 1
+                    return
 
     def __deepcopy__(self, memodict: Dict=None) -> "OmbukiSolution":
         return OmbukiSolution(_id=self.id, vehicles=[copy.deepcopy(v) for v in self.vehicles], feasible=self.feasible, total_distance=self.total_distance, num_vehicles=self.num_vehicles, rank=self.rank)
