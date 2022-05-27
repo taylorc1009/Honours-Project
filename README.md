@@ -10,6 +10,11 @@ As part of the project, a custom GA was developed: the Feasibility Intensive Gen
 |----------------------------------------|----------------------------------------|
 | <img src='figures/custom-ga-c101.png'> | <img src='figures/custom-ga-c201.png'> |
 
+## Authorship
+The contents of the algorithm [FIGA](https://github.com/taylorc1009/Honours-Project/tree/main/FIGA) contained within this repository are protected by Copyright © 2022 [taylorc1009](https://github.com/taylorc1009). Currently, the author deems redistribution of the algorithm's ideas and code as prohibited, with the anticipation of being rescinded in the future.
+
+Additional work, such as other algorithms and their source code, problem instances, libraries, and images/figures produced by another, are not protected by the copyright owner of this repository; their ownership is hereby disclaimed by this author and remains with their original authors.
+
 ## How to execute the application (tutorial for Windows):
 1. Install Python version 3.9,
 2. Open the Windows command line and `cd` to the project root,
